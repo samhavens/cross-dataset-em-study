@@ -1,8 +1,8 @@
 # Cross-Dataset-EM-Study
 
 <div style="display: flex; justify-content: space-between; gap: 20px;">
-  <iframe src="results/lodo.pdf" style="width: 48%; height: 240px;" frameborder="0"></iframe>
-  <iframe src="results/f1-vs-cost.pdf" style="width: 48%; height: 240px;" frameborder="0"></iframe>
+  <img src="results/lodo.png" style="width: 48%; height: auto;" alt="Lodo Image">
+  <img src="results/f1-vs-cost.png" style="width: 48%; height: auto;" alt="F1 vs Cost Image">
 </div>
 
 This repository is the codebase of experiments and artificats of paper "[Experiments & Analysis] A Deep Dive Into Cross-Dataset Entity Matching with Large and Small Language Models". 

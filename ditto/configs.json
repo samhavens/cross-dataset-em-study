@@ -1,0 +1,607 @@
+[
+    {
+        "name": "loo-abt-42",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-abt-42/train.txt",
+        "validset": "../data/ditto/loo-abt-42/valid.txt",
+        "testset": "../data/ditto/loo-abt-42/test.txt"
+    },
+    {
+        "name": "loo-amgo-42",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-amgo-42/train.txt",
+        "validset": "../data/ditto/loo-amgo-42/valid.txt",
+        "testset": "../data/ditto/loo-amgo-42/test.txt"
+    },
+    {
+        "name": "loo-beer-42",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-beer-42/train.txt",
+        "validset": "../data/ditto/loo-beer-42/valid.txt",
+        "testset": "../data/ditto/loo-beer-42/test.txt"
+    },
+    {
+        "name": "loo-dbac-42",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-dbac-42/train.txt",
+        "validset": "../data/ditto/loo-dbac-42/valid.txt",
+        "testset": "../data/ditto/loo-dbac-42/test.txt"
+    },
+    {
+        "name": "loo-dbgo-42",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-dbgo-42/train.txt",
+        "validset": "../data/ditto/loo-dbgo-42/valid.txt",
+        "testset": "../data/ditto/loo-dbgo-42/test.txt"
+    },
+    {
+        "name": "loo-foza-42",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-foza-42/train.txt",
+        "validset": "../data/ditto/loo-foza-42/valid.txt",
+        "testset": "../data/ditto/loo-foza-42/test.txt"
+    },
+    {
+        "name": "loo-itam-42",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-itam-42/train.txt",
+        "validset": "../data/ditto/loo-itam-42/valid.txt",
+        "testset": "../data/ditto/loo-itam-42/test.txt"
+    },
+    {
+        "name": "loo-roim-42",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-roim-42/train.txt",
+        "validset": "../data/ditto/loo-roim-42/valid.txt",
+        "testset": "../data/ditto/loo-roim-42/test.txt"
+    },
+    {
+        "name": "loo-waam-42",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-waam-42/train.txt",
+        "validset": "../data/ditto/loo-waam-42/valid.txt",
+        "testset": "../data/ditto/loo-waam-42/test.txt"
+    },
+    {
+        "name": "loo-wdc-42",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-wdc-42/train.txt",
+        "validset": "../data/ditto/loo-wdc-42/valid.txt",
+        "testset": "../data/ditto/loo-wdc-42/test.txt"
+    },
+    {
+        "name": "loo-zoye-42",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-zoye-42/train.txt",
+        "validset": "../data/ditto/loo-zoye-42/valid.txt",
+        "testset": "../data/ditto/loo-zoye-42/test.txt"
+    },
+    {
+        "name": "loo-abt-44",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-abt-44/train.txt",
+        "validset": "../data/ditto/loo-abt-44/valid.txt",
+        "testset": "../data/ditto/loo-abt-44/test.txt"
+    },
+    {
+        "name": "loo-amgo-44",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-amgo-44/train.txt",
+        "validset": "../data/ditto/loo-amgo-44/valid.txt",
+        "testset": "../data/ditto/loo-amgo-44/test.txt"
+    },
+    {
+        "name": "loo-beer-44",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-beer-44/train.txt",
+        "validset": "../data/ditto/loo-beer-44/valid.txt",
+        "testset": "../data/ditto/loo-beer-44/test.txt"
+    },
+    {
+        "name": "loo-dbac-44",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-dbac-44/train.txt",
+        "validset": "../data/ditto/loo-dbac-44/valid.txt",
+        "testset": "../data/ditto/loo-dbac-44/test.txt"
+    },
+    {
+        "name": "loo-dbgo-44",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-dbgo-44/train.txt",
+        "validset": "../data/ditto/loo-dbgo-44/valid.txt",
+        "testset": "../data/ditto/loo-dbgo-44/test.txt"
+    },
+    {
+        "name": "loo-foza-44",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-foza-44/train.txt",
+        "validset": "../data/ditto/loo-foza-44/valid.txt",
+        "testset": "../data/ditto/loo-foza-44/test.txt"
+    },
+    {
+        "name": "loo-itam-44",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-itam-44/train.txt",
+        "validset": "../data/ditto/loo-itam-44/valid.txt",
+        "testset": "../data/ditto/loo-itam-44/test.txt"
+    },
+    {
+        "name": "loo-roim-44",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-roim-44/train.txt",
+        "validset": "../data/ditto/loo-roim-44/valid.txt",
+        "testset": "../data/ditto/loo-roim-44/test.txt"
+    },
+    {
+        "name": "loo-waam-44",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-waam-44/train.txt",
+        "validset": "../data/ditto/loo-waam-44/valid.txt",
+        "testset": "../data/ditto/loo-waam-44/test.txt"
+    },
+    {
+        "name": "loo-wdc-44",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-wdc-44/train.txt",
+        "validset": "../data/ditto/loo-wdc-44/valid.txt",
+        "testset": "../data/ditto/loo-wdc-44/test.txt"
+    },
+    {
+        "name": "loo-zoye-44",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-zoye-44/train.txt",
+        "validset": "../data/ditto/loo-zoye-44/valid.txt",
+        "testset": "../data/ditto/loo-zoye-44/test.txt"
+    },
+    {
+        "name": "loo-abt-46",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-abt-46/train.txt",
+        "validset": "../data/ditto/loo-abt-46/valid.txt",
+        "testset": "../data/ditto/loo-abt-46/test.txt"
+    },
+    {
+        "name": "loo-amgo-46",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-amgo-46/train.txt",
+        "validset": "../data/ditto/loo-amgo-46/valid.txt",
+        "testset": "../data/ditto/loo-amgo-46/test.txt"
+    },
+    {
+        "name": "loo-beer-46",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-beer-46/train.txt",
+        "validset": "../data/ditto/loo-beer-46/valid.txt",
+        "testset": "../data/ditto/loo-beer-46/test.txt"
+    },
+    {
+        "name": "loo-dbac-46",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-dbac-46/train.txt",
+        "validset": "../data/ditto/loo-dbac-46/valid.txt",
+        "testset": "../data/ditto/loo-dbac-46/test.txt"
+    },
+    {
+        "name": "loo-dbgo-46",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-dbgo-46/train.txt",
+        "validset": "../data/ditto/loo-dbgo-46/valid.txt",
+        "testset": "../data/ditto/loo-dbgo-46/test.txt"
+    },
+    {
+        "name": "loo-foza-46",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-foza-46/train.txt",
+        "validset": "../data/ditto/loo-foza-46/valid.txt",
+        "testset": "../data/ditto/loo-foza-46/test.txt"
+    },
+    {
+        "name": "loo-itam-46",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-itam-46/train.txt",
+        "validset": "../data/ditto/loo-itam-46/valid.txt",
+        "testset": "../data/ditto/loo-itam-46/test.txt"
+    },
+    {
+        "name": "loo-roim-46",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-roim-46/train.txt",
+        "validset": "../data/ditto/loo-roim-46/valid.txt",
+        "testset": "../data/ditto/loo-roim-46/test.txt"
+    },
+    {
+        "name": "loo-waam-46",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-waam-46/train.txt",
+        "validset": "../data/ditto/loo-waam-46/valid.txt",
+        "testset": "../data/ditto/loo-waam-46/test.txt"
+    },
+    {
+        "name": "loo-wdc-46",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-wdc-46/train.txt",
+        "validset": "../data/ditto/loo-wdc-46/valid.txt",
+        "testset": "../data/ditto/loo-wdc-46/test.txt"
+    },
+    {
+        "name": "loo-zoye-46",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-zoye-46/train.txt",
+        "validset": "../data/ditto/loo-zoye-46/valid.txt",
+        "testset": "../data/ditto/loo-zoye-46/test.txt"
+    },
+    {
+        "name": "loo-abt-48",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-abt-48/train.txt",
+        "validset": "../data/ditto/loo-abt-48/valid.txt",
+        "testset": "../data/ditto/loo-abt-48/test.txt"
+    },
+    {
+        "name": "loo-amgo-48",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-amgo-48/train.txt",
+        "validset": "../data/ditto/loo-amgo-48/valid.txt",
+        "testset": "../data/ditto/loo-amgo-48/test.txt"
+    },
+    {
+        "name": "loo-beer-48",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-beer-48/train.txt",
+        "validset": "../data/ditto/loo-beer-48/valid.txt",
+        "testset": "../data/ditto/loo-beer-48/test.txt"
+    },
+    {
+        "name": "loo-dbac-48",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-dbac-48/train.txt",
+        "validset": "../data/ditto/loo-dbac-48/valid.txt",
+        "testset": "../data/ditto/loo-dbac-48/test.txt"
+    },
+    {
+        "name": "loo-dbgo-48",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-dbgo-48/train.txt",
+        "validset": "../data/ditto/loo-dbgo-48/valid.txt",
+        "testset": "../data/ditto/loo-dbgo-48/test.txt"
+    },
+    {
+        "name": "loo-foza-48",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-foza-48/train.txt",
+        "validset": "../data/ditto/loo-foza-48/valid.txt",
+        "testset": "../data/ditto/loo-foza-48/test.txt"
+    },
+    {
+        "name": "loo-itam-48",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-itam-48/train.txt",
+        "validset": "../data/ditto/loo-itam-48/valid.txt",
+        "testset": "../data/ditto/loo-itam-48/test.txt"
+    },
+    {
+        "name": "loo-roim-48",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-roim-48/train.txt",
+        "validset": "../data/ditto/loo-roim-48/valid.txt",
+        "testset": "../data/ditto/loo-roim-48/test.txt"
+    },
+    {
+        "name": "loo-waam-48",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-waam-48/train.txt",
+        "validset": "../data/ditto/loo-waam-48/valid.txt",
+        "testset": "../data/ditto/loo-waam-48/test.txt"
+    },
+    {
+        "name": "loo-wdc-48",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-wdc-48/train.txt",
+        "validset": "../data/ditto/loo-wdc-48/valid.txt",
+        "testset": "../data/ditto/loo-wdc-48/test.txt"
+    },
+    {
+        "name": "loo-zoye-48",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-zoye-48/train.txt",
+        "validset": "../data/ditto/loo-zoye-48/valid.txt",
+        "testset": "../data/ditto/loo-zoye-48/test.txt"
+    },
+    {
+        "name": "loo-abt-50",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-abt-50/train.txt",
+        "validset": "../data/ditto/loo-abt-50/valid.txt",
+        "testset": "../data/ditto/loo-abt-50/test.txt"
+    },
+    {
+        "name": "loo-amgo-50",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-amgo-50/train.txt",
+        "validset": "../data/ditto/loo-amgo-50/valid.txt",
+        "testset": "../data/ditto/loo-amgo-50/test.txt"
+    },
+    {
+        "name": "loo-beer-50",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-beer-50/train.txt",
+        "validset": "../data/ditto/loo-beer-50/valid.txt",
+        "testset": "../data/ditto/loo-beer-50/test.txt"
+    },
+    {
+        "name": "loo-dbac-50",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-dbac-50/train.txt",
+        "validset": "../data/ditto/loo-dbac-50/valid.txt",
+        "testset": "../data/ditto/loo-dbac-50/test.txt"
+    },
+    {
+        "name": "loo-dbgo-50",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-dbgo-50/train.txt",
+        "validset": "../data/ditto/loo-dbgo-50/valid.txt",
+        "testset": "../data/ditto/loo-dbgo-50/test.txt"
+    },
+    {
+        "name": "loo-foza-50",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-foza-50/train.txt",
+        "validset": "../data/ditto/loo-foza-50/valid.txt",
+        "testset": "../data/ditto/loo-foza-50/test.txt"
+    },
+    {
+        "name": "loo-itam-50",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-itam-50/train.txt",
+        "validset": "../data/ditto/loo-itam-50/valid.txt",
+        "testset": "../data/ditto/loo-itam-50/test.txt"
+    },
+    {
+        "name": "loo-roim-50",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-roim-50/train.txt",
+        "validset": "../data/ditto/loo-roim-50/valid.txt",
+        "testset": "../data/ditto/loo-roim-50/test.txt"
+    },
+    {
+        "name": "loo-waam-50",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-waam-50/train.txt",
+        "validset": "../data/ditto/loo-waam-50/valid.txt",
+        "testset": "../data/ditto/loo-waam-50/test.txt"
+    },
+    {
+        "name": "loo-wdc-50",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-wdc-50/train.txt",
+        "validset": "../data/ditto/loo-wdc-50/valid.txt",
+        "testset": "../data/ditto/loo-wdc-50/test.txt"
+    },
+    {
+        "name": "loo-zoye-50",
+        "task_type": "classification",
+        "vocab": [
+            "0",
+            "1"
+        ],
+        "trainset": "../data/ditto/loo-zoye-50/train.txt",
+        "validset": "../data/ditto/loo-zoye-50/valid.txt",
+        "testset": "../data/ditto/loo-zoye-50/test.txt"
+    }
+]

@@ -1,0 +1,1 @@
+The ZeroER project use py_entitymatching as a core library. There are some dependencies issues for python verion after 3.7. Therefore, please consider to use python 3.6

@@ -132,3 +132,19 @@ python throughput.py --model_name MODEL_NAME
 The raw results for the reported numbers in Table 3 and Table 4 can be found in `results`. Moreover, a separate notebook containing all the analyses presented in the paper is available in `results/analysis.ipynb`.
 
 
+
+#### llm mini-key blocking
+
+* one **gpt-4.1-nano** call per canonical record produces a ≤10-token key
+  (cached in `<dataset>_llmkeys.pkl`).
+* at match-time a single nano call turns the left record into its key,
+  we retrieve all right records whose key is exact or edit-distance ≤ 1,
+  and feed only that block to the llm matcher.
+* recall ≥ 99 % on abt_buy & amazon_google with ~200 candidates / row,
+  cost ≈ $0.02 per 500 matches (keys amortised).
+
+build keys once per dataset:
+
+```bash
+python tools/build_llm_keys.py --dataset abt_buy
+```

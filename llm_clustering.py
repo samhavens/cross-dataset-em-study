@@ -315,15 +315,15 @@ def handle_outliers(classifier: LLMClassifier, rows: List[str], depth: int = 0, 
     return mapping
 
 
-class ClusterPipeline(dspy.Graph):
+class ClusterPipeline(dspy.Composition):
     """High level orchestration of the clustering workflow."""
 
     def __init__(self, limit_tokens: int = 1_000_000):
         super().__init__()
         self.sample = SampleForContext(limit_tokens)
         self.first_pass = LLMCluster()
-        self.name_clusters = dspy.Map(ClusterNamer())
-        self.assign_rest = dspy.Map(LLMClassifier({}))
+        self.name_clusters = dspy.Parallel(ClusterNamer())
+        self.assign_rest = dspy.Parallel(LLMClassifier({}))
         self.fallback_vec = VectorAssign({})
         self.sample_seed = 0
 
@@ -375,7 +375,7 @@ class ClusterPipeline(dspy.Graph):
             names[cid] = desc.name
 
         # update classifier context with example lists
-        self.assign_rest = dspy.Map(LLMClassifier(by_cluster))
+        self.assign_rest = dspy.Parallel(LLMClassifier(by_cluster))
 
         results: Dict[int, str] = {}
         outlier_rows: List[str] = []

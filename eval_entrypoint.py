@@ -1,6 +1,9 @@
 import argparse
 import subprocess
 import sys
+import pathlib
+
+from llm_clustering import cfg, ClusterPipeline, report_cost
 
 # Default list of benchmark datasets used across the repository
 DATASETS = [
@@ -77,6 +80,26 @@ def eval_throughput(model_name):
 def eval_random_clustering(dataset, seed):
     run(['python', 'random_clustering.py', dataset, '--seed', str(seed)])
 
+
+def load_rows(path: str):
+    """Load rows from a JSONL or text file."""
+    import json
+    p = pathlib.Path(path)
+    if p.suffix == '.jsonl' or p.suffix == '.json':
+        with open(p, 'r', encoding='utf-8') as f:
+            return [json.loads(line) for line in f]
+    with open(p, 'r', encoding='utf-8') as f:
+        return [line.rstrip('\n') for line in f]
+
+
+def eval_llm_clustering(dataset, model):
+    data_path = f'data/{dataset}.jsonl'
+    cfg.model = model
+    pipe = ClusterPipeline()
+    rows = load_rows(data_path)
+    pipe(rows)
+    report_cost()
+
 def eval_custom(dataset, seed, script):
     cmd = ['python', script, dataset]
     if seed is not None:
@@ -89,7 +112,8 @@ def main():
     parser.add_argument('--method', required=True,
                         choices=['zeroer', 'ditto', 'unicorn', 'anymatch',
                                  'matchgpt', 'jellyfish', 'throughput',
-                                 'random_clustering', 'custom'])
+                                 'random_clustering', 'llm_clustering',
+                                 'custom'])
     parser.add_argument('--dataset', help='Dataset name for the evaluation')
     parser.add_argument('--all', action='store_true',
                         help='Run on all benchmark datasets')
@@ -129,6 +153,9 @@ def main():
                 eval_throughput(model)
             elif args.method == 'random_clustering':
                 eval_random_clustering(dataset, seed)
+            elif args.method == 'llm_clustering':
+                model = args.model or 'gpt-4.1-nano'
+                eval_llm_clustering(dataset, model)
             elif args.method == 'custom':
                 if not args.script:
                     parser.error('--script is required for custom method')

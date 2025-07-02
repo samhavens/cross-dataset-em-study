@@ -108,9 +108,9 @@ python eval_entrypoint.py --method anymatch --dataset dbgo --base_model llama3
 ```
 
 For lightweight experimentation or CI checks, a toy `random_clustering` method
-is provided. It predicts matches by randomly assigning records to clusters and
-computing the F1 score on the test pairs. You can run it on a single dataset or
-all datasets:
+is provided. It predicts matches by randomly assigning records to clusters. The
+script prints both the actual F1 score and the theoretical expectation based on
+the number of clusters. You can run it on a single dataset or all datasets:
 ```bash
 python eval_entrypoint.py --method random_clustering --dataset abt
 python eval_entrypoint.py --method random_clustering --all

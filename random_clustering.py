@@ -56,7 +56,11 @@ def random_clustering(dataset: str, seed: int = 42, clusters: int = 5) -> float:
     recall = tp / (tp + fn) if (tp + fn) else 0.0
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
 
-    print(f"{dataset} seed={seed} f1={f1:.4f}")
+    n_pairs = len(pairs)
+    n_pos = sum(labels)
+    expected_f1 = (2 * n_pos) / (n_pos * clusters + n_pairs) if n_pairs else 0.0
+
+    print(f"{dataset} seed={seed} f1={f1:.4f} expected={expected_f1:.4f}")
     return f1
 
 

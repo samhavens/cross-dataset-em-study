@@ -7,23 +7,36 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Optional
 
 import dspy
 
+try:
+    import tiktoken
+except Exception:  # pragma: no cover - tiktoken may not be installed
+    tiktoken = None  # type: ignore
 
-def token_count(text: str) -> int:
-    """Rough token estimator used to keep prompts under a limit."""
+
+def token_count(text: str, enc: Optional["tiktoken.Encoding"] = None) -> int:
+    """Count tokens using tiktoken if available, otherwise fall back to words."""
+    if tiktoken is not None:
+        if enc is None:
+            try:
+                enc = tiktoken.get_encoding("cl100k_base")
+            except Exception:
+                enc = tiktoken.get_encoding("gpt2")
+        return len(enc.encode(text))
     return len(text.split())
 
 
 class SampleForContext(dspy.Module):
     """Randomly sample rows so their total token count stays within a limit."""
 
-    def __init__(self, limit_tokens: int, seed: int = 0):
+    def __init__(self, limit_tokens: int, seed: int = 0, enc: Optional["tiktoken.Encoding"] = None):
         super().__init__()
         self.limit_tokens = limit_tokens
         self.seed = seed
+        self.enc = enc or (tiktoken.get_encoding("cl100k_base") if tiktoken else None)
 
     def forward(self, rows: List[str]) -> List[str]:
         rng = random.Random(self.seed)
@@ -34,7 +47,7 @@ class SampleForContext(dspy.Module):
         total = 0
         for i in idx:
             row = rows[i]
-            cost = token_count(row)
+            cost = token_count(row, self.enc)
             if total + cost > self.limit_tokens:
                 break
             sampled.append(row)
@@ -47,15 +60,17 @@ class LLMCluster(dspy.Module):
 
     def __init__(self):
         super().__init__()
-        self.reasoning = None
+        self.reasoning: Optional[str] = None
 
     def forward(self, rows: List[str]) -> Dict[int, str]:
         prompt = (
-            "You are an expert taxonomist. Cluster these entries:\n" + "\n".join(rows)
+            "system: you are an expert taxonomist."\
+            "\nuser: here are entries to cluster:\n" + "\n".join(rows) +
+            "\nassistant: think step-by-step and output a JSON mapping id to cluster name"
         )
         lm = dspy.Predict("json")
         result = lm(prompt)
-        self.reasoning = result.text  # store full reasoning for later
+        self.reasoning = result.text
         return result.output  # type: ignore[return-value]
 
 
@@ -70,7 +85,7 @@ class ClusterNamer(dspy.Module):
 
     def forward(self, cluster_id: int, examples: Iterable[str]) -> ClusterDescription:
         prompt = (
-            f"Give a concise name and features for cluster {cluster_id}:\n"
+            f"Provide a short name (<=4 words) and key features for cluster {cluster_id} given these examples:\n"
             + "\n".join(examples)
         )
         lm = dspy.Predict("json")
@@ -86,8 +101,15 @@ class LLMClassifier(dspy.Module):
         self.context = context
 
     def forward(self, row: str) -> str:
-        ctx_lines = [f"{k}: {v}" for k, v in self.context.items()]
-        prompt = "\n".join(ctx_lines + ["Row:", row])
+        ctx_lines = [f"{k}: {', '.join(v)}" for k, v in self.context.items()]
+        prompt = "\n".join(
+            ctx_lines
+            + [
+                "Choose the best cluster for the following row."
+                " Respond with the cluster name or NEW.",
+                row,
+            ]
+        )
         lm = dspy.Predict("text")
         return lm(prompt).output
 
@@ -124,4 +146,34 @@ class ClusterPipeline(dspy.Graph):
     def forward(self, rows: List[str]) -> Dict[int, str]:
         sampled = self.sample(rows)
         mapping = self.first_pass(sampled)
-        return mapping
+
+        # gather examples by cluster id
+        by_cluster: Dict[str, List[str]] = {}
+        for row in sampled:
+            try:
+                rid = int(row.split(")", 1)[0])
+            except Exception:
+                continue
+            cid = mapping.get(rid)
+            if cid is None:
+                continue
+            by_cluster.setdefault(cid, []).append(row)
+
+        # name clusters
+        names: Dict[str, str] = {}
+        for cid, examples in by_cluster.items():
+            desc = self.name_clusters(cid, examples)
+            names[cid] = desc.name
+
+        # update classifier context with example lists
+        self.assign_rest.module.context = by_cluster
+
+        results: Dict[int, str] = {}
+        for row in rows:
+            rid = int(row.split(")", 1)[0])
+            if rid in mapping:
+                results[rid] = names.get(mapping[rid], mapping[rid])
+            else:
+                label = self.assign_rest(row)
+                results[rid] = label
+        return results

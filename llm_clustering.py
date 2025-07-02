@@ -31,6 +31,17 @@ __all__ = [
 
 import dspy
 
+MODEL_COSTS = {
+    "gpt-4.1": (2.0, 8.0),
+    "gpt-4.1-mini": (0.4, 1.6),
+    "gpt-4.1-nano": (0.2, 0.8),
+    "o3": (0.4, 1.6),
+    "o3-mini": (0.1, 0.4),
+    "o4": (10.0, 30.0),
+    "o4-mini": (0.15, 0.60),
+    "claude-4-sonnet": (3.0, 15.0),
+}
+
 try:
     import tiktoken
 except Exception:  # pragma: no cover - tiktoken may not be installed
@@ -57,6 +68,7 @@ class Config:
     mock_seed: int = 42
     in_cost: float = 0.50  # $ per 1M input tokens
     out_cost: float = 1.50  # $ per 1M output tokens
+    model: str = "gpt-4.1-nano"
 
 
 
@@ -107,10 +119,24 @@ class MockPredict:
         return dspy.Response(text=f"cluster_{self.rng.randint(0,2)}")
 
 
+class LivePredict:
+    """Wrapper around ``dspy.Predict`` that logs token usage."""
+
+    def __init__(self, ret_type: str, model_name: str):
+        self.inner = dspy.Predict(ret_type, model=model_name)
+
+    def __call__(self, prompt: str) -> dspy.Response:
+        resp = self.inner(prompt)
+        cost_log.append((token_count(prompt), token_count(resp.text)))
+        return resp
+
+
 def Predictor(ret_type: str):
     """Return a real or mock predictor depending on ``cfg.dry_run``."""
 
-    return MockPredict(ret_type) if cfg.dry_run else dspy.Predict(ret_type)
+    if cfg.dry_run:
+        return MockPredict(ret_type)
+    return LivePredict(ret_type, cfg.model)
 
 
 _ID_RE = re.compile(r"^(\d+)\)")
@@ -237,7 +263,11 @@ class LLMClassifier(dspy.Module):
 
 
 class VectorAssign(dspy.Module):
-    """Fallback vector based assignment using pre-computed embeddings."""
+    """Fallback vector based assignment using pre-computed embeddings.
+
+    ``centroids`` should map cluster names to embedding vectors obtained
+    externally (e.g. via an embeddings service).
+    """
 
     def __init__(self, centroids: Dict[str, List[float]]):
         super().__init__()
@@ -361,3 +391,34 @@ class ClusterPipeline(dspy.Graph):
                 else:
                     results[rid] = "OUTLIER"
         return results
+
+
+if __name__ == "__main__":
+    import argparse
+    import json
+    import pathlib
+    import sys
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--rows", required=True, help="path to txt/json file with one record per line")
+    parser.add_argument("--model", default=cfg.model, help="model key (see MODEL_COSTS) or custom name")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--in-cost", type=float)
+    parser.add_argument("--out-cost", type=float)
+    args = parser.parse_args()
+
+    cfg.dry_run = args.dry_run
+    cfg.model = args.model
+    if args.in_cost and args.out_cost:
+        cfg.in_cost, cfg.out_cost = args.in_cost, args.out_cost
+    else:
+        cfg.in_cost, cfg.out_cost = MODEL_COSTS.get(cfg.model, (cfg.in_cost, cfg.out_cost))
+
+    p = pathlib.Path(args.rows)
+    rows = json.loads(p.read_text()) if p.suffix == ".json" else p.read_text().splitlines()
+
+    pipe = ClusterPipeline()
+    labels = pipe(rows)
+    report_cost()
+
+    json.dump(labels, sys.stdout, indent=2)

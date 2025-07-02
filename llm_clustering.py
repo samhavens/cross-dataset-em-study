@@ -144,7 +144,8 @@ def Predictor(ret_type: str):
 
     if cfg.dry_run:
         return MockPredict(ret_type)
-    return LivePredict(ret_type, cfg.model)
+    real_type = "json" if ret_type == "json-namer" else ret_type
+    return LivePredict(real_type, cfg.model)
 
 
 _ID_RE = re.compile(r"^(\d+)\)")
@@ -300,13 +301,15 @@ def handle_outliers(classifier: LLMClassifier, rows: List[str], depth: int = 0, 
     if depth > max_depth or not rows:
         return {}
     mapping: Dict[int, str] = {}
+    processed: List[Tuple[str, str]] = []
     for row in rows:
         rid = parse_id(row)
         if rid is None:
             continue
         label = classifier(row)
         mapping[rid] = label
-    leftover = [r for r, c in zip(rows, mapping.values()) if c == "OUTLIER"]
+        processed.append((row, label))
+    leftover = [r for r, c in processed if c == "OUTLIER"]
     if leftover:
         mapping.update(handle_outliers(classifier, leftover, depth + 1, max_depth))
     return mapping

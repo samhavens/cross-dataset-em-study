@@ -54,6 +54,10 @@ The project requires:
 
 See `requirements.txt` for the complete list with version constraints.
 
+> **Note:** The code requires **DSPy 2.6.0** (or later). Older releases used
+> the `Graph`/`Map` names; we now depend on `Composition`/`Parallel`.
+> Run `pip install -U dspy-ai==2.6.0` if you hit attribute errors.
+
 * ZeroER: https://github.com/chu-data-lab/zeroer
 * Ditto: https://github.com/megagonlabs/ditto
 * Unicorn: https://github.com/ruc-datalab/Unicorn

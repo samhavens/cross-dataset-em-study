@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import random
+import warnings
 from dataclasses import dataclass
 import re
 from typing import Dict, Iterable, List, Optional, Tuple
@@ -127,7 +128,14 @@ class LivePredict:
 
     def __call__(self, prompt: str) -> dspy.Response:
         resp = self.inner(prompt)
-        cost_log.append((token_count(prompt), token_count(resp.text)))
+        out_text = resp.text
+        if not out_text:
+            try:
+                import json as _json
+                out_text = _json.dumps(resp.output)
+            except Exception:
+                out_text = ""
+        cost_log.append((token_count(prompt), token_count(out_text)))
         return resp
 
 
@@ -409,10 +417,16 @@ if __name__ == "__main__":
 
     cfg.dry_run = args.dry_run
     cfg.model = args.model
-    if args.in_cost and args.out_cost:
+    if args.in_cost is not None and args.out_cost is not None:
         cfg.in_cost, cfg.out_cost = args.in_cost, args.out_cost
     else:
-        cfg.in_cost, cfg.out_cost = MODEL_COSTS.get(cfg.model, (cfg.in_cost, cfg.out_cost))
+        if cfg.model in MODEL_COSTS:
+            cfg.in_cost, cfg.out_cost = MODEL_COSTS[cfg.model]
+        else:
+            warnings.warn(
+                f"unknown model '{cfg.model}'; using default prices. "
+                "Specify --in-cost and --out-cost to override."
+            )
 
     p = pathlib.Path(args.rows)
     rows = json.loads(p.read_text()) if p.suffix == ".json" else p.read_text().splitlines()

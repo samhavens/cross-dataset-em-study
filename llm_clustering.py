@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass
+import re
 from typing import Dict, Iterable, List, Optional
 
 import dspy
@@ -18,7 +19,7 @@ except Exception:  # pragma: no cover - tiktoken may not be installed
 
 
 def token_count(text: str, enc: Optional["tiktoken.Encoding"] = None) -> int:
-    """Count tokens using tiktoken if available, otherwise fall back to words."""
+    """Count tokens using ``tiktoken`` when available."""
     if tiktoken is not None:
         if enc is None:
             try:
@@ -29,10 +30,29 @@ def token_count(text: str, enc: Optional["tiktoken.Encoding"] = None) -> int:
     return len(text.split())
 
 
+_ID_RE = re.compile(r"^(\d+)\)")
+
+
+def parse_id(row: str) -> Optional[int]:
+    """Extract numeric ID from a row string."""
+    m = _ID_RE.match(row.strip())
+    if m:
+        try:
+            return int(m.group(1))
+        except ValueError:  # pragma: no cover - defensive
+            return None
+    return None
+
+
 class SampleForContext(dspy.Module):
     """Randomly sample rows so their total token count stays within a limit."""
 
-    def __init__(self, limit_tokens: int, seed: int = 0, enc: Optional["tiktoken.Encoding"] = None):
+    def __init__(
+        self,
+        limit_tokens: int,
+        seed: int = 0,
+        enc: Optional["tiktoken.Encoding"] = None,
+    ):
         super().__init__()
         self.limit_tokens = limit_tokens
         self.seed = seed
@@ -64,9 +84,10 @@ class LLMCluster(dspy.Module):
 
     def forward(self, rows: List[str]) -> Dict[int, str]:
         prompt = (
-            "system: you are an expert taxonomist."\
-            "\nuser: here are entries to cluster:\n" + "\n".join(rows) +
-            "\nassistant: think step-by-step and output a JSON mapping id to cluster name"
+            "system: you are an expert taxonomist."
+            "\nuser: here are entries to cluster:\n"
+            + "\n".join(rows)
+            + "\nassistant: think step-by-step and output a JSON mapping id to cluster name"
         )
         lm = dspy.Predict("json")
         result = lm(prompt)
@@ -90,7 +111,9 @@ class ClusterNamer(dspy.Module):
         )
         lm = dspy.Predict("json")
         data = lm(prompt).output
-        return ClusterDescription(name=data.get("name", "cluster"), features=data.get("features", ""))
+        return ClusterDescription(
+            name=data.get("name", "cluster"), features=data.get("features", "")
+        )
 
 
 class LLMClassifier(dspy.Module):
@@ -150,9 +173,8 @@ class ClusterPipeline(dspy.Graph):
         # gather examples by cluster id
         by_cluster: Dict[str, List[str]] = {}
         for row in sampled:
-            try:
-                rid = int(row.split(")", 1)[0])
-            except Exception:
+            rid = parse_id(row)
+            if rid is None:
                 continue
             cid = mapping.get(rid)
             if cid is None:
@@ -170,7 +192,7 @@ class ClusterPipeline(dspy.Graph):
 
         results: Dict[int, str] = {}
         for row in rows:
-            rid = int(row.split(")", 1)[0])
+            rid = parse_id(row)
             if rid in mapping:
                 results[rid] = names.get(mapping[rid], mapping[rid])
             else:

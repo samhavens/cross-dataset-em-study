@@ -9,6 +9,51 @@ This repository is the codebase of experiments and artificats of paper "[Experim
 
 It includes the basic components and configurations for reproducing the evaluations described in the paper. For detailed implementations of each method, please refer to the original implementations linked here.
 
+## Quick Start
+
+### Environment Setup
+
+To set up the environment and install all dependencies:
+
+```bash
+# Clone the repository
+git clone https://github.com/samhavens/cross-dataset-em-study.git
+cd cross-dataset-em-study
+
+# Set up environment (works with both uv and pip)
+./setup.sh
+
+# Activate the environment
+source .venv/bin/activate
+
+# Run a quick benchmark
+./bin/quick_llm_bench.sh
+```
+
+### Manual Setup (Alternative)
+
+If you prefer manual setup:
+
+```bash
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Dependencies
+
+The project requires:
+- **Core**: pandas, numpy, scikit-learn
+- **LLM**: dspy-ai, tiktoken, transformers, torch
+- **ML**: autogluon, sentence-transformers
+- **String matching**: jellyfish, fuzzywuzzy
+- **Analysis**: jupyter, matplotlib, seaborn
+
+See `requirements.txt` for the complete list with version constraints.
+
 * ZeroER: https://github.com/chu-data-lab/zeroer
 * Ditto: https://github.com/megagonlabs/ditto
 * Unicorn: https://github.com/ruc-datalab/Unicorn

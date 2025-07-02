@@ -30,12 +30,13 @@ def chunks(xs, n):
 out = {}
 for offset, chunk in enumerate(chunks(rows, BATCH)):
     listing = [f"{i}) {json.dumps(r, ensure_ascii=False)}" for i, r in enumerate(chunk)]
+    records_text = '\n'.join(listing)
     prompt = textwrap.dedent(f"""
       create a *concise*, unique key (≤10 tokens, lowercase, hyphens ok)
       that would help match each record to itself later. respond as JSON
       mapping row number to key.
       records:
-      {'\n'.join(listing)}
+      {records_text}
     """)
     mapping = Predictor("json")(prompt).output
     for local_idx, key in mapping.items():

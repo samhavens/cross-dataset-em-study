@@ -1,0 +1,131 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+*.out
+
+# Data files (uncomment specific patterns if needed)
+# *.csv
+# *.pkl
+# *.pickle
+# *.json
+# *.jsonl
+# *.parquet
+# *.h5
+# *.hdf5
+
+# Model artifacts and checkpoints
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+models/
+checkpoints/
+wandb/
+
+# Cache directories
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# API keys and secrets
+*.key
+*.pem
+secrets/
+credentials/
+.env.secret
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Research specific
+results/*/
+outputs/
+experiments/
+runs/
+mlruns/
+.wandb/
+
+# Large files that should be downloaded separately
+# data/raw/
+# *.zip
+# *.tar.gz
+# *.tgz
+
+# Compiled extensions
+*.so
+
+# Distribution / packaging specific
+.Python
+*.egg-info/
+dist/
+build/

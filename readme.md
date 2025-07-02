@@ -97,6 +97,22 @@ python open_models.py --mid MODEL_ID
 ### TableGPT & GPT-3
 We are unable to evaluate these two models because TableGPT is not open-sourced, and GPT-3 has been deprecated. Therefore, we include their results from the original papers for reference.
 
+## Unified evaluation entry point
+To simplify running evaluations across different methods, you can use
+`eval_entrypoint.py` from the repository root. It dispatches to the
+corresponding evaluation code for each matcher or a custom script.
+Example usage:
+```bash
+python eval_entrypoint.py --method zeroer --dataset abt --seed 42
+python eval_entrypoint.py --method anymatch --dataset dbgo --base_model llama3
+```
+
+To benchmark a new method on all datasets at once, pass the path to the
+script and use `--method custom --all`:
+```bash
+python eval_entrypoint.py --method custom --script my_method.py --all
+```
+
 ## Inference throughput experiments
 We provide the code to run the throughput experiments. To run the experiments, please use the following code:
 ```

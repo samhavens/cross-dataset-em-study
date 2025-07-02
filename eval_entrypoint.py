@@ -74,6 +74,9 @@ def eval_throughput(model_name):
     run(['python', 'throughput.py', '--model_name', model_name])
 
 
+def eval_random_clustering(dataset, seed):
+    run(['python', 'random_clustering.py', dataset, '--seed', str(seed)])
+
 def eval_custom(dataset, seed, script):
     cmd = ['python', script, dataset]
     if seed is not None:
@@ -85,7 +88,8 @@ def main():
     parser = argparse.ArgumentParser(description='Unified evaluation entrypoint')
     parser.add_argument('--method', required=True,
                         choices=['zeroer', 'ditto', 'unicorn', 'anymatch',
-                                 'matchgpt', 'jellyfish', 'throughput', 'custom'])
+                                 'matchgpt', 'jellyfish', 'throughput',
+                                 'random_clustering', 'custom'])
     parser.add_argument('--dataset', help='Dataset name for the evaluation')
     parser.add_argument('--all', action='store_true',
                         help='Run on all benchmark datasets')
@@ -123,6 +127,8 @@ def main():
             elif args.method == 'throughput':
                 model = args.model or 'anymatch-llama3'
                 eval_throughput(model)
+            elif args.method == 'random_clustering':
+                eval_random_clustering(dataset, seed)
             elif args.method == 'custom':
                 if not args.script:
                     parser.error('--script is required for custom method')

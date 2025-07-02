@@ -128,6 +128,24 @@ We provide the code to run the throughput experiments. To run the experiments, p
 python throughput.py --model_name MODEL_NAME
 ```
 
+### quick & cheap benchmark
+
+```bash
+# one-liner: compare SBERT+k-means vs our LLM pipeline on 1k beer rows
+bash bin/quick_llm_bench.sh beer_reviews 1000 gpt-4.1-nano
+```
+
+The script:
+
+1. randomly samples *N* rows (default 1 000)
+2. runs the repo’s `run_sbert_kmeans.py` baseline
+3. runs `llm_clustering.py` (our new DSPy pipeline)
+4. evaluates both with `eval/cluster_metrics.py` (NMI & AMI)
+
+Default model is **gpt-4.1-nano**; change the 3rd arg or pass custom
+`--in-cost/--out-cost` flags inside `llm_clustering.py` if you’re price-sensitive.
+Total spend with nano is typically under $0.05.
+
 ## Experimental results and analysis
 The raw results for the reported numbers in Table 3 and Table 4 can be found in `results`. Moreover, a separate notebook containing all the analyses presented in the paper is available in `results/analysis.ipynb`.
 

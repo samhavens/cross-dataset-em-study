@@ -26,8 +26,20 @@ cd cross-dataset-em-study
 # Activate the environment
 source .venv/bin/activate
 
-# Run a quick benchmark
+# Run a quick benchmark (works in mock mode without API keys)
 ./bin/quick_llm_bench.sh
+
+# Or test the system
+python test_llm_bench.py
+
+# Test the new LLM hybrid entity matching (mock mode)
+python llm_em_hybrid.py --dataset beer --limit 20 --candidate-ratio 0.05
+
+# Test dataset analysis tools
+python tools/dataset_info.py --dataset beer
+
+# Build LLM keys for a dataset (with progress bar and checkpointing)
+python tools/build_llm_keys.py --dataset beer --model gpt-4.1-nano
 ```
 
 ### Manual Setup (Alternative)
@@ -53,6 +65,16 @@ The project requires:
 - **Analysis**: jupyter, matplotlib, seaborn
 
 See `requirements.txt` for the complete list with version constraints.
+
+### API Keys (Optional)
+
+The system works in mock mode by default for testing. To use real LLM APIs:
+
+```bash
+# Set your OpenAI API key (will automatically enable real API calls)
+export OPENAI_API_KEY="your-key-here"
+./bin/quick_llm_bench.sh
+```
 
 > **Note:** The code requires **DSPy 2.6.0** (or later). Older releases used
 > the `Graph`/`Map` names; we now depend on `Composition`/`Parallel`.
@@ -196,4 +218,205 @@ build keys once per dataset:
 
 ```bash
 python tools/build_llm_keys.py --dataset abt_buy
+```
+
+## LLM Entity Matching
+
+### Hybrid Entity Matching
+
+We provide an efficient hybrid approach that combines trigram similarity for candidate filtering with LLM-based matching:
+
+```bash
+# Run entity matching with candidate filtering
+python llm_em_hybrid.py --dataset beer --candidate-ratio 0.05 --model gpt-4.1-nano
+
+# Alternative: specify absolute number of candidates
+python llm_em_hybrid.py --dataset beer --max-candidates 150 --model gpt-4.1-nano
+
+# Run on validation/test subset for quick testing
+python llm_em_hybrid.py --dataset beer --limit 100 --candidate-ratio 0.02
+```
+
+**Key Features:**
+- **Candidate filtering**: Uses trigram similarity to reduce candidates from full Table B to manageable subset
+- **Token-aware**: Automatically respects 1M token context limits 
+- **Cost-efficient**: ~$0.02 per 500 matches vs $2+ for naive approaches
+- **Progress tracking**: Real-time progress bars and match counting
+
+### Hyperparameter Optimization
+
+Find optimal candidate ratios automatically using validation set sweeping:
+
+```bash
+# Sweep candidate ratios to find optimal F1
+python tools/sweep_candidates.py --dataset beer --num-points 8
+
+# Quick sweep with limited test pairs
+python tools/sweep_candidates.py --dataset fodors_zagat --limit 50 --num-points 5
+
+# Test specific dataset constraints
+python tools/dataset_info.py --dataset walmart_amazon
+```
+
+The sweeping tool:
+- Tests multiple candidate ratios using logarithmic spacing
+- Uses validation set for hyperparameter tuning
+- Estimates safe token limits automatically
+- Compares results against published leaderboard thresholds
+- Provides optimal configuration recommendations
+
+### Dataset Analysis Tools
+
+```bash
+# Get dataset size and competitive thresholds
+python tools/dataset_info.py --dataset beer
+python tools/dataset_info.py --test-parsing  # Test all datasets
+
+# Check what datasets are available
+python tools/dataset_info.py --test-parsing
+```
+
+**Output includes:**
+- Table B record counts and test pair statistics
+- Average tokens per record for cost estimation
+- Maximum safe candidate ratios to avoid token limits
+- Competitive F1 thresholds from published leaderboards
+
+### Alternative Key Building Methods
+
+For large datasets, we provide optimized key building approaches:
+
+```bash
+# Method 1: Mega-prompts (1-5 API calls total)
+python tools/build_llm_keys_mega.py --dataset walmart_amazon --model gpt-4.1-nano
+
+# Method 2: Batch API (75% cost savings, 24h latency)
+python tools/build_llm_keys_batch.py --dataset dblp_scholar --model gpt-4.1-nano
+
+# Method 3: Standard batching (original, most reliable)
+python tools/build_llm_keys.py --dataset beer --model gpt-4.1-nano
+```
+
+**Comparison:**
+- **Standard**: 40-record batches, checkpointing, retry logic (~3 min/dataset)
+- **Mega**: Uses full 1M token context, 1-5 calls total (~30 sec/dataset)
+- **Batch API**: Async batch processing, 75% cheaper, 24h turnaround
+
+## Quick Examples
+
+### Complete Workflow Example
+
+```bash
+# 1. Set up environment
+export OPENAI_API_KEY="your-key-here"
+
+# 2. Build keys for dataset (one-time cost)
+python tools/build_llm_keys.py --dataset beer --model gpt-4.1-nano
+
+# 3. Find optimal candidate ratio
+python tools/sweep_candidates.py --dataset beer --limit 50
+
+# 4. Run final evaluation with optimal settings
+python llm_em_hybrid.py --dataset beer --candidate-ratio 0.03 --model gpt-4.1-nano
+
+# 5. Compare against leaderboard
+python tools/dataset_info.py --dataset beer
+```
+
+### Cost Optimization
+
+```bash
+# Check dataset size before running
+python tools/dataset_info.py --dataset walmart_amazon
+
+# For large datasets, use batch API for key building
+python tools/build_llm_keys_batch.py --dataset walmart_amazon
+
+# Use smaller candidate ratios for cost control
+python llm_em_hybrid.py --dataset walmart_amazon --candidate-ratio 0.01
+```
+
+## Advanced Experimental Features
+
+### Structured Results and CSV Logging
+
+Save detailed experimental results in structured formats:
+
+```bash
+# Save results to JSON and CSV
+python llm_em_hybrid.py --dataset beer --candidate-ratio 0.05 \
+    --output-json results.json --output-csv experiment_log.csv
+
+# All subsequent runs append to the same CSV for experiment tracking
+python llm_em_hybrid.py --dataset fodors_zagat --candidate-ratio 0.02 \
+    --output-csv experiment_log.csv
+```
+
+**Structured output includes:**
+- Complete hyperparameters and dataset info
+- Detailed metrics (precision, recall, F1, confusion matrix)
+- Cost tracking and timing information
+- Reproducible experiment metadata
+
+### Automated Hyperparameter Optimization with Test Evaluation
+
+Run complete experiments with automatic validation→test pipeline:
+
+```bash
+# Sweep validation set, then auto-test best config on test set
+python tools/sweep_candidates.py --dataset beer --auto-test \
+    --output-csv experiments.csv
+
+# Multiple datasets with experiment tracking
+python tools/run_experiments.py --datasets beer fodors_zagat zomato_yelp \
+    --output-csv all_experiments.csv
+
+# Analyze all experimental results
+python tools/run_experiments.py --analyze-only
+```
+
+**Auto-test pipeline:**
+1. Sweeps candidate ratios on validation set
+2. Identifies best hyperparameters by F1 score
+3. Automatically runs best config on test set
+4. Compares against competitive leaderboard thresholds
+5. Saves complete experimental record
+
+### Batch Experimental Workflows
+
+Run comprehensive experiments across multiple datasets:
+
+```bash
+# Run experiments on all small datasets
+python tools/run_experiments.py
+
+# Custom dataset selection with debugging
+python tools/run_experiments.py --datasets beer walmart_amazon \
+    --limit 100 --num-points 5
+
+# Production run with full hyperparameter search
+python tools/run_experiments.py --datasets beer fodors_zagat \
+    --num-points 12 --model gpt-4.1-nano
+```
+
+**Features:**
+- Automatic dataset size detection and safety limits
+- Progressive experiment tracking with CSV logs
+- Results aggregation and competitive benchmarking
+- Cost and timing analysis across experiments
+
+### Experimental Analysis Tools
+
+```bash
+# Load and analyze experimental CSV logs
+python -c "
+import pandas as pd
+df = pd.read_csv('experiment_results/all_results.csv')
+print(f'Datasets tested: {df.dataset.nunique()}')
+print(f'Best F1 scores:')
+print(df.groupby('dataset')['f1'].max().sort_values(ascending=False))
+"
+
+# Compare validation vs test performance
+python tools/run_experiments.py --analyze-only --results-dir experiment_results
 ```

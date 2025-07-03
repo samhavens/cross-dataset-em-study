@@ -12,6 +12,8 @@ import re
 from typing import Dict, Iterable, List, Optional, Tuple
 import textwrap
 
+import tiktoken
+
 __all__ = [
     "Config",
     "cfg",
@@ -43,22 +45,15 @@ MODEL_COSTS = {
     "claude-4-sonnet": (3.0, 15.0),
 }
 
-try:
-    import tiktoken
-except Exception:  # pragma: no cover - tiktoken may not be installed
-    tiktoken = None  # type: ignore
-
 
 def token_count(text: str, enc: Optional["tiktoken.Encoding"] = None) -> int:
     """Count tokens using ``tiktoken`` when available."""
-    if tiktoken is not None:
-        if enc is None:
-            try:
-                enc = tiktoken.get_encoding("cl100k_base")
-            except Exception:
-                enc = tiktoken.get_encoding("gpt2")
-        return len(enc.encode(text))
-    return len(text.split())
+    if enc is None:
+        try:
+            enc = tiktoken.get_encoding("cl100k_base")
+        except Exception:
+            enc = tiktoken.get_encoding("gpt2")
+    return len(enc.encode(text))
 
 
 @dataclass
@@ -97,18 +92,27 @@ class MockPredict:
         self.ret_type = ret_type
         self.rng = random.Random(cfg.mock_seed)
 
-    def __call__(self, prompt: str) -> dspy.Response:
+    def __call__(self, prompt: str) -> object:
         tokens_in = token_count(prompt)
         if self.ret_type == "json":
             ids = re.findall(r"(\d+)\)", prompt)
             tokens_out = max(1, 3 * len(ids))
             cost_log.append((tokens_in, tokens_out))
             mapping = {int(i): f"cluster_{int(i) % 3}" for i in ids}
-            return dspy.Response(text="/*mock*/", output=mapping)
+            # Create a simple object with text and output attributes
+            class MockResponse:
+                def __init__(self, text, output=None):
+                    self.text = text
+                    self.output = output
+            return MockResponse(text="/*mock*/", output=mapping)
         if self.ret_type == "json-namer":
             tokens_out = 10
             cost_log.append((tokens_in, tokens_out))
-            return dspy.Response(
+            class MockResponse:
+                def __init__(self, text, output=None):
+                    self.text = text
+                    self.output = output
+            return MockResponse(
                 text="/*mock*/",
                 output={
                     "name": f"cluster{self.rng.randint(0,9)}",
@@ -117,26 +121,56 @@ class MockPredict:
             )
         tokens_out = 5
         cost_log.append((tokens_in, tokens_out))
-        return dspy.Response(text=f"cluster_{self.rng.randint(0,2)}")
+        class MockResponse:
+            def __init__(self, text, output=None):
+                self.text = text
+                self.output = output
+        return MockResponse(text=f"cluster_{self.rng.randint(0,2)}")
 
 
 class LivePredict:
     """Wrapper around ``dspy.Predict`` that logs token usage."""
 
     def __init__(self, ret_type: str, model_name: str):
-        self.inner = dspy.Predict(ret_type, model=model_name)
+        # Use simple signature and handle JSON parsing manually
+        signature = "prompt -> output"
+        self.inner = dspy.Predict(signature)
+        self.ret_type = ret_type
 
-    def __call__(self, prompt: str) -> dspy.Response:
-        resp = self.inner(prompt)
-        out_text = resp.text
-        if not out_text:
+    def __call__(self, prompt: str) -> object:
+        resp = self.inner(prompt=prompt)
+        
+        # Access the output field from the prediction
+        out_text = resp.output if hasattr(resp, 'output') else str(resp)
+        
+        # For JSON responses, try to parse the output
+        if self.ret_type == "json" and out_text:
             try:
                 import json as _json
-                out_text = _json.dumps(resp.output)
+                parsed_output = _json.loads(out_text)
+                # Create a response object with parsed JSON
+                class LiveResponse:
+                    def __init__(self, text, output=None):
+                        self.text = text
+                        self.output = output
+                result = LiveResponse(text=out_text, output=parsed_output)
             except Exception:
-                out_text = ""
-        cost_log.append((token_count(prompt), token_count(out_text)))
-        return resp
+                # If parsing fails, create a simple response with just text
+                class LiveResponse:
+                    def __init__(self, text, output=None):
+                        self.text = text
+                        self.output = output
+                result = LiveResponse(text=out_text, output=None)
+        else:
+            # For text responses, create a simple response object
+            class LiveResponse:
+                def __init__(self, text, output=None):
+                    self.text = text
+                    self.output = output
+            result = LiveResponse(text=out_text, output=None)
+            
+        cost_log.append((token_count(prompt), token_count(str(out_text))))
+        return result
 
 
 def Predictor(ret_type: str):
@@ -315,15 +349,14 @@ def handle_outliers(classifier: LLMClassifier, rows: List[str], depth: int = 0, 
     return mapping
 
 
-class ClusterPipeline(dspy.Composition):
+class ClusterPipeline(dspy.Module):
     """High level orchestration of the clustering workflow."""
 
     def __init__(self, limit_tokens: int = 1_000_000):
         super().__init__()
         self.sample = SampleForContext(limit_tokens)
         self.first_pass = LLMCluster()
-        self.name_clusters = dspy.Parallel(ClusterNamer())
-        self.assign_rest = dspy.Parallel(LLMClassifier({}))
+        self.cluster_namer = ClusterNamer()
         self.fallback_vec = VectorAssign({})
         self.sample_seed = 0
 
@@ -371,11 +404,11 @@ class ClusterPipeline(dspy.Composition):
         # name clusters
         names: Dict[str, str] = {}
         for cid, examples in by_cluster.items():
-            desc = self.name_clusters(cid, examples)
+            desc = self.cluster_namer(cid, examples)
             names[cid] = desc.name
 
-        # update classifier context with example lists
-        self.assign_rest = dspy.Parallel(LLMClassifier(by_cluster))
+        # create classifier for remaining rows
+        classifier = LLMClassifier(by_cluster)
 
         results: Dict[int, str] = {}
         outlier_rows: List[str] = []
@@ -384,7 +417,7 @@ class ClusterPipeline(dspy.Composition):
             if rid in mapping:
                 results[rid] = names.get(mapping[rid], mapping[rid])
             else:
-                label = self.assign_rest(row)
+                label = classifier(row)
                 if label == "OUTLIER":
                     outlier_rows.append(row)
                 else:

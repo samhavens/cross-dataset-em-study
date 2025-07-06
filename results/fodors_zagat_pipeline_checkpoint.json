@@ -1,0 +1,20 @@
+{
+  "dev_results": {
+    "metrics": {
+      "f1": 0.9361702127659575,
+      "precision": 0.88,
+      "recall": 1.0
+    },
+    "cost_usd": 0.0809676,
+    "processed_pairs": 190,
+    "predictions_made": 70
+  },
+  "optimal_params": {
+    "max_candidates": 28,
+    "semantic_weight": 0.2,
+    "model": "gpt-4.1-nano",
+    "use_semantic": true
+  },
+  "dev_time": 0.46836090087890625,
+  "heuristics_file": "results/generated_rules/fodors_zagat_generated_heuristics.json"
+}

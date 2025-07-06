@@ -1,0 +1,54 @@
+{
+  "timestamp": "2025-07-05T15:54:49.149625",
+  "dataset": "amazon_google",
+  "pipeline_version": "complete_v3_working_rules",
+  "dev_results": {
+    "f1": 0.6792452830188679,
+    "precision": 0.6666666666666666,
+    "recall": 0.6923076923076923,
+    "cost_usd": 0.5782242,
+    "processing_time": 4207.035930156708
+  },
+  "optimal_params": {
+    "max_candidates": 25,
+    "semantic_weight": 0.2,
+    "model": "gpt-4.1-nano",
+    "use_semantic": true
+  },
+  "heuristics_file": "results/generated_rules/amazon_google_generated_heuristics.json",
+  "rule_generation": "claude_sdk_success",
+  "rule_optimization": "claude_sdk_success",
+  "optimized_heuristics_file": "results/generated_rules/amazon_google_generated_heuristics_optimized.json",
+  "baseline_results": {
+    "f1": 0.7374749498997996,
+    "precision": 0.6943396226415094,
+    "recall": 0.7863247863247863,
+    "cost_usd": 1.1555012,
+    "processing_time": 374.2755401134491
+  },
+  "enhanced_results": {
+    "f1": 0.6695464362850972,
+    "precision": 0.6768558951965066,
+    "recall": 0.6623931623931624,
+    "cost_usd": 0.28082999999999997,
+    "processing_time": 831.7733561992645,
+    "early_decisions": 0,
+    "llm_calls": 2293,
+    "llm_call_reduction": 0.0
+  },
+  "ab_comparison": {
+    "f1_improvement": -0.06792851361470231,
+    "cost_change": -0.8746712000000001,
+    "rules_helped": false
+  },
+  "summary": {
+    "dev_f1": 0.6792452830188679,
+    "baseline_f1": 0.7374749498997996,
+    "enhanced_f1": 0.6695464362850972,
+    "f1_improvement": -0.06792851361470231,
+    "total_cost_usd": 2.0145554,
+    "total_time_seconds": 5413.084826469421,
+    "beat_leaderboard": false,
+    "leaderboard_target": 75.0
+  }
+}

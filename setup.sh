@@ -41,5 +41,6 @@ fi
 echo ""
 echo "💡 To activate the environment:"
 echo "   source .venv/bin/activate"
+echo "   export TOKENIZERS_PARALLELISM=false  # Disable tokenizer warnings"
 echo ""
 echo "🎯 Then run: ./bin/quick_llm_bench.sh"

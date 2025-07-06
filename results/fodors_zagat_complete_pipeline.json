@@ -1,0 +1,53 @@
+{
+  "timestamp": "2025-07-05T08:33:06.888279",
+  "dataset": "fodors_zagat",
+  "pipeline_version": "complete_v3_working_rules",
+  "dev_results": {
+    "f1": 0.9361702127659575,
+    "precision": 0.88,
+    "recall": 1.0,
+    "cost_usd": 0.0809676,
+    "processing_time": 0.46836090087890625
+  },
+  "optimal_params": {
+    "max_candidates": 28,
+    "semantic_weight": 0.2,
+    "model": "gpt-4.1-nano",
+    "use_semantic": true
+  },
+  "heuristics_file": "results/generated_rules/fodors_zagat_generated_heuristics.json",
+  "rule_generation": "claude_sdk_success",
+  "rule_optimization": "no_changes_needed",
+  "baseline_results": {
+    "f1": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "cost_usd": 0.16197040000000001,
+    "processing_time": 20.1613609790802
+  },
+  "enhanced_results": {
+    "f1": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "cost_usd": 0.021197999999999998,
+    "processing_time": 66.54204988479614,
+    "early_decisions": 42,
+    "llm_calls": 148,
+    "llm_call_reduction": 22.10526315789474
+  },
+  "ab_comparison": {
+    "f1_improvement": 0.0,
+    "cost_change": -0.14077240000000002,
+    "rules_helped": false
+  },
+  "summary": {
+    "dev_f1": 0.9361702127659575,
+    "baseline_f1": 1.0,
+    "enhanced_f1": 1.0,
+    "f1_improvement": 0.0,
+    "total_cost_usd": 0.26413600000000004,
+    "total_time_seconds": 87.17177176475525,
+    "beat_leaderboard": true,
+    "leaderboard_target": 96.4
+  }
+}

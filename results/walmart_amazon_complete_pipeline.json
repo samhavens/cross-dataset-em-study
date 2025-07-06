@@ -1,0 +1,52 @@
+{
+  "timestamp": "2025-07-03T16:51:21.292050",
+  "dataset": "walmart_amazon",
+  "pipeline_version": "complete_v3_working_rules",
+  "dev_results": {
+    "f1": 0.8750000000000001,
+    "precision": 0.7777777777777778,
+    "recall": 1.0,
+    "cost_usd": 0.0387116,
+    "processing_time": 934.278844833374
+  },
+  "optimal_params": {
+    "max_candidates": 25,
+    "semantic_weight": 0.5,
+    "model": "gpt-4.1-nano",
+    "use_semantic": true
+  },
+  "heuristics_file": "results/generated_rules/walmart_amazon_generated_heuristics.json",
+  "rule_generation": "claude_sdk_success",
+  "baseline_results": {
+    "f1": 0.7777777777777778,
+    "precision": 0.6363636363636364,
+    "recall": 1.0,
+    "cost_usd": 0.0774232,
+    "processing_time": 93.07794308662415
+  },
+  "enhanced_results": {
+    "f1": 0.8571428571428571,
+    "precision": 0.8571428571428571,
+    "recall": 0.8571428571428571,
+    "cost_usd": 0.014297200000000003,
+    "processing_time": 174.80966877937317,
+    "early_decisions": 0,
+    "llm_calls": 100,
+    "llm_call_reduction": 0.0
+  },
+  "ab_comparison": {
+    "f1_improvement": 0.0793650793650793,
+    "cost_change": -0.06312599999999999,
+    "rules_helped": true
+  },
+  "summary": {
+    "dev_f1": 0.8750000000000001,
+    "baseline_f1": 0.7777777777777778,
+    "enhanced_f1": 0.8571428571428571,
+    "f1_improvement": 0.0793650793650793,
+    "total_cost_usd": 0.130432,
+    "total_time_seconds": 1202.1664566993713,
+    "beat_leaderboard": true,
+    "leaderboard_target": 82.9
+  }
+}

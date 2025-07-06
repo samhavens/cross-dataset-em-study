@@ -1,0 +1,21 @@
+{
+  "dev_results": {
+    "metrics": {
+      "f1": 0.6792452830188679,
+      "precision": 0.6666666666666666,
+      "recall": 0.6923076923076923
+    },
+    "cost_usd": 0.5782242,
+    "processed_pairs": 2293,
+    "predictions_made": 768
+  },
+  "optimal_params": {
+    "max_candidates": 25,
+    "semantic_weight": 0.2,
+    "model": "gpt-4.1-nano",
+    "use_semantic": true
+  },
+  "dev_time": 4207.035930156708,
+  "heuristics_file": "results/generated_rules/amazon_google_generated_heuristics.json",
+  "optimized_heuristics_file": "results/generated_rules/amazon_google_generated_heuristics_optimized.json"
+}

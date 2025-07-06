@@ -1,0 +1,163 @@
+{
+  "timestamp": "2025-07-03T16:03:37.282554",
+  "dataset": "walmart_amazon",
+  "score_rules": [
+    {
+      "rule_name": "exact_model_brand_boost",
+      "description": "Boost score for exact brand and model number matches in product data",
+      "implementation": "def exact_model_brand_boost(left_record, right_record):\n    def normalize(text):\n        return str(text).lower().strip() if text and str(text).lower() != 'nan' else ''\n    \n    left_brand = normalize(left_record.get('brand', ''))\n    right_brand = normalize(right_record.get('brand', ''))\n    left_model = normalize(left_record.get('modelno', ''))\n    right_model = normalize(right_record.get('modelno', ''))\n    \n    if (left_brand == right_brand and left_model == right_model \n        and left_brand and left_model):\n        return ScoreAction(\n            score_adjustment=0.4,\n            confidence=0.95,\n            reason=f\"Exact brand ({left_brand}) and model ({left_model}) match\"\n        )\n    return None",
+      "confidence": 0.95,
+      "stage": "post_semantic",
+      "test_cases": [
+        {
+          "left": {
+            "brand": "xerox",
+            "modelno": "108r00645"
+          },
+          "right": {
+            "brand": "xerox",
+            "modelno": "108r00645"
+          },
+          "expected": "score_boost"
+        }
+      ]
+    },
+    {
+      "rule_name": "title_similarity_brand_boost",
+      "description": "Boost score when titles are similar and brands match",
+      "implementation": "def title_similarity_brand_boost(left_record, right_record):\n    def normalize(text):\n        return str(text).lower().strip() if text else ''\n    \n    left_brand = normalize(left_record.get('brand', ''))\n    right_brand = normalize(right_record.get('brand', ''))\n    left_title = normalize(left_record.get('title', ''))\n    right_title = normalize(right_record.get('title', ''))\n    \n    if left_brand == right_brand and left_brand:\n        # Check for significant title overlap\n        left_words = set(left_title.split())\n        right_words = set(right_title.split())\n        if len(left_words) > 2 and len(right_words) > 2:\n            overlap = len(left_words & right_words)\n            if overlap >= 3:\n                return ScoreAction(\n                    score_adjustment=0.25,\n                    confidence=0.8,\n                    reason=f\"Same brand ({left_brand}) with {overlap} overlapping title words\"\n                )\n    return None",
+      "confidence": 0.8,
+      "stage": "post_semantic",
+      "test_cases": [
+        {
+          "left": {
+            "brand": "toshiba",
+            "title": "toshiba ph3100u-1e3s 1tb usb 3.0 desktop hard drive"
+          },
+          "right": {
+            "brand": "toshiba",
+            "title": "toshiba 1 tb usb 3.0 external hard drive ph3100u-1e3s black silver"
+          },
+          "expected": "score_boost"
+        }
+      ]
+    }
+  ],
+  "decision_rules": [
+    {
+      "rule_name": "exact_brand_model_auto_accept",
+      "description": "Auto-accept matches with exact brand and model number",
+      "implementation": "def exact_brand_model_auto_accept(left_record, right_record, current_score):\n    def normalize(text):\n        return str(text).lower().strip() if text and str(text).lower() != 'nan' else ''\n    \n    left_brand = normalize(left_record.get('brand', ''))\n    right_brand = normalize(right_record.get('brand', ''))\n    left_model = normalize(left_record.get('modelno', ''))\n    right_model = normalize(right_record.get('modelno', ''))\n    \n    if (left_brand == right_brand and left_model == right_model \n        and left_brand and left_model and len(left_model) >= 4):\n        return DecisionAction(\n            terminate_early=True,\n            final_result=1,\n            confidence=0.95,\n            reason=f\"Exact brand ({left_brand}) and model ({left_model}) match\"\n        )\n    return None",
+      "confidence": 0.95,
+      "stage": "pre_llm",
+      "test_cases": [
+        {
+          "left": {
+            "brand": "xerox",
+            "modelno": "108r00645"
+          },
+          "right": {
+            "brand": "xerox",
+            "modelno": "108r00645"
+          },
+          "expected": "auto_accept"
+        }
+      ]
+    },
+    {
+      "rule_name": "brand_mismatch_auto_reject",
+      "description": "Auto-reject when brands are explicitly different (not missing)",
+      "implementation": "def brand_mismatch_auto_reject(left_record, right_record, current_score):\n    def normalize(text):\n        return str(text).lower().strip() if text and str(text).lower() != 'nan' else ''\n    \n    left_brand = normalize(left_record.get('brand', ''))\n    right_brand = normalize(right_record.get('brand', ''))\n    \n    if (left_brand and right_brand and left_brand != right_brand \n        and len(left_brand) >= 3 and len(right_brand) >= 3):\n        return DecisionAction(\n            terminate_early=True,\n            final_result=0,\n            skip_llm=True,\n            confidence=0.85,\n            reason=f\"Different brands: {left_brand} vs {right_brand}\"\n        )\n    return None",
+      "confidence": 0.85,
+      "stage": "pre_llm",
+      "test_cases": [
+        {
+          "left": {
+            "brand": "sony",
+            "title": "sony camera"
+          },
+          "right": {
+            "brand": "canon",
+            "title": "canon camera"
+          },
+          "expected": "auto_reject"
+        }
+      ]
+    },
+    {
+      "rule_name": "very_low_similarity_auto_reject",
+      "description": "Auto-reject pairs with very low similarity to skip expensive LLM calls",
+      "implementation": "def very_low_similarity_auto_reject(left_record, right_record, current_score):\n    if current_score < 0.15:\n        return DecisionAction(\n            terminate_early=True,\n            final_result=0,\n            skip_llm=True,\n            confidence=0.9,\n            reason=f\"Very low similarity score: {current_score:.3f}\"\n        )\n    return None",
+      "confidence": 0.9,
+      "stage": "pre_llm",
+      "test_cases": [
+        {
+          "current_score": 0.1,
+          "expected": "auto_reject"
+        }
+      ]
+    }
+  ],
+  "weight_rules": [
+    {
+      "rule_name": "missing_model_increase_semantic",
+      "description": "Increase semantic weight when model numbers are missing",
+      "implementation": "def missing_model_increase_semantic(left_record, right_record, current_weights):\n    def normalize(text):\n        return str(text).lower().strip() if text and str(text).lower() != 'nan' else ''\n    \n    left_model = normalize(left_record.get('modelno', ''))\n    right_model = normalize(right_record.get('modelno', ''))\n    \n    if not left_model or not right_model:\n        return WeightAction(\n            semantic_weight=0.8,\n            confidence=0.75,\n            reason=\"Missing model numbers - rely more on semantic similarity\"\n        )\n    return None",
+      "confidence": 0.75,
+      "stage": "pre_semantic",
+      "test_cases": [
+        {
+          "left": {
+            "modelno": ""
+          },
+          "right": {
+            "modelno": "abc123"
+          },
+          "expected": "increase_semantic_weight"
+        }
+      ]
+    },
+    {
+      "rule_name": "price_discrepancy_adjust_weights",
+      "description": "Adjust weights when there's significant price discrepancy",
+      "implementation": "def price_discrepancy_adjust_weights(left_record, right_record, current_weights):\n    try:\n        left_price = float(left_record.get('price', 0))\n        right_price = float(right_record.get('price', 0))\n        \n        if left_price > 0 and right_price > 0:\n            price_ratio = max(left_price, right_price) / min(left_price, right_price)\n            if price_ratio > 3.0:  # Significant price difference\n                return WeightAction(\n                    semantic_weight=0.9,\n                    confidence=0.7,\n                    reason=f\"Large price discrepancy: {left_price:.2f} vs {right_price:.2f}\"\n                )\n    except (ValueError, ZeroDivisionError):\n        pass\n    return None",
+      "confidence": 0.7,
+      "stage": "pre_semantic",
+      "test_cases": [
+        {
+          "left": {
+            "price": 100.0
+          },
+          "right": {
+            "price": 400.0
+          },
+          "expected": "increase_semantic_weight"
+        }
+      ]
+    }
+  ],
+  "pipeline_rules": [
+    {
+      "rule_name": "high_confidence_skip_reranking",
+      "description": "Skip semantic reranking for very high confidence exact matches",
+      "implementation": "def high_confidence_skip_reranking(left_record, right_record, current_score):\n    def normalize(text):\n        return str(text).lower().strip() if text and str(text).lower() != 'nan' else ''\n    \n    left_brand = normalize(left_record.get('brand', ''))\n    right_brand = normalize(right_record.get('brand', ''))\n    left_model = normalize(left_record.get('modelno', ''))\n    right_model = normalize(right_record.get('modelno', ''))\n    \n    if (left_brand == right_brand and left_model == right_model \n        and left_brand and left_model and len(left_model) >= 6):\n        return PipelineAction(\n            skip_stage=True,\n            reason=f\"High confidence exact match: {left_brand} {left_model}\"\n        )\n    return None",
+      "confidence": 0.9,
+      "stage": "candidate_selection",
+      "test_cases": [
+        {
+          "left": {
+            "brand": "xerox",
+            "modelno": "108r00645"
+          },
+          "right": {
+            "brand": "xerox",
+            "modelno": "108r00645"
+          },
+          "expected": "skip_reranking"
+        }
+      ]
+    }
+  ],
+  "implementation_notes": "These rules leverage the walmart_amazon domain's structured product data (brand, modelno, title, price) to make intelligent decisions. The rules focus on exact matches for brand+model combinations which show high precision in the examples. Price discrepancy rules help handle cases where same products have different pricing across platforms. The system prioritizes avoiding false positives through brand mismatch detection while catching true positives through exact attribute matching.",
+  "cost_optimization_strategy": "Rules reduce LLM API costs by: 1) Auto-accepting high-confidence exact matches (brand+model) without LLM calls, 2) Auto-rejecting obvious mismatches (different brands) early, 3) Filtering out very low similarity pairs before expensive semantic processing, 4) Skipping semantic reranking for perfect matches. Expected 40-60% reduction in LLM calls while maintaining or improving accuracy through precise product attribute matching."
+}

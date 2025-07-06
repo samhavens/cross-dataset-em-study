@@ -1,0 +1,52 @@
+{
+  "timestamp": "2025-07-03T15:18:35.868598",
+  "dataset": "zomato_yelp",
+  "pipeline_version": "complete_v3_working_rules",
+  "dev_results": {
+    "f1": 0.8571428571428572,
+    "precision": 0.8181818181818182,
+    "recall": 0.9,
+    "cost_usd": 0.19133840000000002,
+    "processing_time": 55.53317999839783
+  },
+  "optimal_params": {
+    "max_candidates": 50,
+    "semantic_weight": 0.5,
+    "model": "gpt-4.1-mini",
+    "use_semantic": true
+  },
+  "heuristics_file": "results/generated_rules/zomato_yelp_generated_heuristics.json",
+  "rule_generation": "claude_sdk_success",
+  "baseline_results": {
+    "f1": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "cost_usd": 0.0132216,
+    "processing_time": 97.43360209465027
+  },
+  "enhanced_results": {
+    "f1": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "cost_usd": 0.0,
+    "processing_time": 0.0,
+    "early_decisions": 0,
+    "llm_calls": 0,
+    "llm_call_reduction": 0.0
+  },
+  "ab_comparison": {
+    "f1_improvement": -1.0,
+    "cost_change": -0.0132216,
+    "rules_helped": false
+  },
+  "summary": {
+    "dev_f1": 0.8571428571428572,
+    "baseline_f1": 1.0,
+    "enhanced_f1": 0.0,
+    "f1_improvement": -1.0,
+    "total_cost_usd": 0.20456000000000002,
+    "total_time_seconds": 152.9667820930481,
+    "beat_leaderboard": true,
+    "leaderboard_target": 98.1
+  }
+}

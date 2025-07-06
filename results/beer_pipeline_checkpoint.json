@@ -1,0 +1,21 @@
+{
+  "dev_results": {
+    "metrics": {
+      "f1": 0.8823529411764706,
+      "precision": 0.9375,
+      "recall": 0.8333333333333334
+    },
+    "cost_usd": 0.31668820000000003,
+    "processed_pairs": 100,
+    "predictions_made": 67
+  },
+  "optimal_params": {
+    "max_candidates": 300,
+    "semantic_weight": 0.8,
+    "model": "gpt-4.1-nano",
+    "use_semantic": true
+  },
+  "dev_time": 190.13212084770203,
+  "heuristics_file": "results/generated_rules/beer_generated_heuristics.json",
+  "optimized_heuristics_file": "results/generated_rules/beer_generated_heuristics_optimized.json"
+}

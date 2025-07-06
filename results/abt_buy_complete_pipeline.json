@@ -1,0 +1,52 @@
+{
+  "timestamp": "2025-07-04T07:06:39.724121",
+  "dataset": "abt_buy",
+  "pipeline_version": "complete_v3_working_rules",
+  "dev_results": {
+    "f1": 0.9104859335038363,
+    "precision": 0.9621621621621622,
+    "recall": 0.8640776699029126,
+    "cost_usd": 0.6906192000000001,
+    "processing_time": 0.4745171070098877
+  },
+  "optimal_params": {
+    "max_candidates": 25,
+    "semantic_weight": 0.2,
+    "model": "gpt-4.1-nano",
+    "use_semantic": true
+  },
+  "heuristics_file": "results/generated_rules/abt_buy_generated_heuristics.json",
+  "rule_generation": "claude_sdk_success",
+  "baseline_results": {
+    "f1": 0.9558823529411764,
+    "precision": 0.9653465346534653,
+    "recall": 0.9466019417475728,
+    "cost_usd": 1.3812368000000002,
+    "processing_time": 201.60702514648438
+  },
+  "enhanced_results": {
+    "f1": 0.47232472324723246,
+    "precision": 0.9846153846153847,
+    "recall": 0.3106796116504854,
+    "cost_usd": 0.2787052,
+    "processing_time": 741.2959430217743,
+    "early_decisions": 98,
+    "llm_calls": 1818,
+    "llm_call_reduction": 5.114822546972864
+  },
+  "ab_comparison": {
+    "f1_improvement": -0.48355762969394395,
+    "cost_change": -1.1025316000000003,
+    "rules_helped": false
+  },
+  "summary": {
+    "dev_f1": 0.9104859335038363,
+    "baseline_f1": 0.9558823529411764,
+    "enhanced_f1": 0.47232472324723246,
+    "f1_improvement": -0.48355762969394395,
+    "total_cost_usd": 2.3505612000000005,
+    "total_time_seconds": 943.3774852752686,
+    "beat_leaderboard": false,
+    "leaderboard_target": 89.3
+  }
+}

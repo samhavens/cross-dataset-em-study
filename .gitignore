@@ -110,7 +110,7 @@ Thumbs.db
 # Research specific
 results/*/
 outputs/
-experiments/
+
 runs/
 mlruns/
 .wandb/
@@ -129,3 +129,8 @@ mlruns/
 *.egg-info/
 dist/
 build/
+# Cache directories
+.*_cache/
+
+# XML files
+*.xml

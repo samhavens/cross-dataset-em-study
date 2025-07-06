@@ -75,8 +75,8 @@ a quick-and-dirty markdown dump of the *per-dataset* cross-dataset-EM leaderboar
 
 | # | model                    | F1       |
 | - | ------------------------ | -------- |
-| 1 | **anymatch \[llama3.2]** | **69.3** |
-| 2 | matchgpt \[gpt-4]        | 75.0     |
+| 1 | **matchgpt \[gpt-4]** | **75.0** |
+| 2 | anymatch \[llama3.2]      | 69.3     |
 | 3 | anymatch \[t5]           | 64.4     |
 | 4 | unicorn                  | 64.0     |
 | 5 | matchgpt \[gpt-4o-mini]  | 60.7     |

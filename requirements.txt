@@ -15,6 +15,7 @@ duckdb>=0.8.0
 jellyfish
 fuzzywuzzy[speedup]
 python-Levenshtein
+sentence-transformers>=3.0.0
 
 # ML frameworks and utilities
 apex  # for mixed precision training (optional, requires manual install)

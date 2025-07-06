@@ -2,7 +2,7 @@
 import argparse, json, pathlib, textwrap, asyncio, os, datetime, time
 from typing import List, Dict
 import pandas as pd
-from llm_clustering import MODEL_COSTS
+from src.entity_matching.constants import MODEL_COSTS
 import tiktoken
 from tqdm.asyncio import tqdm
 from openai import AsyncOpenAI

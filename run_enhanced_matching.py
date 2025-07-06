@@ -23,8 +23,9 @@ from src.entity_matching.enhanced_heuristic_engine import (
 )
 from src.entity_matching.hybrid_matcher import (
     Config, get_semantic_model, trigram_similarity, semantic_similarity, 
-    token_count, call_openai_async, MODEL_COSTS
+    token_count, call_openai_async
 )
+from src.entity_matching.constants import MODEL_COSTS
 from openai import AsyncOpenAI
 import os
 

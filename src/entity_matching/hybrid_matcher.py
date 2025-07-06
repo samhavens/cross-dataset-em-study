@@ -2,7 +2,7 @@
 import argparse, json, pathlib, textwrap, asyncio, datetime, time, os
 from typing import List, Dict, Optional
 import pandas as pd
-from .clustering import MODEL_COSTS
+from .constants import MODEL_COSTS
 from .heuristic_engine import HeuristicEngine, load_heuristics_for_dataset
 import tiktoken
 from tqdm.asyncio import tqdm
@@ -387,11 +387,16 @@ def get_top_candidates(left_record: dict, right_records, max_candidates: int, cf
 async def match_single_record(left_record: dict, candidates: List[tuple], cfg: Config, client: AsyncOpenAI) -> int:
     """Match a single left record against its filtered candidates"""
 
-    # Build prompt with candidates
-    candidates_text = "\n".join(
-        f"{idx}) {json.dumps(record, ensure_ascii=False)}"
-        for idx, record in candidates
-    )
+    # Create mapping from position numbers to actual IDs for robust parsing
+    id_mapping = {}  # position_number -> actual_database_id
+    
+    # Build prompt with sequential position numbers (1, 2, 3...) regardless of actual IDs
+    candidates_lines = []
+    for position, (actual_id, record) in enumerate(candidates, 1):
+        id_mapping[position] = actual_id
+        candidates_lines.append(f"{position}) {json.dumps(record, ensure_ascii=False)}")
+    
+    candidates_text = "\n".join(candidates_lines)
 
     # Create prompt
     prompt = textwrap.dedent(f"""
@@ -417,10 +422,11 @@ async def match_single_record(left_record: dict, candidates: List[tuple], cfg: C
       Think step by step and identify the candidate that represents the same entity.
 
       CRITICAL: Your response must contain ONLY a single number:
-      - If you find a match, output ONLY the candidate number (e.g., "2600")
+      - If you find a match, output ONLY the position number from the list above (e.g., "1", "2", "3")
       - If no candidate represents the same entity, output ONLY "-1"
       - Do NOT include any explanation, reasoning, or other text
       - Do NOT use quotes around the number
+      - Do NOT return record IDs - only return the position number (1, 2, 3, etc.)
 
       ANSWER:
     """)
@@ -454,17 +460,29 @@ async def match_single_record(left_record: dict, candidates: List[tuple], cfg: C
         raise ValueError("Empty response from LLM")
     
     try:
-        # First try direct integer parsing
-        match_idx = int(response.strip())
-        return match_idx if match_idx != -1 else -1
+        # First try direct integer parsing for position number
+        position_number = int(response.strip())
+        if position_number == -1:
+            return -1  # No match
+        elif position_number in id_mapping:
+            return id_mapping[position_number]  # Convert position to actual database ID
+        else:
+            print(f"Warning: LLM returned position {position_number} but only {len(candidates)} candidates available")
+            return -1
     except ValueError:
         # Try to extract number from response using regex
         import re
         numbers = re.findall(r'-?\d+', response.strip())
         if numbers:
             try:
-                match_idx = int(numbers[0])
-                return match_idx if match_idx != -1 else -1
+                position_number = int(numbers[0])
+                if position_number == -1:
+                    return -1  # No match
+                elif position_number in id_mapping:
+                    return id_mapping[position_number]  # Convert position to actual database ID
+                else:
+                    print(f"Warning: LLM returned position {position_number} but only {len(candidates)} candidates available")
+                    return -1
             except ValueError:
                 pass
         

@@ -454,10 +454,23 @@ async def match_single_record(left_record: dict, candidates: List[tuple], cfg: C
         raise ValueError("Empty response from LLM")
     
     try:
-        match_idx = int(response)
+        # First try direct integer parsing
+        match_idx = int(response.strip())
         return match_idx if match_idx != -1 else -1
-    except ValueError as e:
-        raise ValueError(f"Could not parse LLM response as integer: '{response}'")
+    except ValueError:
+        # Try to extract number from response using regex
+        import re
+        numbers = re.findall(r'-?\d+', response.strip())
+        if numbers:
+            try:
+                match_idx = int(numbers[0])
+                return match_idx if match_idx != -1 else -1
+            except ValueError:
+                pass
+        
+        # If all else fails, return -1 (no match) and log the issue
+        print(f"Warning: Could not parse LLM response as integer: '{response}', defaulting to -1 (no match)")
+        return -1
 
 async def process_batch(batch_pairs: List[tuple], semaphore: asyncio.Semaphore, A: List[dict], B: List[dict], max_candidates: int, cfg: Config, client: AsyncOpenAI, dataset: str) -> Dict[int, int]:
     """Process a batch of pairs with concurrency control"""

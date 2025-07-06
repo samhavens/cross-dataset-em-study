@@ -67,7 +67,7 @@ class SweepResult:
 class IntelligentSweeper:
     """Intelligent hyperparameter sweeper with Claude Code SDK integration"""
     
-    def __init__(self, dataset: str, limit: Optional[int] = None, early_exit: bool = False):
+    def __init__(self, dataset: str, limit: Optional[int] = None, early_exit: bool = False, model: str = "gpt-4.1-nano"):
         self.dataset = dataset
         self.limit = limit
         self.early_exit = early_exit
@@ -88,7 +88,7 @@ class IntelligentSweeper:
         # Hyperparameter search spaces
         self.candidate_options = [5, 10, 25, 50, 100]
         self.semantic_weight_options = [0.0, 0.3, 0.5, 0.7, 1.0]
-        self.model_options = ["gpt-4.1-nano", "gpt-4.1-mini"]
+        self.model_options = [model]  # Use the specified model
         
     def get_config_cache_path(self, config: HyperparamConfig) -> pathlib.Path:
         """Get cache file path for a specific config"""

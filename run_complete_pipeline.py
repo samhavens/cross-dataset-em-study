@@ -30,7 +30,7 @@ from run_enhanced_matching import run_enhanced_matching
 from src.experiments.claude_sdk_optimizer import ClaudeSDKOptimizer
 
 
-async def run_basic_dev_sweep(dataset: str, early_exit: bool = False) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+async def run_basic_dev_sweep(dataset: str, early_exit: bool = False, model: str = 'gpt-4.1-nano') -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """Run basic hyperparameter sweep on dev set to find good parameters quickly"""
     data_root = pathlib.Path('data') / 'raw' / dataset
     
@@ -50,7 +50,7 @@ async def run_basic_dev_sweep(dataset: str, early_exit: bool = False) -> Tuple[D
         
         try:
             # Run strategic sweep - extreme/low/middle candidates × low/medium/high semantic weights
-            sweeper = IntelligentSweeper(dataset, limit, early_exit)
+            sweeper = IntelligentSweeper(dataset, limit, early_exit, model)
             await sweeper.run_strategic_sweep()  # Strategic 3×3 grid sweep
             
             # Get best result
@@ -104,7 +104,7 @@ async def run_basic_dev_sweep(dataset: str, early_exit: bool = False) -> Tuple[D
         
         try:
             # Run strategic sweep - extreme/low/middle candidates × low/medium/high semantic weights
-            sweeper = IntelligentSweeper(dataset, None, early_exit)  # Use full dev slice
+            sweeper = IntelligentSweeper(dataset, None, early_exit, model)  # Use full dev slice
             await sweeper.run_strategic_sweep()  # Strategic 3×3 grid sweep
             
             # Get best result
@@ -148,7 +148,7 @@ async def run_basic_dev_sweep(dataset: str, early_exit: bool = False) -> Tuple[D
         optimal_params = {
             'max_candidates': 50,
             'semantic_weight': 0.5,
-            'model': 'gpt-4.1-nano',
+            'model': model,
             'use_semantic': True
         }
     
@@ -176,7 +176,7 @@ async def run_dev_only_analysis(dataset: str) -> Dict[str, Any]:
                 dataset=dataset,
                 limit=None,
                 max_candidates=150,
-                model='gpt-4.1-nano',
+                model=model,
                 semantic_weight=0.5,
                 use_semantic=True,
                 concurrency=concurrency
@@ -212,7 +212,7 @@ async def run_dev_only_analysis(dataset: str) -> Dict[str, Any]:
                 dataset=dataset,
                 limit=None,
                 max_candidates=150,
-                model='gpt-4.1-nano',
+                model=model,
                 semantic_weight=0.5,
                 use_semantic=True,
                 concurrency=concurrency
@@ -229,7 +229,7 @@ async def run_dev_only_analysis(dataset: str) -> Dict[str, Any]:
             dataset=dataset,
             limit=None,
             max_candidates=150,
-            model='gpt-4.1-nano',
+            model=model,
             semantic_weight=0.5,
             use_semantic=True,
             concurrency=concurrency
@@ -246,7 +246,7 @@ async def generate_actual_rules(dataset: str, dev_results: Dict[str, Any]) -> st
     
     # Use the proper comprehensive analysis method that generates real rules
     config = {
-        'model': 'gpt-4.1-nano',
+        'model': model,
         'max_candidates': 150,
         'semantic_weight': 0.5,
         'use_semantic': True,
@@ -455,7 +455,7 @@ Only disable rules if F1 < target. If F1 >= target, return empty rules_to_disabl
         return heuristic_file
 
 
-async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: bool = False, concurrency: int = 3, validate_rules: bool = False) -> Dict[str, Any]:
+async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: bool = False, concurrency: int = 3, validate_rules: bool = False, model: str = 'gpt-4.1-nano') -> Dict[str, Any]:
     """Complete pipeline: dev analysis -> ACTUAL rule generation -> test with enhanced matching"""
     
     print(f"🚀 COMPLETE ENTITY MATCHING PIPELINE", flush=True)
@@ -489,7 +489,7 @@ async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: 
         print(f"⏳ This will run a basic sweep to find good parameters quickly...")
         
         start_time = time.time()
-        dev_results, optimal_params = await run_basic_dev_sweep(dataset, early_exit)
+        dev_results, optimal_params = await run_basic_dev_sweep(dataset, early_exit, model)
         dev_time = time.time() - start_time
         
         # Save checkpoint
@@ -712,6 +712,7 @@ async def main():
     parser.add_argument('--resume', action='store_true', help='Resume from checkpoint if available')
     parser.add_argument('--concurrency', type=int, default=3, help='Number of concurrent API requests')
     parser.add_argument('--validate-rules', action='store_true', help='Validate and optimize rules on dev set before test')
+    parser.add_argument('--model', default='gpt-4.1-nano', help='Model to use for dev sweep (default: gpt-4.1-nano)')
     
     args = parser.parse_args()
     
@@ -721,7 +722,7 @@ async def main():
         # Update concurrency in source files would require more complex logic
         # For now, just show the setting
     
-    results = await run_complete_pipeline(args.dataset, args.early_exit, args.resume, args.concurrency, args.validate_rules)
+    results = await run_complete_pipeline(args.dataset, args.early_exit, args.resume, args.concurrency, args.validate_rules, args.model)
     return results
 
 

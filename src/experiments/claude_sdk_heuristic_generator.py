@@ -10,8 +10,14 @@ import asyncio
 import json
 import os
 import pathlib
-import subprocess
-import tempfile
+
+from claude_code_sdk import (
+    query,
+    ClaudeCodeOptions,
+    AssistantMessage,
+    ResultMessage,
+    TextBlock,
+)
 import re
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
@@ -607,14 +613,23 @@ SPECIFIC GUIDANCE:
 - Focus on {self.dataset} domain patterns from the examples above
 - Design weight adjustments that help catch subtle matches
 - Avoid being overly conservative - better to let LLM decide than miss matches
+
+USING CLAUDE CODE TOOLS:
+- You have the Read, Write and Bash tools available.
+- Write candidate rules to a file named `heuristics.json`.
+- Test them by running `python run_enhanced_matching.py --dataset {self.dataset} --limit 100 --heuristics heuristics.json`.
+- Inspect the F1 score and iterate on the rules until the score exceeds {target_f1:.1f}.
+- When satisfied, output ONLY the final `heuristics.json` content as JSON.
 """
         
         return prompt
     
-    def generate_heuristics(self, patterns: List[FailurePattern]) -> List[HeuristicRule]:
+    async def generate_heuristics(self, patterns: List[FailurePattern]) -> List[HeuristicRule]:
         """Use Claude Code SDK to generate heuristic rules"""
         if not self.claude_optimizer.claude_executable:
-            raise RuntimeError("Claude Code SDK not available. This pipeline requires Claude SDK to generate heuristics. Please install it with: pip install claude-sdk")
+            raise RuntimeError(
+                "Claude Code SDK not available. This pipeline requires Claude SDK to generate heuristics. Please install it with: pip install claude-code-sdk and npm install -g @anthropic-ai/claude-code"
+            )
         
         print("🤖 GENERATING HEURISTICS VIA CLAUDE CODE SDK")
         
@@ -622,7 +637,7 @@ SPECIFIC GUIDANCE:
         
         try:
             # Call Claude Code SDK
-            response = self._call_claude_sdk(prompt)
+            response = await self._call_claude_sdk(prompt)
             return self._parse_heuristic_response(response)
             
         except Exception as e:
@@ -631,31 +646,29 @@ SPECIFIC GUIDANCE:
             print(f"❌ Pipeline will crash - you can resume later with working Claude SDK")
             raise RuntimeError(f"Claude SDK heuristic generation failed: {e}. This is required for the pipeline to work properly.")
     
-    def _call_claude_sdk(self, prompt: str) -> str:
+    async def _call_claude_sdk(self, prompt: str) -> str:
         """Call Claude Code SDK with the heuristic generation prompt"""
         try:
             print(f"🔍 Calling Claude SDK with prompt length: {len(prompt)} chars")
-            
-            # Use claude --print for non-interactive mode
-            result = subprocess.run(
-                [self.claude_optimizer.claude_executable, "--print", prompt],
-                capture_output=True,
-                text=True,
-                timeout=180  # Even longer timeout for complex analysis
+
+            options = ClaudeCodeOptions(
+                allowed_tools=["Read", "Write", "Bash"],
+                permission_mode="acceptEdits",
+                cwd=os.getcwd(),
             )
-            
-            print(f"🔍 Claude SDK return code: {result.returncode}")
-            print(f"🔍 Claude SDK stderr: {repr(result.stderr[:200])}")
-            print(f"🔍 Claude SDK stdout length: {len(result.stdout)}")
-            print(f"🔍 Claude SDK stdout preview: {repr(result.stdout[:200])}")
-            
-            if result.returncode != 0:
-                raise RuntimeError(f"Claude SDK error (code {result.returncode}): {result.stderr}")
-            
-            return result.stdout
-            
-        except subprocess.TimeoutExpired:
-            raise RuntimeError(f"Claude SDK call timed out after 180 seconds with prompt length {len(prompt)}")
+
+            response_parts = []
+            async for message in query(prompt=prompt, options=options):
+                if isinstance(message, AssistantMessage):
+                    for block in message.content:
+                        if isinstance(block, TextBlock):
+                            response_parts.append(block.text)
+                elif isinstance(message, ResultMessage):
+                    # end of run
+                    break
+
+            return "".join(response_parts)
+
         except Exception as e:
             raise RuntimeError(f"Claude SDK call failed: {e}")
     
@@ -754,7 +767,7 @@ SPECIFIC GUIDANCE:
         patterns = self.analyze_comprehensive_failure_patterns(validation_results)
         
         # Step 3: Generate heuristics from comprehensive patterns
-        rules = self.generate_heuristics(patterns)
+        rules = await self.generate_heuristics(patterns)
         
         # Step 4: Save results
         if output_file:

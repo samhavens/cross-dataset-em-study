@@ -268,7 +268,7 @@ async def generate_actual_rules(dataset: str, dev_results: Dict[str, Any]) -> st
         patterns = generator.analyze_comprehensive_failure_patterns(dev_results)
         
         # Generate heuristics from the patterns
-        rules = generator.generate_heuristics(patterns)
+        rules = await generator.generate_heuristics(patterns)
         
         # Save the generated rules
         if rules:

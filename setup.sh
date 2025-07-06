@@ -15,6 +15,11 @@ if command -v uv &> /dev/null; then
     
     # Install dependencies from requirements.txt
     uv pip install -r requirements.txt
+    # Install Claude Code SDK and CLI
+    uv pip install claude-code-sdk
+    if ! command -v claude &> /dev/null; then
+        npm install -g @anthropic-ai/claude-code
+    fi
     
     echo "✅ Environment setup complete with uv!"
     
@@ -30,6 +35,11 @@ elif command -v pip &> /dev/null; then
     
     # Install from requirements.txt
     pip install -r requirements.txt
+    # Install Claude Code SDK and CLI
+    pip install claude-code-sdk
+    if ! command -v claude &> /dev/null; then
+        npm install -g @anthropic-ai/claude-code
+    fi
     
     echo "✅ Environment setup complete with pip!"
     

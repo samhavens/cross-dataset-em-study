@@ -1,0 +1,20 @@
+{
+  "dev_results": {
+    "metrics": {
+      "f1": 0.9545454545454545,
+      "precision": 0.9130434782608695,
+      "recall": 1.0
+    },
+    "cost_usd": 0.042901800000000004,
+    "processed_pairs": 120,
+    "predictions_made": 103
+  },
+  "optimal_params": {
+    "max_candidates": 640,
+    "semantic_weight": 0.8,
+    "model": "gpt-4.1-nano",
+    "use_semantic": true
+  },
+  "dev_time": 468.26207995414734,
+  "heuristics_file": "results/generated_rules/rotten_imdb_generated_heuristics.json"
+}

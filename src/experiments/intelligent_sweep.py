@@ -375,8 +375,8 @@ class IntelligentSweeper:
             print(f"\n🔄 CLAUDE ITERATION {iteration + 1}/{iterations}")
             await self.run_claude_iteration(configs_per_iteration)
             
-            # Show current best
-            best_result = max(self.results, key=lambda r: r.f1_score)
+            # Show current best - break ties by preferring higher max_candidates for better generalization
+            best_result = max(self.results, key=lambda r: (r.f1_score, r.config.max_candidates))
             print(f"\nCurrent best F1: {best_result.f1_score:.4f} with config: {best_result.config.to_dict()}")
             
             # Check if we've hit the target
@@ -433,8 +433,8 @@ async def main():
     print("="*80)
     print(analysis)
     
-    # Show best result
-    best_result = max(sweeper.results, key=lambda r: r.f1_score)
+    # Show best result - break ties by preferring higher max_candidates for better generalization
+    best_result = max(sweeper.results, key=lambda r: (r.f1_score, r.config.max_candidates))
     print(f"\n🏆 BEST CONFIGURATION:")
     print(f"F1 Score: {best_result.f1_score:.4f}")
     print(f"Config: {best_result.config.to_dict()}")

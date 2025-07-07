@@ -25,9 +25,11 @@ import pandas as pd
 
 from src.entity_matching.hybrid_matcher import run_matching
 from src.experiments.claude_sdk_heuristic_generator import ClaudeSDKHeuristicGenerator
+from src.experiments.agentic_heuristic_generator import generate_agentic_heuristics
 from src.experiments.intelligent_sweep import IntelligentSweeper
 from run_enhanced_matching import run_enhanced_matching
 from src.experiments.claude_sdk_optimizer import ClaudeSDKOptimizer
+from src.experiments.improved_sweep import run_improved_sweep
 
 
 async def run_basic_dev_sweep(dataset: str, early_exit: bool = False, model: str = 'gpt-4.1-nano') -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -53,8 +55,8 @@ async def run_basic_dev_sweep(dataset: str, early_exit: bool = False, model: str
             sweeper = IntelligentSweeper(dataset, limit, early_exit, model)
             await sweeper.run_strategic_sweep()  # Strategic 3×3 grid sweep
             
-            # Get best result
-            best_result = max(sweeper.results, key=lambda r: r.f1_score)
+            # Get best result - break ties by preferring higher max_candidates for better generalization
+            best_result = max(sweeper.results, key=lambda r: (r.f1_score, r.config.max_candidates))
             
             # Convert to format expected by rest of pipeline
             dev_results = {
@@ -107,8 +109,8 @@ async def run_basic_dev_sweep(dataset: str, early_exit: bool = False, model: str
             sweeper = IntelligentSweeper(dataset, None, early_exit, model)  # Use full dev slice
             await sweeper.run_strategic_sweep()  # Strategic 3×3 grid sweep
             
-            # Get best result
-            best_result = max(sweeper.results, key=lambda r: r.f1_score)
+            # Get best result - break ties by preferring higher max_candidates for better generalization
+            best_result = max(sweeper.results, key=lambda r: (r.f1_score, r.config.max_candidates))
             
             # Convert to format expected by rest of pipeline
             dev_results = {
@@ -155,7 +157,7 @@ async def run_basic_dev_sweep(dataset: str, early_exit: bool = False, model: str
     return dev_results, optimal_params
 
 
-async def run_dev_only_analysis(dataset: str) -> Dict[str, Any]:
+async def run_dev_only_analysis(dataset: str, model: str = 'gpt-4.1-nano', concurrency: int = 3) -> Dict[str, Any]:
     """Run dev set analysis without test set leakage"""
     data_root = pathlib.Path('data') / 'raw' / dataset
     
@@ -238,41 +240,32 @@ async def run_dev_only_analysis(dataset: str) -> Dict[str, Any]:
     return dev_results
 
 
-async def generate_actual_rules(dataset: str, dev_results: Dict[str, Any]) -> str:
+async def generate_actual_rules(dataset: str, dev_results: Dict[str, Any], model: str = 'gpt-4.1-nano', use_agentic: bool = True) -> str:
     """Generate actual executable rules using Claude SDK heuristic generator"""
     print(f"🧠 STEP 2: Generating ACTUAL EXECUTABLE RULES using Claude SDK")
     
-    generator = ClaudeSDKHeuristicGenerator(dataset)
-    
-    # Use the proper comprehensive analysis method that generates real rules
-    config = {
-        'model': model,
-        'max_candidates': 150,
-        'semantic_weight': 0.5,
-        'use_semantic': True,
-        'limit': None  # Full dev set for comprehensive analysis
-    }
+    os.makedirs("results/generated_rules", exist_ok=True)
+    heuristics_file = f"results/generated_rules/{dataset}_generated_heuristics.json"
     
     try:
-        # This generates actual executable rules using the existing dev_results
-        os.makedirs("results/generated_rules", exist_ok=True)
-        heuristics_file = f"results/generated_rules/{dataset}_generated_heuristics.json"
-        
-        # Skip running dev analysis again - use existing results!
         print(f"🔄 Using existing dev results (F1={dev_results['metrics']['f1']:.4f}) for rule generation")
         
-        # Create mock comprehensive results using the dev_results we already have
-        comprehensive_results = {'validation': dev_results}
-        
-        # Generate failure patterns from existing results
-        patterns = generator.analyze_comprehensive_failure_patterns(dev_results)
-        
-        # Generate heuristics from the patterns
-        rules = await generator.generate_heuristics(patterns)
-        
-        # Save the generated rules
-        if rules:
-            generator.save_heuristics(rules, heuristics_file)
+        if use_agentic:
+            print(f"🤖 Using AGENTIC rule generation (Claude can test and iterate)")
+            heuristics_file = await generate_agentic_heuristics(dataset, dev_results, heuristics_file)
+        else:
+            print(f"📋 Using LEGACY rule generation (simple prompt-response)")
+            generator = ClaudeSDKHeuristicGenerator(dataset)
+            
+            # Generate failure patterns from existing results
+            patterns = generator.analyze_comprehensive_failure_patterns(dev_results)
+            
+            # Generate heuristics from the patterns
+            rules = await generator.generate_heuristics(patterns)
+            
+            # Save the generated rules
+            if rules:
+                generator.save_heuristics(rules, heuristics_file)
         
         print(f"✅ Generated executable rules saved to: {heuristics_file}")
         return heuristics_file
@@ -455,7 +448,7 @@ Only disable rules if F1 < target. If F1 >= target, return empty rules_to_disabl
         return heuristic_file
 
 
-async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: bool = False, concurrency: int = 3, validate_rules: bool = False, model: str = 'gpt-4.1-nano') -> Dict[str, Any]:
+async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: bool = False, concurrency: int = 3, validate_rules: bool = False, model: str = 'gpt-4.1-nano', use_improved_sweep: bool = False, use_agentic_rules: bool = True) -> Dict[str, Any]:
     """Complete pipeline: dev analysis -> ACTUAL rule generation -> test with enhanced matching"""
     
     print(f"🚀 COMPLETE ENTITY MATCHING PIPELINE", flush=True)
@@ -484,12 +477,33 @@ async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: 
         dev_results = checkpoint['dev_results']
         optimal_params = checkpoint['optimal_params']
         dev_time = checkpoint.get('dev_time', 0)
+        
+        # Validate consistency if we have unified results
+        if 'unified_sweep_result' in dev_results:
+            unified = dev_results['unified_sweep_result']
+            expected_f1 = unified['best_f1']
+            actual_f1 = dev_results['metrics']['f1']
+            expected_config = unified['config_that_achieved_best_f1']
+            
+            if abs(expected_f1 - actual_f1) > 0.001:
+                print(f"⚠️ WARNING: F1 mismatch in checkpoint! Expected {expected_f1:.4f}, got {actual_f1:.4f}")
+            if expected_config != optimal_params:
+                print(f"⚠️ WARNING: Config mismatch in checkpoint!")
+                print(f"   Expected: {expected_config}")
+                print(f"   Got: {optimal_params}")
+        
+        print(f"📊 Loaded: F1={dev_results['metrics']['f1']:.4f}, Config={optimal_params}")
     else:
         print(f"🎯 STEP 1: Hyperparameter optimization on dev set")
         print(f"⏳ This will run a basic sweep to find good parameters quickly...")
         
         start_time = time.time()
-        dev_results, optimal_params = await run_basic_dev_sweep(dataset, early_exit, model)
+        if use_improved_sweep:
+            print("🔧 Using improved sweep implementation")
+            dev_results, optimal_params = await run_improved_sweep(dataset, early_exit, model)
+        else:
+            print("⚠️ Using legacy sweep implementation")
+            dev_results, optimal_params = await run_basic_dev_sweep(dataset, early_exit, model)
         dev_time = time.time() - start_time
         
         # Save checkpoint
@@ -521,7 +535,7 @@ async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: 
         heuristics_file = checkpoint['heuristics_file']
     else:
         print(f"\n🧠 STEP 2: Rule generation (analyzing dev results...)")
-        heuristics_file = await generate_actual_rules(dataset, dev_results)
+        heuristics_file = await generate_actual_rules(dataset, dev_results, model, use_agentic=use_agentic_rules)
         
         # Save checkpoint
         checkpoint['heuristics_file'] = heuristics_file
@@ -713,6 +727,9 @@ async def main():
     parser.add_argument('--concurrency', type=int, default=3, help='Number of concurrent API requests')
     parser.add_argument('--validate-rules', action='store_true', help='Validate and optimize rules on dev set before test')
     parser.add_argument('--model', default='gpt-4.1-nano', help='Model to use for dev sweep (default: gpt-4.1-nano)')
+    parser.add_argument('--use-improved-sweep', action='store_true', help='Use the improved sweep implementation (recommended)')
+    parser.add_argument('--use-agentic-rules', action='store_true', default=True, help='Use agentic rule generation (default: True)')
+    parser.add_argument('--use-legacy-rules', dest='use_agentic_rules', action='store_false', help='Use legacy rule generation instead of agentic')
     
     args = parser.parse_args()
     
@@ -722,7 +739,7 @@ async def main():
         # Update concurrency in source files would require more complex logic
         # For now, just show the setting
     
-    results = await run_complete_pipeline(args.dataset, args.early_exit, args.resume, args.concurrency, args.validate_rules, args.model)
+    results = await run_complete_pipeline(args.dataset, args.early_exit, args.resume, args.concurrency, args.validate_rules, args.model, args.use_improved_sweep, args.use_agentic_rules)
     return results
 
 

@@ -1,0 +1,54 @@
+{
+  "timestamp": "2025-07-06T08:30:54.058052",
+  "dataset": "itunes_amazon",
+  "pipeline_version": "complete_v3_working_rules",
+  "dev_results": {
+    "f1": 0.6341463414634146,
+    "precision": 0.9285714285714286,
+    "recall": 0.48148148148148145,
+    "cost_usd": 0.064443,
+    "processing_time": 4297.462476968765
+  },
+  "optimal_params": {
+    "max_candidates": 25,
+    "semantic_weight": 0.5,
+    "model": "gpt-4.1-nano",
+    "use_semantic": true
+  },
+  "heuristics_file": "results/generated_rules/itunes_amazon_generated_heuristics.json",
+  "rule_generation": "claude_sdk_success",
+  "rule_optimization": "claude_sdk_success",
+  "optimized_heuristics_file": "results/generated_rules/itunes_amazon_generated_heuristics_optimized.json",
+  "baseline_results": {
+    "f1": 0.7142857142857143,
+    "precision": 1.0,
+    "recall": 0.5555555555555556,
+    "cost_usd": 0.130062,
+    "processing_time": 2621.8756818771362
+  },
+  "enhanced_results": {
+    "f1": 0.65,
+    "precision": 1.0,
+    "recall": 0.48148148148148145,
+    "cost_usd": 0.0141464,
+    "processing_time": 470.25347089767456,
+    "early_decisions": 31,
+    "llm_calls": 78,
+    "llm_call_reduction": 28.44036697247706
+  },
+  "ab_comparison": {
+    "f1_improvement": -0.06428571428571428,
+    "cost_change": -0.11591560000000001,
+    "rules_helped": false
+  },
+  "summary": {
+    "dev_f1": 0.6341463414634146,
+    "baseline_f1": 0.7142857142857143,
+    "enhanced_f1": 0.65,
+    "f1_improvement": -0.06428571428571428,
+    "total_cost_usd": 0.20865140000000001,
+    "total_time_seconds": 7389.591629743576,
+    "beat_leaderboard": false,
+    "leaderboard_target": 82.3
+  }
+}

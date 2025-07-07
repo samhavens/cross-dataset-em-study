@@ -195,17 +195,12 @@ def sweep_dataset(dataset: str, model: str = "gpt-4.1-nano", num_points: int = 1
     print(f"\n=== SWEEPING {dataset.upper()} ===")
     
     # Get dataset info
-    try:
-        sizes = parse_sizes_md()
-        dataset_info = sizes[dataset]
-        table_b_size = dataset_info.table_b_records
-        competitive_f1 = get_competitive_f1_threshold(dataset)
-        print(f"Table B size: {table_b_size:,} records")
-        print(f"Competitive F1 threshold: {competitive_f1:.1f}")
-    except Exception as e:
-        print(f"Warning: Could not get dataset info: {e}")
-        table_b_size = 1000  # Default fallback
-        competitive_f1 = 80.0
+    sizes = parse_sizes_md()
+    dataset_info = sizes[dataset]
+    table_b_size = dataset_info.table_b_records
+    competitive_f1 = get_competitive_f1_threshold(dataset)
+    print(f"Table B size: {table_b_size:,} records")
+    print(f"Competitive F1 threshold: {competitive_f1:.1f}")
     
     # Generate candidate counts or ratios
     if use_max_candidates:

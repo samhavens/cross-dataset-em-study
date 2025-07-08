@@ -14,4 +14,4 @@ MODEL_COSTS = {
     "claude-4-sonnet": (3.0, 15.0),
 }
 
-__all__ = ["MODEL_COSTS"] 
+__all__ = ["MODEL_COSTS"]

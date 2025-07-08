@@ -1,11 +1,24 @@
 #!/usr/bin/env python
-import argparse, json, pathlib, textwrap, asyncio, os, datetime, time
-from typing import List, Dict
+import argparse
+import asyncio
+import datetime
+import json
+import os
+import pathlib
+import sys
+import textwrap
+import time
+
+from typing import Dict, List
+
 import pandas as pd
-from src.entity_matching.constants import MODEL_COSTS
 import tiktoken
+
 from tqdm.asyncio import tqdm
+
 from openai import AsyncOpenAI
+from src.entity_matching.constants import MODEL_COSTS
+
 
 # Configuration
 class Config:
@@ -17,7 +30,9 @@ class Config:
         self.total_input_tokens = 0
         self.total_output_tokens = 0
 
+
 cfg = Config()
+
 
 # Token counting
 def token_count(text: str) -> int:
@@ -29,35 +44,39 @@ def token_count(text: str) -> int:
         # Fallback estimation
         return len(text.split()) * 1.3
 
+
 def report_cost():
     """Report total cost and token usage"""
     try:
         input_cost_per_1k, output_cost_per_1k = MODEL_COSTS[cfg.model]
     except KeyError:
         print(f"WARNING: Model {cfg.model} not found in MODEL_COSTS. Using gpt-4.1-mini instead.")
-        input_cost_per_1k, output_cost_per_1k = MODEL_COSTS['gpt-4.1-mini']
+        input_cost_per_1k, output_cost_per_1k = MODEL_COSTS["gpt-4.1-mini"]
 
     input_cost = (cfg.total_input_tokens / 1000) * input_cost_per_1k
     output_cost = (cfg.total_output_tokens / 1000) * output_cost_per_1k
     total_cost = input_cost + output_cost
 
-    print(f"≈{cfg.total_input_tokens/1000:.1f}K in, {cfg.total_output_tokens/1000:.1f}K out → ${total_cost:.2f}")
+    print(f"≈{cfg.total_input_tokens / 1000:.1f}K in, {cfg.total_output_tokens / 1000:.1f}K out → ${total_cost:.2f}")
+
 
 MAX = 1_000_000  # token limit for the matching prompt
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', required=True)
-parser.add_argument('--limit', type=int, default=None, help='number of test rows')
+parser.add_argument("--dataset", required=True)
+parser.add_argument("--limit", type=int, default=None, help="number of test rows")
 
 # Candidate selection - mutually exclusive options
 candidate_group = parser.add_mutually_exclusive_group()
-candidate_group.add_argument('--max-candidates', type=int, help='maximum candidates per left record (absolute number)')
-candidate_group.add_argument('--candidate-ratio', type=float, help='candidates as ratio of table B size (e.g., 0.02 = 2%% of table B)')
+candidate_group.add_argument("--max-candidates", type=int, help="maximum candidates per left record (absolute number)")
+candidate_group.add_argument(
+    "--candidate-ratio", type=float, help="candidates as ratio of table B size (e.g., 0.02 = 2%% of table B)"
+)
 
-parser.add_argument('--model', default=cfg.model)
-parser.add_argument('--concurrency', type=int, default=20, help='number of concurrent API calls')
-parser.add_argument('--output-json', type=str, help='save detailed results to JSON file')
-parser.add_argument('--output-csv', type=str, help='append results to CSV file')
+parser.add_argument("--model", default=cfg.model)
+parser.add_argument("--concurrency", type=int, default=20, help="number of concurrent API calls")
+parser.add_argument("--output-json", type=str, help="save detailed results to JSON file")
+parser.add_argument("--output-csv", type=str, help="append results to CSV file")
 args = parser.parse_args()
 
 # Set default if neither option provided
@@ -73,12 +92,13 @@ DATASET = args.dataset
 if not os.getenv("OPENAI_API_KEY"):
     print("ERROR: OPENAI_API_KEY environment variable not set")
     print("Set it with: export OPENAI_API_KEY='your-api-key'")
-    exit(1)
+    sys.exit(1)
 
 # Initialize async OpenAI client
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 print(f"Using OpenAI API with model: {cfg.model}")
+
 
 async def call_openai_async(prompt: str) -> str:
     """Make async call to OpenAI API"""
@@ -87,7 +107,7 @@ async def call_openai_async(prompt: str) -> str:
             model=cfg.model,
             messages=[{"role": "user", "content": prompt}],
             temperature=cfg.temperature,
-            max_tokens=cfg.max_tokens
+            max_tokens=cfg.max_tokens,
         )
 
         # Track usage
@@ -101,9 +121,9 @@ async def call_openai_async(prompt: str) -> str:
         print(f"OpenAI API error: {e}")
 
 
-root = pathlib.Path('data')/'raw'/DATASET
-A = pd.read_csv(root/'tableA.csv').to_dict(orient='records')
-B = pd.read_csv(root/'tableB.csv').to_dict(orient='records')
+root = pathlib.Path("data") / "raw" / DATASET
+A = pd.read_csv(root / "tableA.csv").to_dict(orient="records")
+B = pd.read_csv(root / "tableB.csv").to_dict(orient="records")
 
 # Calculate max_candidates based on parameter choice
 if args.candidate_ratio is not None:
@@ -113,18 +133,20 @@ if args.candidate_ratio is not None:
     candidate_method = f"{args.candidate_ratio:.1%} of table B ({max_candidates} candidates)"
 else:
     max_candidates = args.max_candidates
-    candidate_method = f"{max_candidates} candidates ({max_candidates/len(B):.1%} of table B)"
+    candidate_method = f"{max_candidates} candidates ({max_candidates / len(B):.1%} of table B)"
 
 # load test pairs
-pairs = pd.read_csv(root/'test.csv')
+pairs = pd.read_csv(root / "test.csv")
 if args.limit:
     pairs = pairs.head(args.limit)
 
+
 def trigram_similarity(s1: str, s2: str) -> float:
     """Calculate trigram similarity between two strings"""
+
     def get_trigrams(s):
         s = s.lower()
-        return set(s[i:i+3] for i in range(len(s)-2))
+        return {s[i : i + 3] for i in range(len(s) - 2)}
 
     t1, t2 = get_trigrams(s1), get_trigrams(s2)
     if not t1 and not t2:
@@ -132,6 +154,7 @@ def trigram_similarity(s1: str, s2: str) -> float:
     if not t1 or not t2:
         return 0.0
     return len(t1 & t2) / len(t1 | t2)
+
 
 def get_top_candidates(left_record: dict, right_records: List[dict], max_candidates: int) -> List[tuple]:
     """Get top candidates for a left record using trigram similarity"""
@@ -148,14 +171,12 @@ def get_top_candidates(left_record: dict, right_records: List[dict], max_candida
     candidates.sort(key=lambda x: x[0], reverse=True)
     return [(idx, record) for _, idx, record in candidates[:max_candidates]]
 
+
 async def match_single_record(left_record: dict, candidates: List[tuple]) -> int:
     """Match a single left record against its filtered candidates"""
 
     # Build prompt with candidates
-    candidates_text = "\n".join(
-        f"{idx}) {json.dumps(record, ensure_ascii=False)}"
-        for idx, record in candidates
-    )
+    candidates_text = "\n".join(f"{idx}) {json.dumps(record, ensure_ascii=False)}" for idx, record in candidates)
 
     # Create prompt
     prompt = textwrap.dedent(f"""
@@ -191,7 +212,6 @@ async def match_single_record(left_record: dict, candidates: List[tuple]) -> int
     if total_tokens > MAX:
         print(f"  WARNING: Prompt too large ({total_tokens:,} tokens)")
 
-
     # Get LLM response
     response = await call_openai_async(prompt)
 
@@ -201,6 +221,7 @@ async def match_single_record(left_record: dict, candidates: List[tuple]) -> int
         return match_idx if match_idx != -1 else -1
     except ValueError:
         return -1
+
 
 async def process_batch(batch_pairs: List[tuple], semaphore: asyncio.Semaphore) -> Dict[int, int]:
     """Process a batch of pairs with concurrency control"""
@@ -226,6 +247,7 @@ async def process_batch(batch_pairs: List[tuple], semaphore: asyncio.Semaphore) 
 
         return batch_results
 
+
 async def main():
     """Main async function"""
     start_time = time.time()
@@ -240,7 +262,7 @@ async def main():
     batch_size = max(1, len(pairs) // 20)  # 20 progress updates
     batches = []
     for i in range(0, len(pairs), batch_size):
-        batch = list(pairs.iloc[i:i+batch_size].iterrows())
+        batch = list(pairs.iloc[i : i + batch_size].iterrows())
         batches.append(batch)
 
     # Process batches with progress bar
@@ -248,7 +270,7 @@ async def main():
 
     # Process batches with progress tracking
     tasks = [process_batch(batch, semaphore) for batch in batches]
-    
+
     # Use tqdm to track progress
     for task in tqdm(asyncio.as_completed(tasks), total=len(batches), desc="Processing batches", unit="batch"):
         batch_results = await task
@@ -295,13 +317,13 @@ async def main():
         input_cost_per_1k, output_cost_per_1k = MODEL_COSTS[cfg.model]
     except KeyError:
         print(f"WARNING: Model {cfg.model} not found in MODEL_COSTS. Using gpt-4o-mini pricing.")
-        input_cost_per_1k, output_cost_per_1k = MODEL_COSTS.get('gpt-4o-mini', (0.00015, 0.0006))
+        input_cost_per_1k, output_cost_per_1k = MODEL_COSTS.get("gpt-4o-mini", (0.00015, 0.0006))
 
     input_cost = (cfg.total_input_tokens / 1000) * input_cost_per_1k
     output_cost = (cfg.total_output_tokens / 1000) * output_cost_per_1k
     total_cost = input_cost + output_cost
 
-    print(f"\n=== EVALUATION RESULTS ===")
+    print("\n=== EVALUATION RESULTS ===")
     print(f"Dataset: {DATASET}")
     print(f"Model: {cfg.model}")
     print(f"Processed: {len(pairs)} pairs")
@@ -335,24 +357,21 @@ async def main():
             "tp": tp,
             "fp": fp,
             "fn": fn,
-            "tn": tn
+            "tn": tn,
         },
         "cost_usd": total_cost,
         "tokens": {
             "input": cfg.total_input_tokens,
             "output": cfg.total_output_tokens,
-            "total": cfg.total_input_tokens + cfg.total_output_tokens
+            "total": cfg.total_input_tokens + cfg.total_output_tokens,
         },
-        "table_sizes": {
-            "table_a": len(A),
-            "table_b": len(B)
-        },
-        "args": vars(args)
+        "table_sizes": {"table_a": len(A), "table_b": len(B)},
+        "args": vars(args),
     }
 
     # Save JSON results if requested
     if args.output_json:
-        with open(args.output_json, 'w') as f:
+        with open(args.output_json, "w") as f:
             json.dump(results, f, indent=2)
         print(f"Detailed results saved to: {args.output_json}")
 
@@ -385,13 +404,13 @@ async def main():
             "output_tokens": results["tokens"]["output"],
             "total_tokens": results["tokens"]["total"],
             "table_a_size": results["table_sizes"]["table_a"],
-            "table_b_size": results["table_sizes"]["table_b"]
+            "table_b_size": results["table_sizes"]["table_b"],
         }
 
         # Check if file exists to determine if we need headers
         file_exists = os.path.exists(args.output_csv)
 
-        with open(args.output_csv, 'a', newline='') as f:
+        with open(args.output_csv, "a", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=csv_row.keys())
             if not file_exists:
                 writer.writeheader()
@@ -400,6 +419,7 @@ async def main():
         print(f"Results appended to: {args.output_csv}")
 
     return results
+
 
 if __name__ == "__main__":
     results = asyncio.run(main())

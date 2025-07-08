@@ -31,6 +31,7 @@ seaborn
 # Development and utilities
 tqdm
 python-dotenv
+ruff>=0.1.0
 
 # Optional GPU support (uncomment if needed)
 # torch-audio  # for audio processing if needed

@@ -1,0 +1,53 @@
+{
+  "timestamp": "2025-07-06T07:52:46.668316",
+  "dataset": "rotten_imdb",
+  "pipeline_version": "complete_v3_working_rules",
+  "dev_results": {
+    "f1": 0.9545454545454545,
+    "precision": 0.9130434782608695,
+    "recall": 1.0,
+    "cost_usd": 0.042901800000000004,
+    "processing_time": 468.26207995414734
+  },
+  "optimal_params": {
+    "max_candidates": 640,
+    "semantic_weight": 0.8,
+    "model": "gpt-4.1-nano",
+    "use_semantic": true
+  },
+  "heuristics_file": "results/generated_rules/rotten_imdb_generated_heuristics.json",
+  "rule_generation": "claude_sdk_success",
+  "rule_optimization": "no_changes_needed",
+  "baseline_results": {
+    "f1": 0.9743589743589743,
+    "precision": 0.95,
+    "recall": 1.0,
+    "cost_usd": 1.8494868,
+    "processing_time": 61.53487992286682
+  },
+  "enhanced_results": {
+    "f1": 0.9295774647887324,
+    "precision": 1.0,
+    "recall": 0.868421052631579,
+    "cost_usd": 0.0029236,
+    "processing_time": 737.2175261974335,
+    "early_decisions": 100,
+    "llm_calls": 20,
+    "llm_call_reduction": 83.33333333333334
+  },
+  "ab_comparison": {
+    "f1_improvement": -0.04478150957024196,
+    "cost_change": -1.8465632,
+    "rules_helped": false
+  },
+  "summary": {
+    "dev_f1": 0.9545454545454545,
+    "baseline_f1": 0.9743589743589743,
+    "enhanced_f1": 0.9295774647887324,
+    "f1_improvement": -0.04478150957024196,
+    "total_cost_usd": 1.8953122,
+    "total_time_seconds": 1267.0144860744476,
+    "beat_leaderboard": true,
+    "leaderboard_target": 95.9
+  }
+}

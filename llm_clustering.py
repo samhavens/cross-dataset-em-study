@@ -6,47 +6,40 @@
 from __future__ import annotations
 
 import random
-import warnings
-from dataclasses import dataclass
 import re
-from typing import Dict, Iterable, List, Optional, Tuple
 import textwrap
+import warnings
+
+from dataclasses import dataclass
+from typing import Iterable
 
 import tiktoken
 
 __all__ = [
-    "Config",
-    "cfg",
-    "token_count",
-    "parse_id",
-    "report_cost",
-    "SampleForContext",
-    "LLMCluster",
+    "MODEL_COSTS",
     "ClusterDescription",
     "ClusterNamer",
-    "LLMClassifier",
-    "VectorAssign",
-    "handle_outliers",
     "ClusterPipeline",
-    "Predictor",
+    "Config",
+    "LLMClassifier",
+    "LLMCluster",
     "MockPredict",
+    "Predictor",
+    "SampleForContext",
+    "VectorAssign",
+    "cfg",
+    "handle_outliers",
+    "parse_id",
+    "report_cost",
+    "token_count",
 ]
 
 import dspy
 
-MODEL_COSTS = {
-    "gpt-4.1": (2.0, 8.0),
-    "gpt-4.1-mini": (0.4, 1.6),
-    "gpt-4.1-nano": (0.2, 0.8),
-    "o3": (0.4, 1.6),
-    "o3-mini": (0.1, 0.4),
-    "o4": (10.0, 30.0),
-    "o4-mini": (0.15, 0.60),
-    "claude-4-sonnet": (3.0, 15.0),
-}
+from src.entity_matching.constants import MODEL_COSTS
 
 
-def token_count(text: str, enc: Optional["tiktoken.Encoding"] = None) -> int:
+def token_count(text: str, enc: tiktoken.Encoding | None = None) -> int:
     """Count tokens using ``tiktoken`` when available."""
     if enc is None:
         try:
@@ -67,10 +60,9 @@ class Config:
     model: str = "gpt-4.1-nano"
 
 
-
 cfg = Config()
 
-cost_log: List[Tuple[int, int]] = []  # (in_tokens, out_tokens)
+cost_log: list[tuple[int, int]] = []  # (in_tokens, out_tokens)
 
 
 def report_cost() -> None:
@@ -80,9 +72,7 @@ def report_cost() -> None:
         return
     in_tot, out_tot = map(sum, zip(*cost_log))
     usd = in_tot / 1_000_000 * cfg.in_cost + out_tot / 1_000_000 * cfg.out_cost
-    print(
-        f"\u2248{in_tot/1_000:.1f}K in, {out_tot/1_000:.1f}K out → ${usd:,.2f}"
-    )
+    print(f"\u2248{in_tot / 1_000:.1f}K in, {out_tot / 1_000:.1f}K out → ${usd:,.2f}")
 
 
 class MockPredict:
@@ -99,33 +89,39 @@ class MockPredict:
             tokens_out = max(1, 3 * len(ids))
             cost_log.append((tokens_in, tokens_out))
             mapping = {int(i): f"cluster_{int(i) % 3}" for i in ids}
+
             # Create a simple object with text and output attributes
             class MockResponse:
                 def __init__(self, text, output=None):
                     self.text = text
                     self.output = output
+
             return MockResponse(text="/*mock*/", output=mapping)
         if self.ret_type == "json-namer":
             tokens_out = 10
             cost_log.append((tokens_in, tokens_out))
+
             class MockResponse:
                 def __init__(self, text, output=None):
                     self.text = text
                     self.output = output
+
             return MockResponse(
                 text="/*mock*/",
                 output={
-                    "name": f"cluster{self.rng.randint(0,9)}",
+                    "name": f"cluster{self.rng.randint(0, 9)}",
                     "features": "mock feats",
                 },
             )
         tokens_out = 5
         cost_log.append((tokens_in, tokens_out))
+
         class MockResponse:
             def __init__(self, text, output=None):
                 self.text = text
                 self.output = output
-        return MockResponse(text=f"cluster_{self.rng.randint(0,2)}")
+
+        return MockResponse(text=f"cluster_{self.rng.randint(0, 2)}")
 
 
 class LivePredict:
@@ -139,20 +135,23 @@ class LivePredict:
 
     def __call__(self, prompt: str) -> object:
         resp = self.inner(prompt=prompt)
-        
+
         # Access the output field from the prediction
-        out_text = resp.output if hasattr(resp, 'output') else str(resp)
-        
+        out_text = resp.output if hasattr(resp, "output") else str(resp)
+
         # For JSON responses, try to parse the output
         if self.ret_type == "json" and out_text:
             try:
                 import json as _json
+
                 parsed_output = _json.loads(out_text)
+
                 # Create a response object with parsed JSON
                 class LiveResponse:
                     def __init__(self, text, output=None):
                         self.text = text
                         self.output = output
+
                 result = LiveResponse(text=out_text, output=parsed_output)
             except Exception:
                 # If parsing fails, create a simple response with just text
@@ -160,6 +159,7 @@ class LivePredict:
                     def __init__(self, text, output=None):
                         self.text = text
                         self.output = output
+
                 result = LiveResponse(text=out_text, output=None)
         else:
             # For text responses, create a simple response object
@@ -167,8 +167,9 @@ class LivePredict:
                 def __init__(self, text, output=None):
                     self.text = text
                     self.output = output
+
             result = LiveResponse(text=out_text, output=None)
-            
+
         cost_log.append((token_count(prompt), token_count(str(out_text))))
         return result
 
@@ -185,7 +186,7 @@ def Predictor(ret_type: str):
 _ID_RE = re.compile(r"^(\d+)\)")
 
 
-def parse_id(row: str) -> Optional[int]:
+def parse_id(row: str) -> int | None:
     """Extract numeric ID from a row string."""
     m = _ID_RE.match(row.strip())
     if m:
@@ -203,7 +204,7 @@ class SampleForContext(dspy.Module):
         self,
         limit_tokens: int,
         seed: int = 0,
-        enc: Optional["tiktoken.Encoding"] = None,
+        enc: tiktoken.Encoding | None = None,
     ):
         super().__init__()
         self.limit_tokens = limit_tokens
@@ -218,12 +219,12 @@ class SampleForContext(dspy.Module):
         else:
             self.enc = None
 
-    def forward(self, rows: List[str]) -> List[str]:
+    def forward(self, rows: list[str]) -> list[str]:
         rng = random.Random(self.seed)
         idx = list(range(len(rows)))
         rng.shuffle(idx)
 
-        sampled: List[str] = []
+        sampled: list[str] = []
         total = 0
         for i in idx:
             row = rows[i]
@@ -240,9 +241,9 @@ class LLMCluster(dspy.Module):
 
     def __init__(self):
         super().__init__()
-        self.reasoning: Optional[str] = None
+        self.reasoning: str | None = None
 
-    def forward(self, rows: List[str]) -> Dict[int, str]:
+    def forward(self, rows: list[str]) -> dict[int, str]:
         prompt = textwrap.dedent(
             """
             system: you are an expert taxonomist.
@@ -275,15 +276,13 @@ class ClusterNamer(dspy.Module):
         ).format(cid=cluster_id, rows="\n".join(examples))
         lm = Predictor("json-namer")
         data = lm(prompt).output
-        return ClusterDescription(
-            name=data.get("name", "cluster"), features=data.get("features", "")
-        )
+        return ClusterDescription(name=data.get("name", "cluster"), features=data.get("features", ""))
 
 
 class LLMClassifier(dspy.Module):
     """Classify an unseen row into an existing cluster."""
 
-    def __init__(self, context: Dict[str, List[str]], tau: float = 0.15):
+    def __init__(self, context: dict[str, list[str]], tau: float = 0.15):
         super().__init__()
         self.context = context
         self.tau = tau
@@ -312,30 +311,30 @@ class VectorAssign(dspy.Module):
     externally (e.g. via an embeddings service).
     """
 
-    def __init__(self, centroids: Dict[str, List[float]]):
+    def __init__(self, centroids: dict[str, list[float]]):
         super().__init__()
         self.centroids = centroids
 
     @staticmethod
-    def _cosine(a: List[float], b: List[float]) -> float:
+    def _cosine(a: list[float], b: list[float]) -> float:
         dot = sum(x * y for x, y in zip(a, b))
         na = sum(x * x for x in a) ** 0.5
         nb = sum(y * y for y in b) ** 0.5
         return dot / (na * nb + 1e-8)
 
-    def forward(self, embedding: List[float]) -> str:
+    def forward(self, embedding: list[float]) -> str:
         if not self.centroids:
             return "OUTLIER"
         best = max(self.centroids.items(), key=lambda kv: self._cosine(kv[1], embedding))
         return best[0]
 
 
-def handle_outliers(classifier: LLMClassifier, rows: List[str], depth: int = 0, max_depth: int = 1) -> Dict[int, str]:
+def handle_outliers(classifier: LLMClassifier, rows: list[str], depth: int = 0, max_depth: int = 1) -> dict[int, str]:
     """Recursively cluster outlier rows."""
     if depth > max_depth or not rows:
         return {}
-    mapping: Dict[int, str] = {}
-    processed: List[Tuple[str, str]] = []
+    mapping: dict[int, str] = {}
+    processed: list[tuple[str, str]] = []
     for row in rows:
         rid = parse_id(row)
         if rid is None:
@@ -361,7 +360,7 @@ class ClusterPipeline(dspy.Module):
         self.sample_seed = 0
 
     @staticmethod
-    def _quick_silhouette(by_cluster: Dict[str, List[str]]) -> float:
+    def _quick_silhouette(by_cluster: dict[str, list[str]]) -> float:
         """Placeholder silhouette heuristic using cluster sizes."""
         if not by_cluster:
             return 0.0
@@ -372,11 +371,11 @@ class ClusterPipeline(dspy.Module):
         var = sum((s - mean) ** 2 for s in sizes) / len(sizes)
         return 1 / (1 + var)
 
-    def forward(self, rows: List[str]) -> Dict[int, str]:
+    def forward(self, rows: list[str]) -> dict[int, str]:
         sampled = self.sample(rows)
         mapping = self.first_pass(sampled)
 
-        by_cluster: Dict[str, List[str]] = {}
+        by_cluster: dict[str, list[str]] = {}
         for row in sampled:
             rid = parse_id(row)
             if rid is None:
@@ -402,7 +401,7 @@ class ClusterPipeline(dspy.Module):
                 by_cluster.setdefault(cid, []).append(row)
 
         # name clusters
-        names: Dict[str, str] = {}
+        names: dict[str, str] = {}
         for cid, examples in by_cluster.items():
             desc = self.cluster_namer(cid, examples)
             names[cid] = desc.name
@@ -410,8 +409,8 @@ class ClusterPipeline(dspy.Module):
         # create classifier for remaining rows
         classifier = LLMClassifier(by_cluster)
 
-        results: Dict[int, str] = {}
-        outlier_rows: List[str] = []
+        results: dict[int, str] = {}
+        outlier_rows: list[str] = []
         for row in rows:
             rid = parse_id(row)
             if rid in mapping:
@@ -455,14 +454,13 @@ if __name__ == "__main__":
     cfg.model = args.model
     if args.in_cost is not None and args.out_cost is not None:
         cfg.in_cost, cfg.out_cost = args.in_cost, args.out_cost
+    elif cfg.model in MODEL_COSTS:
+        cfg.in_cost, cfg.out_cost = MODEL_COSTS[cfg.model]
     else:
-        if cfg.model in MODEL_COSTS:
-            cfg.in_cost, cfg.out_cost = MODEL_COSTS[cfg.model]
-        else:
-            warnings.warn(
-                f"unknown model '{cfg.model}'; using default prices. "
-                "Specify --in-cost and --out-cost to override."
-            )
+        warnings.warn(
+            f"unknown model '{cfg.model}'; using default prices. Specify --in-cost and --out-cost to override.",
+            stacklevel=2,
+        )
 
     p = pathlib.Path(args.rows)
     rows = json.loads(p.read_text()) if p.suffix == ".json" else p.read_text().splitlines()

@@ -1,0 +1,2059 @@
+{
+  "dataset": "itunes_amazon",
+  "analysis_type": "validation",
+  "metadata": {
+    "total_pairs_analyzed": 109,
+    "positive_pairs": 27,
+    "negative_pairs_sampled": 30,
+    "semantic_available": true
+  },
+  "similarity_analysis": {
+    "true_matches": {
+      "syntactic": {
+        "mean": 0.942407683627728,
+        "std": 0.10900388133503457,
+        "median": 1.0,
+        "min": 0.5631067961165048,
+        "max": 1.0
+      },
+      "trigram": {
+        "mean": 0.8912595938292462,
+        "std": 0.19447009859467976,
+        "median": 1.0,
+        "min": 0.3424657534246575,
+        "max": 1.0
+      },
+      "semantic": {
+        "mean": 0.9237028514897382,
+        "std": 0.05868316440531914,
+        "median": 0.940001368522644,
+        "min": 0.761064887046814,
+        "max": 0.9891471266746521
+      }
+    },
+    "false_positives": {
+      "syntactic": {
+        "mean": 0.4365468177688385,
+        "std": 0.10412635577339563,
+        "median": 0.41820987654320985,
+        "min": 0.28125,
+        "max": 0.6896551724137931
+      },
+      "trigram": {
+        "mean": 0.17199952017497575,
+        "std": 0.10525379121285884,
+        "median": 0.1383572567783094,
+        "min": 0.034482758620689655,
+        "max": 0.47058823529411764
+      },
+      "semantic": {
+        "mean": 0.7911823252836864,
+        "std": 0.07776163143475032,
+        "median": 0.8222338855266571,
+        "min": 0.6443910002708435,
+        "max": 0.9105609059333801
+      }
+    }
+  },
+  "candidate_analysis": {
+    "recall_at_1": 0.4074074074074074,
+    "recall_at_5": 0.8888888888888888,
+    "recall_at_10": 0.8888888888888888,
+    "recall_at_25": 0.9259259259259259,
+    "recall_at_50": 0.9259259259259259,
+    "recall_at_100": 0.9259259259259259
+  },
+  "concrete_examples": {
+    "true_matches": [
+      {
+        "left_record": {
+          "id": 4301,
+          "Song_Name": "See You Again",
+          "Artist_Name": "Elle King",
+          "Album_Name": "Love Stuff",
+          "Genre": "Alternative , Music , Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 RCA Records , a division of Sony Music Entertainment",
+          "Time": "3:26",
+          "Released": "13-Feb-15"
+        },
+        "right_record": {
+          "id": 29695,
+          "Song_Name": "See You Again",
+          "Artist_Name": "Elle King",
+          "Album_Name": "Love Stuff",
+          "Genre": "Alternative Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 1996 The Island Def Jam Music Group",
+          "Time": "3:26",
+          "Released": "February 13 , 2015"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.826
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 431,
+          "Song_Name": "Closer ( feat . Mike Posner )",
+          "Artist_Name": "Nick Jonas",
+          "Album_Name": "Nick Jonas ( Deluxe )",
+          "Genre": "Pop , Music , Rock , Pop/Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Island Records , a division of UMG Recordings , Inc. / Safehouse Records , LLC",
+          "Time": "3:48",
+          "Released": "10-Nov-14"
+        },
+        "right_record": {
+          "id": 33296,
+          "Song_Name": "Closer [ feat . Mike Posner ] [ Clean ]",
+          "Artist_Name": "Nick Jonas",
+          "Album_Name": "Nick Jonas ( Deluxe ) [ Clean ]",
+          "Genre": "Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2014 Island Records/Safehouse Records LLC , a division of UMG Recordings , Inc.",
+          "Time": "3:48",
+          "Released": "November 10 , 2014"
+        },
+        "similarities": {
+          "syntactic": 0.794,
+          "trigram": 0.564,
+          "semantic": 0.981
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1164,
+          "Song_Name": "Dangerous ( feat . Sam Martin ) [ Robin Schulz Remix ] [ Radio Edit ]",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "Listen ( Deluxe Version )",
+          "Genre": "Dance , Music , Rock , House , Electronic , French Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 What A Music Ltd. under exclusive license to Parlophone/Warner Music France , under exclusive license to Atlantic Recording Corporation for the United States . All rights reserved .",
+          "Time": "3:20",
+          "Released": "24-Nov-14"
+        },
+        "right_record": {
+          "id": 27994,
+          "Song_Name": "Dangerous ( feat . Sam Martin ) [ Robin Schulz Remix ] [ Radio Edit ]",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "Listen ( Deluxe )",
+          "Genre": "Dance & Electronic",
+          "Price": "$ 1.29",
+          "CopyRight": "2015 If Moving Your Mine",
+          "Time": "3:20",
+          "Released": "November 24 , 2014"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.838
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1683,
+          "Song_Name": "Jack Daniels and Jesus",
+          "Artist_Name": "Chase Rice",
+          "Album_Name": "Ignite the Night",
+          "Genre": "Country , Music , Urban Cowboy , Contemporary Country",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Dack Janiels Records",
+          "Time": "3:55",
+          "Released": "19-Aug-14"
+        },
+        "right_record": {
+          "id": 23727,
+          "Song_Name": "Jack Daniels and Jesus",
+          "Artist_Name": "Chase Rice",
+          "Album_Name": "Ignite the Night ( Party Edition ) [ Explicit ]",
+          "Genre": "Country",
+          "Price": "$ 0.89",
+          "CopyRight": "( C ) 2014 Dack Janiels Records , under exclusive license to Sony Music Entertainment .",
+          "Time": "3:55",
+          "Released": "August 19 , 2014"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.921
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 6,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 5083,
+          "Song_Name": "Second Chance",
+          "Artist_Name": "Disclosure",
+          "Album_Name": "Settle ( Deluxe Version )",
+          "Genre": "Electronic , Music",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2014 Universal Island Records , a division of Universal Music Operations Limited",
+          "Time": "2:27",
+          "Released": "15-Apr-14"
+        },
+        "right_record": {
+          "id": 40471,
+          "Song_Name": "Second Chance",
+          "Artist_Name": "Disclosure",
+          "Album_Name": "Settle",
+          "Genre": "Electronica , Dance & Electronic",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2013 Universal Island Records , a division of Universal Music Operations Limited",
+          "Time": "2:27",
+          "Released": "June 11 , 2013"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.979
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 5,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2368,
+          "Song_Name": "I Ca n't Go There ( Acoustic Version )",
+          "Artist_Name": "Kenny Chesney",
+          "Album_Name": "No Shoes , No Shirt , No Problems",
+          "Genre": "Country , Music , Contemporary Country , Urban Cowboy",
+          "Price": "$ 0.99",
+          "CopyRight": "2002 BMG",
+          "Time": "3:45",
+          "Released": "2-Apr-02"
+        },
+        "right_record": {
+          "id": 33786,
+          "Song_Name": "I Ca n't Go There ( Acoustic Version )",
+          "Artist_Name": "Kenny Chesney",
+          "Album_Name": "No Shoes , No Shirt , No Problems",
+          "Genre": "Country",
+          "Price": "$ 0.99",
+          "CopyRight": "Underground Avenue",
+          "Time": "3:45",
+          "Released": "April 2 , 2002"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.979
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 5406,
+          "Song_Name": "This Love ( Will Be Your Downfall )",
+          "Artist_Name": "Ellie Goulding",
+          "Album_Name": "Bright Lights ( Deluxe Version )",
+          "Genre": "Pop , Music , Dance , Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2010 Polydor Ltd. ( UK )",
+          "Time": "3:53",
+          "Released": "29-Nov-10"
+        },
+        "right_record": {
+          "id": 27824,
+          "Song_Name": "This Love ( Will Be Your Downfall )",
+          "Artist_Name": "Ellie Goulding",
+          "Album_Name": "Lights",
+          "Genre": "Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2011 Polydor Ltd. ( UK )",
+          "Time": "3:53",
+          "Released": "March 8 , 2011"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.98
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2812,
+          "Song_Name": "Cowboy Boots",
+          "Artist_Name": "Macklemore & Ryan Lewis",
+          "Album_Name": "The Heist",
+          "Genre": "Hip-Hop , Music,Hip-Hop / Rap , Rap , West Coast Rap , Alternative Rap",
+          "Price": "$ 1.29",
+          "CopyRight": "2012 Macklemore , LLC .",
+          "Time": "4:15",
+          "Released": "9-Oct-12"
+        },
+        "right_record": {
+          "id": 47863,
+          "Song_Name": "Cowboy Boots",
+          "Artist_Name": "Macklemore & Ryan Lewis",
+          "Album_Name": "The Heist [ Explicit ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Selena Garcia & Steven Gomez",
+          "Time": "4:17",
+          "Released": "October 9 , 2012"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.938
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2337,
+          "Song_Name": "Old Blue Chair",
+          "Artist_Name": "Kenny Chesney",
+          "Album_Name": "When the Sun Goes Down",
+          "Genre": "Country , Music , Contemporary Country , Urban Cowboy",
+          "Price": "$ 1.29",
+          "CopyRight": "2004 Sony Music Entertainment",
+          "Time": "3:23",
+          "Released": "1-Jan-90"
+        },
+        "right_record": {
+          "id": 54230,
+          "Song_Name": "Old Blue Chair",
+          "Artist_Name": "Kenny Chesney",
+          "Album_Name": "When The Sun Goes Down ( Deluxe Version )",
+          "Genre": "Country",
+          "Price": "$ 1.29",
+          "CopyRight": "2012 Pinecastle Records",
+          "Time": "3:25",
+          "Released": "February 2 , 2004"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.94
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 5733,
+          "Song_Name": "Bumpin ' the Night",
+          "Artist_Name": "Florida Georgia Line",
+          "Album_Name": "Anything Goes",
+          "Genre": "Country , Music , Honky Tonk , Urban Cowboy , Contemporary Country",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2014 Big Machine Label Group , LLC",
+          "Time": "3:42",
+          "Released": "14-Oct-14"
+        },
+        "right_record": {
+          "id": 4465,
+          "Song_Name": "Bumpin ' The Night",
+          "Artist_Name": "Florida Georgia Line",
+          "Album_Name": "Anything Goes",
+          "Genre": "Country",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2014 Republic Records , a Division of UMG Recordings , Inc. ( Republic Nashville )",
+          "Time": "3:41",
+          "Released": "October 14 , 2014"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.886
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 19,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 668,
+          "Song_Name": "Thriller ( Live From Hammersmith Palais )",
+          "Artist_Name": "Fall Out Boy",
+          "Album_Name": "Infinity On High ( Deluxe Edition )",
+          "Genre": "Alternative , Music , Rock , Adult Alternative , Punk",
+          "Price": "$ 0.99",
+          "CopyRight": "2007 The Island Def Jam Music Group",
+          "Time": "3:32",
+          "Released": "20-Nov-07"
+        },
+        "right_record": {
+          "id": 24621,
+          "Song_Name": "Thriller ( Live From Hammersmith Palais )",
+          "Artist_Name": "Fall Out Boy",
+          "Album_Name": "Infinity On High - Deluxe Bonus EP",
+          "Genre": "Alternative Rock",
+          "Price": "$ 0.99",
+          "CopyRight": "( C ) 2007 The Island Def Jam Music Group",
+          "Time": "3:32",
+          "Released": "November 20 , 2007"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.979
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1918,
+          "Song_Name": "Is It Love",
+          "Artist_Name": "P!NK",
+          "Album_Name": "Ca n't Take Me Home",
+          "Genre": "Pop , Music , Dance , R&B / Soul , Pop/Rock , Teen Pop , Contemporary R&B",
+          "Price": "$ 0.99",
+          "CopyRight": "1999 , 2000 LaFace Records LLC",
+          "Time": "3:38",
+          "Released": "5-May-97"
+        },
+        "right_record": {
+          "id": 9358,
+          "Song_Name": "Is It Love",
+          "Artist_Name": "P!nk",
+          "Album_Name": "Ca n't Take Me Home",
+          "Genre": "Pop",
+          "Price": "$ 0.99",
+          "CopyRight": "( C ) 2008 Concord Music Group , Inc.",
+          "Time": "3:38",
+          "Released": "May 17 , 1999"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.891
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 4312,
+          "Song_Name": "Remark",
+          "Artist_Name": "Rachel Platten",
+          "Album_Name": "Be Here",
+          "Genre": "Pop , Music , Singer/Songwriter , Contemporary Singer/Songwriter , Rock , Adult Alternative",
+          "Price": "$ 0.99",
+          "CopyRight": "2011 Great Unknown , LLC",
+          "Time": "2:57",
+          "Released": "26-Apr-11"
+        },
+        "right_record": {
+          "id": 6130,
+          "Song_Name": "Remark",
+          "Artist_Name": "Rachel Platten",
+          "Album_Name": "Be Here",
+          "Genre": "Pop",
+          "Price": "$ 0.99",
+          "CopyRight": "2014 Great Unknown , LLC",
+          "Time": "2:57",
+          "Released": "April 26 , 2011"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.954
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1216,
+          "Song_Name": "Glasgow",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "Nothing But the Beat - The Electronic Album",
+          "Genre": "Dance , Music , Electronic , House , Rock",
+          "Price": "$ 0.99",
+          "CopyRight": "2011 What A Music Ltd , Licence exclusive Parlophone Music France",
+          "Time": "5:13",
+          "Released": "26-Aug-11"
+        },
+        "right_record": {
+          "id": 33988,
+          "Song_Name": "Glasgow",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "Nothing But The Beat - The Electronic Album",
+          "Genre": "Dance & Electronic",
+          "Price": "$ 0.99",
+          "CopyRight": "2009 Andy Henningsen",
+          "Time": "5:13",
+          "Released": "August 26 , 2011"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.939
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1358,
+          "Song_Name": "Stars Come Out ( Tim Mason Remix )",
+          "Artist_Name": "Zedd",
+          "Album_Name": "Stars Come Out ( Remixes ) - EP",
+          "Genre": "Dance , Music , Electronic , House",
+          "Price": "$ 1.29",
+          "CopyRight": "2012 Dim Mak Inc.",
+          "Time": "5:49",
+          "Released": "20-May-14"
+        },
+        "right_record": {
+          "id": 42278,
+          "Song_Name": "Stars Come Out ( Dillon Francis Remix )",
+          "Artist_Name": "Zedd",
+          "Album_Name": "Stars Come Out [ Dillon Francis Remix ]",
+          "Genre": "Dance & Electronic",
+          "Price": "$ 1.29",
+          "CopyRight": "2012 Dim Mak Inc.",
+          "Time": "4:08",
+          "Released": "May 20 , 2014"
+        },
+        "similarities": {
+          "syntactic": 0.767,
+          "trigram": 0.468,
+          "semantic": 0.954
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 6592,
+          "Song_Name": "I Almost Do",
+          "Artist_Name": "Taylor Swift",
+          "Album_Name": "Red",
+          "Genre": "Country , Music , Rock , Contemporary Country , Honky Tonk , Pop , Teen Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2012 Big Machine Records , LLC .",
+          "Time": "4:04",
+          "Released": "22-Oct-12"
+        },
+        "right_record": {
+          "id": 38375,
+          "Song_Name": "I Almost Do",
+          "Artist_Name": "Taylor Swift",
+          "Album_Name": "Red",
+          "Genre": "Country",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2012 Big Machine Records , LLC .",
+          "Time": "4:02",
+          "Released": "October 30 , 2012"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.976
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 4669,
+          "Song_Name": "Take '`` There ( feat . Kiesza ) [ Missy Elliott Remix ] [ Bonus Track ]",
+          "Artist_Name": "Skrillex & Diplo",
+          "Album_Name": "Skrillex and Diplo Present Jack '``",
+          "Genre": "Dance,Music,Hip-Hop / Rap , Jazz , Bop , Electronic , Rap , Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "2015 Atlantic Recording Corporation for the US and WEA International for the world outside the United States . A Warner Music Group Company",
+          "Time": "3:30",
+          "Released": "24-Feb-15"
+        },
+        "right_record": {
+          "id": 41083,
+          "Song_Name": "Take \u00cc\u00cf There ( feat . Kiesza )",
+          "Artist_Name": "Skrillex , Diplo",
+          "Album_Name": "Skrillex and Diplo present Jack \u00cc\u00cf [ Explicit ]",
+          "Genre": "Dance & Electronic",
+          "Price": "$ 1.29",
+          "CopyRight": "2012 Knight Skreams",
+          "Time": "3:30",
+          "Released": "February 24 , 2015"
+        },
+        "similarities": {
+          "syntactic": 0.563,
+          "trigram": 0.342,
+          "semantic": 0.761
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 6425,
+          "Song_Name": "Happily",
+          "Artist_Name": "One Direction",
+          "Album_Name": "Midnight Memories ( Deluxe Edition )",
+          "Genre": "Pop , Music , Rock , Teen Pop , Pop/Rock , Dance",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2013 Simco Limited under exclusive license to Sony Music Entertainment UK Limited",
+          "Time": "2:55",
+          "Released": "25-Nov-13"
+        },
+        "right_record": {
+          "id": 31102,
+          "Song_Name": "Happily",
+          "Artist_Name": "One Direction",
+          "Album_Name": "Midnight Memories",
+          "Genre": "Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2014 Disney Enterprises , Inc.",
+          "Time": "2:55",
+          "Released": "November 25 , 2013"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.864
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3292,
+          "Song_Name": "True Colors ( feat . Nicki Minaj )",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "Blacc Hollywood",
+          "Genre": "Hip-Hop/Rap , Music , Rap , East Coast Rap , Hardcore Rap , Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States . A Warner Music Group Company",
+          "Time": "4:15",
+          "Released": "19-Aug-14"
+        },
+        "right_record": {
+          "id": 7440,
+          "Song_Name": "True Colors ( feat . Nicki Minaj ) [ Explicit ]",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "Blacc Hollywood [ Explicit ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States . A Warner Music Group Company",
+          "Time": "4:15",
+          "Released": "August 19 , 2014"
+        },
+        "similarities": {
+          "syntactic": 0.84,
+          "trigram": 0.711,
+          "semantic": 0.969
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 6280,
+          "Song_Name": "Thrift Shop ( feat . Wanz )",
+          "Artist_Name": "Macklemore & Ryan Lewis",
+          "Album_Name": "The Heist ( Deluxe Edition )",
+          "Genre": "Hip-Hop/Rap , Music , Rap , Alternative Rap , West Coast Rap",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2012 Macklemore , LLC .",
+          "Time": "3:55",
+          "Released": "1-Aug-12"
+        },
+        "right_record": {
+          "id": 47818,
+          "Song_Name": "Thrift Shop ( feat . Wanz ) [ Explicit ]",
+          "Artist_Name": "Macklemore & Ryan Lewis",
+          "Album_Name": "The Heist [ Deluxe Edition ] [ Explicit ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Selena Garcia & Steven Gomez",
+          "Time": "3:55",
+          "Released": "October 9 , 2012"
+        },
+        "similarities": {
+          "syntactic": 0.806,
+          "trigram": 0.658,
+          "semantic": 0.948
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3734,
+          "Song_Name": "Cowboy Boots",
+          "Artist_Name": "Macklemore & Ryan Lewis",
+          "Album_Name": "The Heist",
+          "Genre": "Hip-Hop/Rap , Music , Rap , West Coast Rap , Alternative Rap , Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "2012 2012 Macklemore , LLC .",
+          "Time": "4:17",
+          "Released": "9-Oct-12"
+        },
+        "right_record": {
+          "id": 47848,
+          "Song_Name": "Cowboy Boots",
+          "Artist_Name": "Macklemore & Ryan Lewis",
+          "Album_Name": "The Heist [ Explicit ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Selena Garcia & Steven Gomez",
+          "Time": "4:17",
+          "Released": "October 9 , 2012"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.94
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1161,
+          "Song_Name": "The Whisperer ( feat . Sia )",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "Listen",
+          "Genre": "Dance , Music , Electronic , House , Rock , French Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 What A Music Ltd. under exclusive license to Parlophone/Warner Music France , under exclusive license to Atlantic Recording Corporation for the United States . All rights reserved",
+          "Time": "3:54",
+          "Released": "24-Nov-14"
+        },
+        "right_record": {
+          "id": 27990,
+          "Song_Name": "The Whisperer ( feat . Sia )",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "Listen ( Deluxe )",
+          "Genre": "Dance & Electronic",
+          "Price": "$ 1.29",
+          "CopyRight": "2015 If Moving Your Mine",
+          "Time": "3:54",
+          "Released": "November 24 , 2014"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.849
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 251,
+          "Song_Name": "VHS Outro ( Interlude )",
+          "Artist_Name": "X Ambassadors",
+          "Album_Name": "VHS",
+          "Genre": "Alternative , Music , Rock , Adult Alternative",
+          "Price": "$ 1.29",
+          "CopyRight": "2015 KIDinaKORNER/Interscope Records",
+          "Time": "1:25",
+          "Released": "30-Jun-15"
+        },
+        "right_record": {
+          "id": 53047,
+          "Song_Name": "VHS Outro ( Interlude ) [ Explicit ]",
+          "Artist_Name": "X Ambassadors",
+          "Album_Name": "VHS [ Explicit ]",
+          "Genre": "Alternative Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2015 KIDinaKORNER/Interscope Records",
+          "Time": "1:25",
+          "Released": "June 30 , 2015"
+        },
+        "similarities": {
+          "syntactic": 0.78,
+          "trigram": 0.618,
+          "semantic": 0.978
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1683,
+          "Song_Name": "Jack Daniels and Jesus",
+          "Artist_Name": "Chase Rice",
+          "Album_Name": "Ignite the Night",
+          "Genre": "Country , Music , Urban Cowboy , Contemporary Country",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Dack Janiels Records",
+          "Time": "3:55",
+          "Released": "19-Aug-14"
+        },
+        "right_record": {
+          "id": 23781,
+          "Song_Name": "Jack Daniels and Jesus",
+          "Artist_Name": "Chase Rice",
+          "Album_Name": "Ignite the Night",
+          "Genre": "Country",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2014 Dack Janiels Records , under exclusive license to Sony Music Entertainment .",
+          "Time": "3:55",
+          "Released": "August 19 , 2014"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.93
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 537,
+          "Song_Name": "Goodbye to You ( feat . Dot Rotten )",
+          "Artist_Name": "Ed Sheeran",
+          "Album_Name": "5",
+          "Genre": "Pop , Music , Rock , Singer/Songwriter , Contemporary Singer/Songwriter , Adult Alternative",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Warner Music UK LImited",
+          "Time": "5:30",
+          "Released": "23-Jun-14"
+        },
+        "right_record": {
+          "id": 1878,
+          "Song_Name": "Goodbye To You ( + Dot Rotten )",
+          "Artist_Name": "Ed Sheeran",
+          "Album_Name": "5",
+          "Genre": "Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "Dub Police Records",
+          "Time": "5:30",
+          "Released": "June 23 , 2014"
+        },
+        "similarities": {
+          "syntactic": 0.896,
+          "trigram": 0.703,
+          "semantic": 0.905
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1406,
+          "Song_Name": "The Legend Of Zelda ( Electrixx Remix )",
+          "Artist_Name": "Zedd",
+          "Album_Name": "The Legend Of Zelda - Single",
+          "Genre": "Dance , Music",
+          "Price": "$ 0.99",
+          "CopyRight": "2011 Bazooka , a division of zooland Music GmbH",
+          "Time": "6:09",
+          "Released": "27-May-11"
+        },
+        "right_record": {
+          "id": 48287,
+          "Song_Name": "The Legend Of Zelda ( Electrixx Remix )",
+          "Artist_Name": "Zedd",
+          "Album_Name": "The Legend Of Zelda",
+          "Genre": "Electronica , Dance & Electronic",
+          "Price": "$ 0.89",
+          "CopyRight": "2011 Bazooka , a division of zooland Music GmbH",
+          "Time": "6:09",
+          "Released": "May 27 , 2011"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.989
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 6429,
+          "Song_Name": "Something Great",
+          "Artist_Name": "One Direction",
+          "Album_Name": "Midnight Memories ( Deluxe Edition )",
+          "Genre": "Pop , Music , Rock , Teen Pop , Pop/Rock , Dance",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2013 Simco Limited under exclusive license to Sony Music Entertainment UK Limited",
+          "Time": "3:56",
+          "Released": "25-Nov-13"
+        },
+        "right_record": {
+          "id": 31088,
+          "Song_Name": "Something Great",
+          "Artist_Name": "One Direction",
+          "Album_Name": "Midnight Memories ( Deluxe )",
+          "Genre": "Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2014 Disney Enterprises , Inc.",
+          "Time": "3:56",
+          "Released": "November 25 , 2013"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.844
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 100
+        }
+      }
+    ],
+    "confusing_non_matches": [
+      {
+        "left_record": {
+          "id": 6679,
+          "Song_Name": "You Belong With Me ( Instrumental With Background Vocals )",
+          "Artist_Name": "Taylor Swift",
+          "Album_Name": "Taylor Swift Karaoke : Fearless ( Instrumentals With Background Vocals )",
+          "Genre": "Country , Music",
+          "Price": "$ 0.99",
+          "CopyRight": "\u2030 \u00e3\u00d1 2009 Big Machine Records , LLC",
+          "Time": "3:57",
+          "Released": "7-Apr-09"
+        },
+        "right_record": {
+          "id": 44061,
+          "Song_Name": "How You Get The Girl ( Karaoke Version )",
+          "Artist_Name": "Taylor Swift",
+          "Album_Name": "Taylor Swift Karaoke : 1989",
+          "Genre": "Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2014 Big Machine Records , LLC",
+          "Time": "4:05",
+          "Released": "March 3 , 2015"
+        },
+        "similarities": {
+          "syntactic": 0.388,
+          "trigram": 0.034,
+          "semantic": 0.836
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 85,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3412,
+          "Song_Name": "Remember You ( feat . The Weeknd )",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "O.N.I.F.C. ( Deluxe Version )",
+          "Genre": "Hip-Hop/Rap , Music , East Coast Rap , Hardcore Rap , Rap",
+          "Price": "$ 1.99",
+          "CopyRight": "2012 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States",
+          "Time": "5:20",
+          "Released": "4-Dec-12"
+        },
+        "right_record": {
+          "id": 7356,
+          "Song_Name": "True Colors ( feat . Nicki Minaj ) [ Explicit ]",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "Blacc Hollywood ( Deluxe ) [ Explicit ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States . A Warner Music Group Company",
+          "Time": "4:15",
+          "Released": "August 19 , 2014"
+        },
+        "similarities": {
+          "syntactic": 0.42,
+          "trigram": 0.116,
+          "semantic": 0.771
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1433,
+          "Song_Name": "Son of Sam ( Bonus Track )",
+          "Artist_Name": "Shinedown",
+          "Album_Name": "The Sound of Madness ( Deluxe Version )",
+          "Genre": "Rock , Music , Metal , Alternative , Grunge , Hard Rock",
+          "Price": "Album Only",
+          "CopyRight": "2008 Atlantic Recording Corp. for the United States and WEA International Inc. for the world outside of the United States",
+          "Time": "3:37",
+          "Released": "23-Jun-08"
+        },
+        "right_record": {
+          "id": 49484,
+          "Song_Name": "Her Name Is Alice ( Bonus Track )",
+          "Artist_Name": "Shinedown",
+          "Album_Name": "The Sound Of Madness [ Explicit ] [ Deluxe ]",
+          "Genre": "Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "2005 Z Records",
+          "Time": "3:38",
+          "Released": "June 24 , 2008"
+        },
+        "similarities": {
+          "syntactic": 0.644,
+          "trigram": 0.341,
+          "semantic": 0.766
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3618,
+          "Song_Name": "Money Right ( feat . Rick Ross & Brisco )",
+          "Artist_Name": "Flo Rida",
+          "Album_Name": "Mail On Sunday",
+          "Genre": "Hip-Hop/Rap , Music , Pop , Dirty South",
+          "Price": "$ 1.29",
+          "CopyRight": "2008 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States",
+          "Time": "3:16",
+          "Released": "18-Mar-08"
+        },
+        "right_record": {
+          "id": 30321,
+          "Song_Name": "Elevator ( feat . Timbaland )",
+          "Artist_Name": "Flo Rida",
+          "Album_Name": "Mail On Sunday [ Clean ]",
+          "Genre": "Rap & Hip-Hop , Southern Rap , Pop Rap",
+          "Price": "$ 1.29",
+          "CopyRight": "2013 Warner Bros. . Records Inc.",
+          "Time": "3:50",
+          "Released": "March 18 , 2008"
+        },
+        "similarities": {
+          "syntactic": 0.457,
+          "trigram": 0.14,
+          "semantic": 0.787
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1280,
+          "Song_Name": "Toyfriend ( feat . Wynter Gordon ) [ Continuous Mix Version ]",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "One Love ( Deluxe Version )",
+          "Genre": "Dance , Music",
+          "Price": "$ 1.29",
+          "CopyRight": "2010 Gum Prod licence exclusive Parlophone Music France",
+          "Time": "2:51",
+          "Released": "21-Aug-09"
+        },
+        "right_record": {
+          "id": 9941,
+          "Song_Name": "Bloody War ( Album Version ( Edited ) ) [ feat . BG ] [ Clean ]",
+          "Artist_Name": "David Banner",
+          "Album_Name": "Certified ( Edited Version )",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 0.99",
+          "CopyRight": "( C ) 2014 Island Records , a division of UMG Recordings , Inc.",
+          "Time": "4:27",
+          "Released": "September 20 , 2005"
+        },
+        "similarities": {
+          "syntactic": 0.306,
+          "trigram": 0.196,
+          "semantic": 0.682
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1267,
+          "Song_Name": "Toyfriend ( feat . Wynter Gordon ) [ Continuous Mix Version ]",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "One Love ( Deluxe Version )",
+          "Genre": "Dance , Music",
+          "Price": "$ 1.29",
+          "CopyRight": "2010 Gum Prod licence exclusive Parlophone Music France",
+          "Time": "2:51",
+          "Released": "21-Aug-09"
+        },
+        "right_record": {
+          "id": 34917,
+          "Song_Name": "Choose ( Feat . Ne-Yo & Kelly Rowland ; Continuous Mix Version )",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "One Love ( Deluxe Version )",
+          "Genre": "Dance & Electronic",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2014 Swedish House Mafia Holdings Ltd ( BVI ) under exclusive license to Virgin Records Ltd",
+          "Time": "3:16",
+          "Released": "August 21 , 2009"
+        },
+        "similarities": {
+          "syntactic": 0.624,
+          "trigram": 0.364,
+          "semantic": 0.676
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 6287,
+          "Song_Name": "Jimmy Iovine ( feat . Ab-Soul )",
+          "Artist_Name": "Macklemore & Ryan Lewis",
+          "Album_Name": "The Heist ( Deluxe Edition )",
+          "Genre": "Hip-Hop/Rap , Music , Rap , Alternative Rap , West Coast Rap",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2012 Macklemore , LLC .",
+          "Time": "3:53",
+          "Released": "1-Aug-12"
+        },
+        "right_record": {
+          "id": 47807,
+          "Song_Name": "Neon Cathedral ( feat . Allen Stone )",
+          "Artist_Name": "Macklemore & Ryan Lewis",
+          "Album_Name": "The Heist [ Clean ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Selena Garcia & Steven Gomez",
+          "Time": "4:33",
+          "Released": "October 9 , 2012"
+        },
+        "similarities": {
+          "syntactic": 0.5,
+          "trigram": 0.185,
+          "semantic": 0.858
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 16,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 6333,
+          "Song_Name": "Wind Up ( feat . Elephant Man & Opal )",
+          "Artist_Name": "Major Lazer",
+          "Album_Name": "Free the Universe ( Extended Version )",
+          "Genre": "Electronic , Music , Rock , Reggae , Modern Dancehall , Dance",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2013 Secretly Canadian / Mad Decent",
+          "Time": "4:27",
+          "Released": "18-Jun-13"
+        },
+        "right_record": {
+          "id": 18444,
+          "Song_Name": "Jah No Partial ( feat . Flux Pavilion )",
+          "Artist_Name": "Major Lazer",
+          "Album_Name": "Free the Universe",
+          "Genre": "Dance & Electronic",
+          "Price": "$ 1.29",
+          "CopyRight": "2013 Secretly Canadian / Mad Decent",
+          "Time": "4:12",
+          "Released": "April 16 , 2013"
+        },
+        "similarities": {
+          "syntactic": 0.442,
+          "trigram": 0.143,
+          "semantic": 0.801
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 11,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 5065,
+          "Song_Name": "This Is Not a Love Song",
+          "Artist_Name": "David Guetta & JD Davis",
+          "Album_Name": "Pop Life ( Extended Version ) [ Bonus Version ]",
+          "Genre": "Dance , Music , Rock , Pop , House , Electronic , Electronica , Adult Alternative",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2007 Gum Records",
+          "Time": "3:46",
+          "Released": "18-Sep-07"
+        },
+        "right_record": {
+          "id": 36955,
+          "Song_Name": "Drunk in Love [ Explicit ]",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "Pop for Your Weekend [ Explicit ]",
+          "Genre": "Dance & Electronic , House",
+          "Price": "$ 1.29",
+          "CopyRight": "2012 Blue Drum Records",
+          "Time": "5:23",
+          "Released": ""
+        },
+        "similarities": {
+          "syntactic": 0.367,
+          "trigram": 0.1,
+          "semantic": 0.87
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 17,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 5352,
+          "Song_Name": "Girion , Lord of Dale ( Extended Version )",
+          "Artist_Name": "Howard Shore",
+          "Album_Name": "The Hobbit : The Desolation of Smaug ( Original Motion Picture Soundtrack ) [ Special Edition ]",
+          "Genre": "Soundtrack , Music , Soundtrack , Classical , Original Score",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2013 WaterTower Music",
+          "Time": "4:15",
+          "Released": "10-Dec-13"
+        },
+        "right_record": {
+          "id": 30496,
+          "Song_Name": "Path of Destruction",
+          "Artist_Name": "James Newton Howard",
+          "Album_Name": "Maleficent ( Original Motion Picture Soundtrack )",
+          "Genre": "Soundtracks",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2014 Disney Enterprises , Inc.",
+          "Time": "1:48",
+          "Released": "May 27 , 2014"
+        },
+        "similarities": {
+          "syntactic": 0.361,
+          "trigram": 0.078,
+          "semantic": 0.682
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3421,
+          "Song_Name": "Remember You ( feat . The Weeknd )",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "O.N.I.F.C. ( Deluxe Version )",
+          "Genre": "Hip-Hop/Rap , Music , East Coast Rap , Hardcore Rap , Rap",
+          "Price": "$ 1.99",
+          "CopyRight": "2012 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States",
+          "Time": "5:20",
+          "Released": "4-Dec-12"
+        },
+        "right_record": {
+          "id": 34324,
+          "Song_Name": "Bluffin ( feat . Berner ) [ Explicit ]",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "O.N.I.F.C. [ Explicit ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "2012 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States",
+          "Time": "5:32",
+          "Released": "December 4 , 2012"
+        },
+        "similarities": {
+          "syntactic": 0.444,
+          "trigram": 0.172,
+          "semantic": 0.86
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 20,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2725,
+          "Song_Name": "Whateva ( feat . Monty )",
+          "Artist_Name": "Fetty Wap",
+          "Album_Name": "Fetty Wap ( Deluxe )",
+          "Genre": "Hip-Hop/Rap , Music , Rap",
+          "Price": "Album Only",
+          "CopyRight": "2015 300 Entertainment/RGF Productions",
+          "Time": "5:11",
+          "Released": ""
+        },
+        "right_record": {
+          "id": 17169,
+          "Song_Name": "My Way ( feat . Monty ) [ Explicit ]",
+          "Artist_Name": "Fetty Wap",
+          "Album_Name": "Fetty Wap ( Deluxe ) [ Explicit ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2000 Mute Records Ltd. , a BMG Company , under exclusive license to INgrooves",
+          "Time": "3:33",
+          "Released": "September 25 , 2015"
+        },
+        "similarities": {
+          "syntactic": 0.633,
+          "trigram": 0.366,
+          "semantic": 0.862
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 8,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3271,
+          "Song_Name": "Judas ( Royksopp 's 30 Pieces Remix )",
+          "Artist_Name": "Lady Gaga",
+          "Album_Name": "Born This Way ( The Remix )",
+          "Genre": "Pop , Music , Dance",
+          "Price": "Album Only",
+          "CopyRight": "2011 Interscope Records",
+          "Time": "9:18",
+          "Released": "21-Nov-11"
+        },
+        "right_record": {
+          "id": 7926,
+          "Song_Name": "Electric Chapel ( Two Door Cinema Club Remix )",
+          "Artist_Name": "Lady Gaga",
+          "Album_Name": "Born This Way - The Remix",
+          "Genre": "Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2011 Interscope Records",
+          "Time": "3:59",
+          "Released": "November 21 , 2011"
+        },
+        "similarities": {
+          "syntactic": 0.386,
+          "trigram": 0.097,
+          "semantic": 0.887
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 19,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 529,
+          "Song_Name": "The A Team ( Live )",
+          "Artist_Name": "Ed Sheeran",
+          "Album_Name": "iTunes Festival : London 2012 - EP",
+          "Genre": "Singer/Songwriter , Music",
+          "Price": "$ 1.99",
+          "CopyRight": "2012 Warner Music UK LImited",
+          "Time": "5:01",
+          "Released": "3-Sep-12"
+        },
+        "right_record": {
+          "id": 44877,
+          "Song_Name": "The A Team",
+          "Artist_Name": "Ed Sheeran",
+          "Album_Name": "The A Team ( EP )",
+          "Genre": "Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "Sam Hunt & David Kilgour / Bandit King Records",
+          "Time": "4:18",
+          "Released": "December 6 , 2011"
+        },
+        "similarities": {
+          "syntactic": 0.69,
+          "trigram": 0.471,
+          "semantic": 0.911
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 17,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 5942,
+          "Song_Name": "In God 's Hands ( feat . Keith Urban )",
+          "Artist_Name": "Nelly Furtado & Keith Urban",
+          "Album_Name": "The Best of Nelly Furtado ( Deluxe Version )",
+          "Genre": "Pop , Music , Rock , Vocal , Adult Alternative , Singer/Songwriter , Contemporary Singer/Songwriter",
+          "Price": "$ 0.99",
+          "CopyRight": "\u2030 \u00e3\u00d1 2010 Geffen Records",
+          "Time": "4:34",
+          "Released": "16-Nov-10"
+        },
+        "right_record": {
+          "id": 29264,
+          "Song_Name": "Te Busque ( Full Spanish Version ) [ feat . Juanes ]",
+          "Artist_Name": "Nelly Furtado",
+          "Album_Name": "Loose ( US version )",
+          "Genre": "Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2006 Geffen Records",
+          "Time": "3:38",
+          "Released": "June 20 , 2006"
+        },
+        "similarities": {
+          "syntactic": 0.356,
+          "trigram": 0.117,
+          "semantic": 0.665
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 60,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1552,
+          "Song_Name": "Second Chance ( Live Acoustic from Kansas City )",
+          "Artist_Name": "Shinedown",
+          "Album_Name": "Somewhere In the Stratosphere ( Live )",
+          "Genre": "Rock , Music , Metal , Alternative , Hard Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "2011 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States .",
+          "Time": "5:06",
+          "Released": "18-Apr-11"
+        },
+        "right_record": {
+          "id": 50063,
+          "Song_Name": "Miracle ( The Live Room )",
+          "Artist_Name": "Shinedown",
+          "Album_Name": "The Warner Sound Live Room EP",
+          "Genre": "Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "2013 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States",
+          "Time": "3:35",
+          "Released": "May 28 , 2013"
+        },
+        "similarities": {
+          "syntactic": 0.411,
+          "trigram": 0.113,
+          "semantic": 0.835
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2720,
+          "Song_Name": "Whateva ( feat . Monty )",
+          "Artist_Name": "Fetty Wap",
+          "Album_Name": "Fetty Wap ( Deluxe )",
+          "Genre": "Hip-Hop/Rap , Music , Rap",
+          "Price": "Album Only",
+          "CopyRight": "2015 300 Entertainment/RGF Productions",
+          "Time": "5:11",
+          "Released": ""
+        },
+        "right_record": {
+          "id": 17143,
+          "Song_Name": "How We Do Things ( feat . Monty ) [ Clean ]",
+          "Artist_Name": "Fetty Wap",
+          "Album_Name": "Fetty Wap ( Deluxe ) [ Clean ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2000 Mute Records Ltd. , a BMG Company , under exclusive license to INgrooves",
+          "Time": "3:31",
+          "Released": "September 25 , 2015"
+        },
+        "similarities": {
+          "syntactic": 0.567,
+          "trigram": 0.312,
+          "semantic": 0.829
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 29,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 347,
+          "Song_Name": "All My Love ( feat . Ariana Grande & Machel Montano ) [ Remix ]",
+          "Artist_Name": "Major Lazer",
+          "Album_Name": "Peace Is The Mission",
+          "Genre": "Electronic , Music , Reggae , Modern Dancehall , Dance",
+          "Price": "$ 1.29",
+          "CopyRight": "2015 Mad Decent",
+          "Time": "3:49",
+          "Released": "1-Jun-15"
+        },
+        "right_record": {
+          "id": 35883,
+          "Song_Name": "Be Together ( feat . Wild Belle )",
+          "Artist_Name": "Major Lazer",
+          "Album_Name": "Peace Is The Mission [ Explicit ]",
+          "Genre": "Dance & Electronic",
+          "Price": "$ 1.29",
+          "CopyRight": "2015 Mad Decent",
+          "Time": "3:53",
+          "Released": "June 1 , 2015"
+        },
+        "similarities": {
+          "syntactic": 0.375,
+          "trigram": 0.096,
+          "semantic": 0.826
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1274,
+          "Song_Name": "Toyfriend ( feat . Wynter Gordon ) [ Continuous Mix Version ]",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "One Love ( Deluxe Version )",
+          "Genre": "Dance , Music",
+          "Price": "$ 1.29",
+          "CopyRight": "2010 Gum Prod licence exclusive Parlophone Music France",
+          "Time": "2:51",
+          "Released": "21-Aug-09"
+        },
+        "right_record": {
+          "id": 9947,
+          "Song_Name": "Crossroads ( Album Version ( Edited ) ) [ feat . Grout ] [ Clean ]",
+          "Artist_Name": "David Banner",
+          "Album_Name": "Certified ( Edited Version )",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 0.99",
+          "CopyRight": "( C ) 2014 Island Records , a division of UMG Recordings , Inc.",
+          "Time": "3:45",
+          "Released": "September 20 , 2005"
+        },
+        "similarities": {
+          "syntactic": 0.299,
+          "trigram": 0.19,
+          "semantic": 0.713
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1155,
+          "Song_Name": "Dangerous ( feat . Sam Martin ) [ Robin Schulz Remix ] [ Radio Edit ]",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "Listen ( Deluxe Version )",
+          "Genre": "Dance , Music , Rock , House , Electronic , French Pop",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 What A Music Ltd. under exclusive license to Parlophone/Warner Music France , under exclusive license to Atlantic Recording Corporation for the United States . All rights reserved .",
+          "Time": "3:20",
+          "Released": "24-Nov-14"
+        },
+        "right_record": {
+          "id": 31282,
+          "Song_Name": "Fast Life ( Album Version ( Explicit ) ) [ feat . AX ] [ Explicit ]",
+          "Artist_Name": "David Banner",
+          "Album_Name": "Mississippi-The Album ( Explicit Version )",
+          "Genre": "Pop",
+          "Price": "$ 0.99",
+          "CopyRight": "( C ) 2003 Universal Records , a Division of UMG Recordings , Inc.",
+          "Time": "4:52",
+          "Released": "May 20 , 2003"
+        },
+        "similarities": {
+          "syntactic": 0.382,
+          "trigram": 0.146,
+          "semantic": 0.644
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 5088,
+          "Song_Name": "Help Me Lose My Mind ( feat . London Grammar )",
+          "Artist_Name": "Disclosure",
+          "Album_Name": "Settle ( Deluxe Version )",
+          "Genre": "Electronic , Music",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2014 Universal Island Records , a division of Universal Music Operations Limited",
+          "Time": "4:04",
+          "Released": "15-Apr-14"
+        },
+        "right_record": {
+          "id": 9508,
+          "Song_Name": "Moving Mountains [ feat . Brendan Reilly ]",
+          "Artist_Name": "Disclosure",
+          "Album_Name": "Caracal ( Deluxe )",
+          "Genre": "Electronica , Dance & Electronic",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2015 Island Records , a division of Universal Music Operations Limited",
+          "Time": "5:36",
+          "Released": "September 25 , 2015"
+        },
+        "similarities": {
+          "syntactic": 0.455,
+          "trigram": 0.078,
+          "semantic": 0.728
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3319,
+          "Song_Name": "Remember You ( feat . The Weeknd )",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "O.N.I.F.C. ( Deluxe Version )",
+          "Genre": "Hip-Hop/Rap , Music , Hardcore Rap , East Coast Rap , Rap",
+          "Price": "$ 1.99",
+          "CopyRight": "2012 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States",
+          "Time": "5:20",
+          "Released": "4-Dec-12"
+        },
+        "right_record": {
+          "id": 34342,
+          "Song_Name": "Let It Go ( feat . Akon ) [ Explicit ]",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "O.N.I.F.C. [ Explicit ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "2012 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States",
+          "Time": "4:18",
+          "Released": "December 4 , 2012"
+        },
+        "similarities": {
+          "syntactic": 0.472,
+          "trigram": 0.136,
+          "semantic": 0.83
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 50,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1437,
+          "Song_Name": "Fake ( Demo )",
+          "Artist_Name": "Shinedown",
+          "Album_Name": "Us and Them ( Deluxe Version )",
+          "Genre": "Rock , Music , Metal , Hard Rock , Alternative",
+          "Price": "$ 1.29",
+          "CopyRight": "2009 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States .",
+          "Time": "5:05",
+          "Released": "4-Oct-05"
+        },
+        "right_record": {
+          "id": 52937,
+          "Song_Name": "Fake",
+          "Artist_Name": "Shinedown",
+          "Album_Name": "Us And Them",
+          "Genre": "Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "2015 Real Sounds",
+          "Time": "4:01",
+          "Released": "October 4 , 2005"
+        },
+        "similarities": {
+          "syntactic": 0.471,
+          "trigram": 0.182,
+          "semantic": 0.91
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 6524,
+          "Song_Name": "Talkin ' 2 Myself ( feat . Kobe )",
+          "Artist_Name": "Eminem",
+          "Album_Name": "Recovery ( Deluxe Edition )",
+          "Genre": "Hip-Hop/Rap , Music , Rock , Hardcore Rap , Rap",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2010 Aftermath Records",
+          "Time": "5:00",
+          "Released": "21-Jun-10"
+        },
+        "right_record": {
+          "id": 38300,
+          "Song_Name": "No Love [ feat . Lil Wayne ] [ Explicit ]",
+          "Artist_Name": "Eminem",
+          "Album_Name": "Recovery ( Amazon Version ) [ Explicit ] [ + video ] [ + digital booklet ]",
+          "Genre": "Gangsta & Hardcore , Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "( C ) 2010 Aftermath Records",
+          "Time": "4:59",
+          "Released": "June 21 , 2010"
+        },
+        "similarities": {
+          "syntactic": 0.324,
+          "trigram": 0.095,
+          "semantic": 0.818
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 5349,
+          "Song_Name": "The Nature of Evil",
+          "Artist_Name": "Howard Shore",
+          "Album_Name": "The Hobbit : The Desolation of Smaug ( Original Motion Picture Soundtrack ) [ Special Edition ]",
+          "Genre": "Soundtrack , Music , Soundtrack , Classical , Original Score",
+          "Price": "$ 1.29",
+          "CopyRight": "\u2030 \u00e3\u00d1 2013 WaterTower Music",
+          "Time": "3:20",
+          "Released": "10-Dec-13"
+        },
+        "right_record": {
+          "id": 47893,
+          "Song_Name": "Bard , a Man of Lake-town ( Extended Version )",
+          "Artist_Name": "Howard Shore",
+          "Album_Name": "The Hobbit : The Desolation of Smaug ( Original Motion Picture Soundtrack ) [ Special Edition ]",
+          "Genre": "Soundtracks",
+          "Price": "$ 1.29",
+          "CopyRight": "2013 WaterTower Music / Warner Bros. . Entertainment / Metro - Goldwyn Mayer Pictures Inc.",
+          "Time": "3:18",
+          "Released": "December 10 , 2013"
+        },
+        "similarities": {
+          "syntactic": 0.281,
+          "trigram": 0.034,
+          "semantic": 0.844
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 29,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2064,
+          "Song_Name": "Let Go",
+          "Artist_Name": "Ryan Adams",
+          "Album_Name": "Ryan Adams",
+          "Genre": "Rock , Music , Singer/Songwriter , Contemporary Singer/Songwriter , Adult Alternative , Country , Alternative Country , Americana",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 PaxAmericana Recording Company Under Exclusive License To Blue Note Records .",
+          "Time": "3:43",
+          "Released": "9-Sep-14"
+        },
+        "right_record": {
+          "id": 45391,
+          "Song_Name": "Let Us Worship Him",
+          "Artist_Name": "Yolanda Adams",
+          "Album_Name": "The Best Of Yolanda Adams",
+          "Genre": "Gospel , Christian",
+          "Price": "$ 0.99",
+          "CopyRight": "( C ) 2004 Universal International Music BV",
+          "Time": "3:37",
+          "Released": "January 1 , 1990"
+        },
+        "similarities": {
+          "syntactic": 0.417,
+          "trigram": 0.111,
+          "semantic": 0.717
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1616,
+          "Song_Name": "Fly from the Inside ( Live Acoustic from WXDX , Pittsburgh )",
+          "Artist_Name": "Shinedown",
+          "Album_Name": "Leave a Whisper ( Deluxe Version )",
+          "Genre": "Rock , Music , Hard Rock , Alternative",
+          "Price": "$ 1.29",
+          "CopyRight": "2009 Atlantic Recording Corporation for the United States and WEA International for the world outside of the United States",
+          "Time": "3:59",
+          "Released": "27-May-03"
+        },
+        "right_record": {
+          "id": 27519,
+          "Song_Name": "Fly From The Inside",
+          "Artist_Name": "Shinedown",
+          "Album_Name": "Leave A Whisper",
+          "Genre": "Rock",
+          "Price": "$ 1.29",
+          "CopyRight": "2015 Mad Decent",
+          "Time": "3:55",
+          "Released": "May 27 , 2003"
+        },
+        "similarities": {
+          "syntactic": 0.481,
+          "trigram": 0.315,
+          "semantic": 0.845
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1270,
+          "Song_Name": "Toyfriend ( feat . Wynter Gordon ) [ Continuous Mix Version ]",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "One Love ( Deluxe Version )",
+          "Genre": "Dance , Music",
+          "Price": "$ 1.29",
+          "CopyRight": "2010 Gum Prod licence exclusive Parlophone Music France",
+          "Time": "2:51",
+          "Released": "21-Aug-09"
+        },
+        "right_record": {
+          "id": 27984,
+          "Song_Name": "Bang my Head ( feat . Sia )",
+          "Artist_Name": "David Guetta",
+          "Album_Name": "Listen ( Deluxe )",
+          "Genre": "Dance & Electronic",
+          "Price": "$ 1.29",
+          "CopyRight": "2015 If Moving Your Mine",
+          "Time": "3:53",
+          "Released": "November 24 , 2014"
+        },
+        "similarities": {
+          "syntactic": 0.341,
+          "trigram": 0.122,
+          "semantic": 0.676
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3459,
+          "Song_Name": "Remember You ( feat . The Weeknd )",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "O.N.I.F.C. ( Deluxe Version )",
+          "Genre": "Hip-Hop/Rap , Music , Hardcore Rap , East Coast Rap , Rap",
+          "Price": "$ 1.99",
+          "CopyRight": "2012 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States",
+          "Time": "5:20",
+          "Released": "4-Dec-12"
+        },
+        "right_record": {
+          "id": 34324,
+          "Song_Name": "Bluffin ( feat . Berner ) [ Explicit ]",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "O.N.I.F.C. [ Explicit ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "2012 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States",
+          "Time": "5:32",
+          "Released": "December 4 , 2012"
+        },
+        "similarities": {
+          "syntactic": 0.444,
+          "trigram": 0.172,
+          "semantic": 0.859
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 22,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3350,
+          "Song_Name": "Remember You ( feat . The Weeknd )",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "O.N.I.F.C. ( Deluxe Version )",
+          "Genre": "Hip-Hop/Rap , Music , Hardcore Rap , East Coast Rap , Rap",
+          "Price": "$ 1.99",
+          "CopyRight": "2012 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States",
+          "Time": "5:20",
+          "Released": "4-Dec-12"
+        },
+        "right_record": {
+          "id": 7388,
+          "Song_Name": "You And Your Friends ( feat . Snoop Dogg & Ty Dolla $ ign ) [ Explicit ]",
+          "Artist_Name": "Wiz Khalifa",
+          "Album_Name": "Blacc Hollywood ( Deluxe ) [ Explicit ]",
+          "Genre": "Rap & Hip-Hop",
+          "Price": "$ 1.29",
+          "CopyRight": "2014 Atlantic Recording Corporation for the United States and WEA International Inc. for the world outside of the United States . A Warner Music Group Company",
+          "Time": "3:06",
+          "Released": "August 19 , 2014"
+        },
+        "similarities": {
+          "syntactic": 0.358,
+          "trigram": 0.136,
+          "semantic": 0.758
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      }
+    ]
+  },
+  "dataset_characteristics": {
+    "table_a_size": 6907,
+    "table_b_size": 55923,
+    "field_names": [
+      "Song_Name",
+      "Artist_Name",
+      "Album_Name",
+      "Genre",
+      "Price",
+      "CopyRight",
+      "Time",
+      "Released"
+    ],
+    "sample_records": [
+      {
+        "id": 0,
+        "Song_Name": "Runaway Train",
+        "Artist_Name": "Cam",
+        "Album_Name": "Welcome to Cam Country - EP",
+        "Genre": "Country , Music , Contemporary Country , Honky Tonk",
+        "Price": "$ 0.99",
+        "CopyRight": "2015 Sony Music Entertainment",
+        "Time": "3:01",
+        "Released": "31-Mar-15"
+      },
+      {
+        "id": 1,
+        "Song_Name": "Track 14",
+        "Artist_Name": "Omi",
+        "Album_Name": "Me 4 U",
+        "Genre": "Pop/Rock , Music , Pop , Dance , R&B / Soul",
+        "Price": "Album Only",
+        "CopyRight": "2015 Ultra Records , LLC under exclusive license to Columbia Records , a Division of Sony Music Entertainment",
+        "Time": "3:41",
+        "Released": ""
+      },
+      {
+        "id": 2,
+        "Song_Name": "Lips Are Movin",
+        "Artist_Name": "Meghan Trainor",
+        "Album_Name": "Title",
+        "Genre": "Pop , Music , Pop/Rock , Dance , Rock , Teen Pop",
+        "Price": "$ 1.29",
+        "CopyRight": "2014 , 2015 Epic Records , a division of Sony Music Entertainment",
+        "Time": "3:01",
+        "Released": "9-Jan-15"
+      }
+    ]
+  }
+}

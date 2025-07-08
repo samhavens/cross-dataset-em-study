@@ -1,54 +1,57 @@
 {
-  "timestamp": "2025-07-05T15:55:48.712545",
+  "timestamp": "2025-07-07T17:34:14.307844",
   "dataset": "beer",
   "pipeline_version": "complete_v3_working_rules",
   "dev_results": {
-    "f1": 0.8823529411764706,
-    "precision": 0.9375,
-    "recall": 0.8333333333333334,
-    "cost_usd": 0.31668820000000003,
-    "processing_time": 190.13212084770203
+    "f1": 0.8571428571428571,
+    "precision": 0.8571428571428571,
+    "recall": 0.8571428571428571,
+    "cost_usd": 0.0155238,
+    "processing_time": 158.93998885154724
   },
   "optimal_params": {
-    "max_candidates": 300,
-    "semantic_weight": 0.8,
+    "max_candidates": 10,
+    "semantic_weight": 0.15,
     "model": "gpt-4.1-nano",
     "use_semantic": true
   },
   "heuristics_file": "results/generated_rules/beer_generated_heuristics.json",
   "rule_generation": "claude_sdk_success",
-  "rule_optimization": "claude_sdk_success",
-  "optimized_heuristics_file": "results/generated_rules/beer_generated_heuristics_optimized.json",
   "baseline_results": {
-    "f1": 0.8999999999999999,
-    "precision": 0.9642857142857143,
-    "recall": 0.84375,
-    "cost_usd": 1.2668432,
-    "processing_time": 47.887603998184204
+    "f1": 0.9333333333333333,
+    "precision": 0.875,
+    "recall": 1.0,
+    "cost_usd": 0.031204799999999998,
+    "processing_time": 14.874008178710938
   },
   "enhanced_results": {
-    "f1": 0.8,
-    "precision": 0.9565217391304348,
-    "recall": 0.6875,
-    "cost_usd": 0.02576,
-    "processing_time": 542.3381927013397,
-    "early_decisions": 9,
-    "llm_calls": 191,
-    "llm_call_reduction": 4.5000000000000036
+    "f1": 0.8333333333333333,
+    "precision": 1.0,
+    "recall": 0.7142857142857143,
+    "cost_usd": 0.009436,
+    "processing_time": 30.3831148147583,
+    "early_decisions": 21,
+    "llm_calls": 70,
+    "llm_call_reduction": 23.076923076923073
   },
   "ab_comparison": {
-    "f1_improvement": -0.09999999999999987,
-    "cost_change": -1.2410832,
+    "f1_improvement": -0.10000000000000009,
+    "cost_change": -0.021768799999999998,
     "rules_helped": false
   },
   "summary": {
-    "dev_f1": 0.8823529411764706,
-    "baseline_f1": 0.8999999999999999,
-    "enhanced_f1": 0.8,
-    "f1_improvement": -0.09999999999999987,
-    "total_cost_usd": 1.6092914,
-    "total_time_seconds": 780.357917547226,
-    "beat_leaderboard": false,
+    "dev_f1": 0.8571428571428571,
+    "baseline_f1": 0.9333333333333333,
+    "enhanced_f1": 0.8333333333333333,
+    "f1_improvement": -0.10000000000000009,
+    "total_cost_usd": 0.79035995,
+    "rule_generation_cost_usd": 0.73419535,
+    "rule_generation_method": "agentic",
+    "total_time_seconds": 204.19711184501648,
+    "beat_leaderboard": true,
     "leaderboard_target": 91.2
+  },
+  "failure_analysis": {
+    "failure_analysis": "No predictions available for failure analysis"
   }
 }

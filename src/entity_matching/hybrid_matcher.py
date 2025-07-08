@@ -1,23 +1,36 @@
 #!/usr/bin/env python
-import argparse, json, pathlib, textwrap, asyncio, datetime, time, os
-from typing import List, Dict, Optional
-import pandas as pd
-from .clustering import MODEL_COSTS
-from .heuristic_engine import HeuristicEngine, load_heuristics_for_dataset
-import tiktoken
-from tqdm.asyncio import tqdm
-from openai import AsyncOpenAI
-import numpy as np
+import argparse
+import asyncio
+import datetime
+import json
+import os
+import pathlib
 import pickle
-import hashlib
+import textwrap
+import time
+
+from typing import Dict, List, Optional, Union
+
+import numpy as np
+import pandas as pd
+import tiktoken
+
+from tqdm import tqdm
+
+from openai import AsyncOpenAI
+
+from .constants import MODEL_COSTS
+from .heuristic_engine import load_heuristics_for_dataset
 
 # Try to import sentence transformers for semantic similarity
 try:
     from sentence_transformers import SentenceTransformer
+
     SEMANTIC_AVAILABLE = True
 except ImportError:
     SEMANTIC_AVAILABLE = False
     print("Warning: sentence-transformers not available. Install with: pip install sentence-transformers")
+
 
 # Configuration
 class Config:
@@ -36,6 +49,7 @@ class Config:
         self.heuristic_file = None  # Path to heuristics file
         self.embeddings = None  # Cached embeddings for the dataset
 
+
 # Token counting
 def token_count(text: str, model: str = "gpt-4o-mini") -> int:
     """Count tokens using tiktoken"""
@@ -46,38 +60,41 @@ def token_count(text: str, model: str = "gpt-4o-mini") -> int:
         # Fallback estimation
         return len(text.split()) * 1.3
 
+
 def report_cost(cfg: Config):
     """Report total cost and token usage"""
     try:
         input_cost_per_1k, output_cost_per_1k = MODEL_COSTS[cfg.model]
     except KeyError:
         print(f"WARNING: Model {cfg.model} not found in MODEL_COSTS. Using gpt-4.1-mini instead.")
-        input_cost_per_1k, output_cost_per_1k = MODEL_COSTS['gpt-4.1-mini']
+        input_cost_per_1k, output_cost_per_1k = MODEL_COSTS["gpt-4.1-mini"]
 
     input_cost = (cfg.total_input_tokens / 1_000_000) * input_cost_per_1k
     output_cost = (cfg.total_output_tokens / 1_000_000) * output_cost_per_1k
     total_cost = input_cost + output_cost
 
-    print(f"≈{cfg.total_input_tokens/1000:.1f}K in, {cfg.total_output_tokens/1000:.1f}K out → ${total_cost:.3f}")
+    print(f"≈{cfg.total_input_tokens / 1000:.1f}K in, {cfg.total_output_tokens / 1000:.1f}K out → ${total_cost:.3f}")
+
 
 MAX = 1_000_000  # token limit for the matching prompt
+
 
 async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> str:
     """Make async call to OpenAI API"""
     try:
         # o3/o4 models use max_completion_tokens instead of max_tokens and don't support temperature=0
-        if cfg.model.startswith(('o3', 'o4')):
+        if cfg.model.startswith(("o3", "o4")):
             response = await client.chat.completions.create(
                 model=cfg.model,
                 messages=[{"role": "user", "content": prompt}],
-                max_completion_tokens=max(cfg.max_tokens, 1000)  # Give o4 models more tokens
+                max_completion_tokens=max(cfg.max_tokens, 1000),  # Give o4 models more tokens
             )
         else:
             response = await client.chat.completions.create(
                 model=cfg.model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=cfg.temperature,
-                max_tokens=cfg.max_tokens
+                max_tokens=cfg.max_tokens,
             )
 
         # Track usage
@@ -90,22 +107,32 @@ async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> st
             print(f"  WARNING: Empty response from OpenAI API for model {cfg.model}")
             print(f"  Response object: {response}")
             return ""
-        
+
         result = content.strip()
-        if cfg.model.startswith(('o3', 'o4')) and not result:
+        if cfg.model.startswith(("o3", "o4")) and not result:
             print(f"  WARNING: o4 model returned empty string. Raw content: '{content}'")
-        
+
         return result
 
     except Exception as e:
         print(f"OpenAI API error: {e}")
         return ""
 
+
+def syntactic_similarity(s1: str, s2: str) -> float:
+    """Calculate syntactic similarity using difflib.SequenceMatcher"""
+    from difflib import SequenceMatcher
+    if not s1 or not s2:
+        return 0.0
+    return SequenceMatcher(None, s1.lower(), s2.lower()).ratio()
+
+
 def trigram_similarity(s1: str, s2: str) -> float:
     """Calculate trigram similarity between two strings"""
+
     def get_trigrams(s):
         s = s.lower()
-        return set(s[i:i+3] for i in range(len(s)-2))
+        return {s[i : i + 3] for i in range(len(s) - 2)}
 
     t1, t2 = get_trigrams(s1), get_trigrams(s2)
     if not t1 and not t2:
@@ -114,77 +141,81 @@ def trigram_similarity(s1: str, s2: str) -> float:
         return 0.0
     return len(t1 & t2) / len(t1 | t2)
 
+
 def get_semantic_model(cfg: Config):
     """Get or initialize the semantic similarity model"""
     if not SEMANTIC_AVAILABLE:
         return None
-    
+
     if cfg.semantic_model is None:
         print("Loading semantic similarity model (first time only)...")
-        cfg.semantic_model = SentenceTransformer('all-MiniLM-L6-v2')
-    
+        cfg.semantic_model = SentenceTransformer("all-MiniLM-L6-v2")
+
     return cfg.semantic_model
+
 
 def get_heuristic_engine(cfg: Config, dataset: str):
     """Get or initialize the heuristic engine"""
     if not cfg.use_heuristics:
         return None
-    
+
     if cfg.heuristic_engine is None:
         print("Loading heuristic engine (first time only)...")
         cfg.heuristic_engine = load_heuristics_for_dataset(dataset, cfg.heuristic_file)
-        
+
         if cfg.heuristic_engine.rules:
             print(f"Loaded {len(cfg.heuristic_engine.rules)} heuristic rules for {dataset}")
         else:
             print("No heuristic rules loaded - continuing without heuristics")
             cfg.use_heuristics = False
-    
+
     return cfg.heuristic_engine
+
 
 def get_embeddings_cache_path(dataset: str) -> pathlib.Path:
     """Get path for embeddings cache file"""
-    cache_dir = pathlib.Path('.embeddings_cache')
+    cache_dir = pathlib.Path(".embeddings_cache")
     cache_dir.mkdir(exist_ok=True)
     return cache_dir / f"{dataset}_embeddings.pkl"
+
 
 def compute_dataset_embeddings(dataset: str, cfg: Config) -> Dict[str, np.ndarray]:
     """Compute and cache embeddings for entire dataset"""
     cache_path = get_embeddings_cache_path(dataset)
-    
+
     # Check if cache exists
     if cache_path.exists():
         print(f"📁 Loading cached embeddings from {cache_path}")
         try:
-            with open(cache_path, 'rb') as f:
+            with open(cache_path, "rb") as f:
                 return pickle.load(f)
         except Exception as e:
             print(f"⚠️ Cache load failed: {e}, recomputing...")
-    
+
     print(f"🧮 Computing embeddings for {dataset} (this may take a few minutes)...")
-    
+
     model = get_semantic_model(cfg)
     if model is None:
         return {}
-    
+
     # Load dataset
-    root = pathlib.Path('data') / 'raw' / dataset
-    A_df = pd.read_csv(root / 'tableA.csv')
-    B_df = pd.read_csv(root / 'tableB.csv')
-    
+    root = pathlib.Path("data") / "raw" / dataset
+    A_df = pd.read_csv(root / "tableA.csv")
+    B_df = pd.read_csv(root / "tableB.csv")
+
     embeddings = {}
-    
+
     # Convert records to strings and compute embeddings
     print(f"🔄 Computing embeddings for {len(A_df)} records in tableA...")
     A_strings = [json.dumps(row.to_dict(), ensure_ascii=False).lower() for _, row in A_df.iterrows()]
     A_embeddings = model.encode(A_strings, show_progress_bar=True, batch_size=32)
-    
-    print(f"🔄 Computing embeddings for {len(B_df)} records in tableB...")  
+
+    print(f"🔄 Computing embeddings for {len(B_df)} records in tableB...")
     B_strings = [json.dumps(row.to_dict(), ensure_ascii=False).lower() for _, row in B_df.iterrows()]
     B_embeddings = model.encode(B_strings, show_progress_bar=True, batch_size=32)
-    
+
     # Store with proper ID mapping
-    if 'id' in A_df.columns:
+    if "id" in A_df.columns:
         # Use actual IDs
         for i, (_, row) in enumerate(A_df.iterrows()):
             embeddings[f"A_{row['id']}"] = A_embeddings[i]
@@ -196,77 +227,267 @@ def compute_dataset_embeddings(dataset: str, cfg: Config) -> Dict[str, np.ndarra
             embeddings[f"A_{i}"] = A_embeddings[i]
         for i in range(len(B_df)):
             embeddings[f"B_{i}"] = B_embeddings[i]
-    
+
     # Cache the embeddings
     print(f"💾 Caching embeddings to {cache_path}")
-    with open(cache_path, 'wb') as f:
+    with open(cache_path, "wb") as f:
         pickle.dump(embeddings, f)
-    
+
     print(f"✅ Embeddings computed and cached for {len(embeddings)} records")
     return embeddings
+
 
 def semantic_similarity_cached(left_record: dict, right_record: dict, embeddings: Dict[str, np.ndarray]) -> float:
     """Calculate semantic similarity using cached embeddings"""
     try:
         # Get record IDs
-        left_id = left_record.get('id', 0)
-        right_id = right_record.get('id', 0) 
-        
+        left_id = left_record.get("id", 0)
+        right_id = right_record.get("id", 0)
+
         left_key = f"A_{left_id}"
         right_key = f"B_{right_id}"
-        
+
         if left_key not in embeddings or right_key not in embeddings:
             return 0.0
-        
+
         left_emb = embeddings[left_key]
         right_emb = embeddings[right_key]
-        
+
         # Calculate cosine similarity
-        cos_sim = np.dot(left_emb, right_emb) / (
-            np.linalg.norm(left_emb) * np.linalg.norm(right_emb)
-        )
+        cos_sim = np.dot(left_emb, right_emb) / (np.linalg.norm(left_emb) * np.linalg.norm(right_emb))
         return float(cos_sim)
     except Exception as e:
         print(f"Warning: Cached semantic similarity calculation failed: {e}")
         return 0.0
 
+
 def semantic_similarity(s1: str, s2: str, cfg: Config) -> float:
     """Calculate semantic similarity using sentence transformers (fallback for non-cached)"""
     if not SEMANTIC_AVAILABLE or not cfg.use_semantic:
         return 0.0
-    
+
     model = get_semantic_model(cfg)
     if model is None:
         return 0.0
-    
+
     try:
         embeddings = model.encode([s1, s2])
         # Calculate cosine similarity
-        cos_sim = np.dot(embeddings[0], embeddings[1]) / (
-            np.linalg.norm(embeddings[0]) * np.linalg.norm(embeddings[1])
-        )
+        cos_sim = np.dot(embeddings[0], embeddings[1]) / (np.linalg.norm(embeddings[0]) * np.linalg.norm(embeddings[1]))
         return float(cos_sim)
     except Exception as e:
         print(f"Warning: Semantic similarity calculation failed: {e}")
         return 0.0
 
+
 def combined_similarity(s1: str, s2: str, cfg: Config) -> float:
     """Calculate combined trigram + semantic similarity"""
     trigram_score = trigram_similarity(s1, s2)
-    
+
     if not cfg.use_semantic or not SEMANTIC_AVAILABLE:
         return trigram_score
-    
-    semantic_score = semantic_similarity(s1, s2, cfg)
-    
-    # Weighted combination
-    combined = (1 - cfg.semantic_weight) * trigram_score + cfg.semantic_weight * semantic_score
-    return combined
 
-def get_top_candidates(left_record: dict, right_records, max_candidates: int, cfg: Config, dataset: str = None) -> List[tuple]:
+    semantic_score = semantic_similarity(s1, s2, cfg)
+
+    # Weighted combination
+    return (1 - cfg.semantic_weight) * trigram_score + cfg.semantic_weight * semantic_score
+
+
+class CandidateCache:
+    """Pre-computed cache for expensive candidate operations"""
+
+    def __init__(self, right_records: Union[List[dict], Dict[int, dict]]):
+        """Pre-compute all expensive operations on right records"""
+        print("🔄 Building candidate cache...")
+
+        self.right_records = right_records
+        self.json_strings = {}  # id -> json string
+        self.trigram_sets = {}  # id -> trigram set
+        self.is_dict_access = isinstance(right_records, dict)
+
+        # Pre-compute JSON strings and trigram sets
+        if self.is_dict_access:
+            # Dict access (ID-based)
+            for record_id, record in tqdm(right_records.items(), desc="Caching records"):
+                json_str = json.dumps(record, ensure_ascii=False).lower()
+                self.json_strings[record_id] = json_str
+                self.trigram_sets[record_id] = self._get_trigrams(json_str)
+        else:
+            # List access (index-based)
+            for i, record in tqdm(enumerate(right_records), desc="Caching records"):
+                json_str = json.dumps(record, ensure_ascii=False).lower()
+                self.json_strings[i] = json_str
+                self.trigram_sets[i] = self._get_trigrams(json_str)
+
+        print(f"✅ Cached {len(self.json_strings)} records")
+
+    def _get_trigrams(self, s: str) -> set:
+        """Get trigram set for a string"""
+        if len(s) < 3:
+            return {s}
+        return {s[i : i + 3] for i in range(len(s) - 2)}
+
+    def compute_trigram_similarity(self, left_str: str, right_id: Union[int, str]) -> float:
+        """Fast trigram similarity using pre-computed trigrams"""
+        left_trigrams = self._get_trigrams(left_str)
+        right_trigrams = self.trigram_sets[right_id]
+
+        if not left_trigrams and not right_trigrams:
+            return 1.0
+        if not left_trigrams or not right_trigrams:
+            return 0.0
+
+        intersection = len(left_trigrams & right_trigrams)
+        union = len(left_trigrams | right_trigrams)
+        return intersection / union if union > 0 else 0.0
+
+    def get_record(self, record_id: Union[int, str]) -> dict:
+        """Get record by ID"""
+        if self.is_dict_access:
+            return self.right_records[record_id]
+        return self.right_records[record_id]
+
+    def get_json_string(self, record_id: Union[int, str]) -> str:
+        """Get pre-computed JSON string"""
+        return self.json_strings[record_id]
+
+    def get_all_ids(self) -> List[Union[int, str]]:
+        """Get all record IDs"""
+        if self.is_dict_access:
+            return list(self.right_records.keys())
+        return list(range(len(self.right_records)))
+
+
+def get_top_candidates_cached(
+    left_record: dict, candidate_cache: CandidateCache, max_candidates: int, cfg: Config, dataset: str = None
+) -> List[tuple]:
+    """FAST get_top_candidates using pre-computed cache"""
+    left_str = json.dumps(left_record, ensure_ascii=False).lower()
+
+    # Get heuristic engine if enabled
+    heuristic_engine = get_heuristic_engine(cfg, dataset) if dataset else None
+
+    # Fast scoring using pre-computed values
+    if cfg.use_semantic and SEMANTIC_AVAILABLE:
+        # First pass: Fast trigram scoring with 3x candidates for semantic reranking
+        trigram_candidates = max_candidates * 3
+        trigram_scores = []
+
+        for record_id in candidate_cache.get_all_ids():
+            # Ultra-fast trigram similarity using pre-computed trigrams
+            score = candidate_cache.compute_trigram_similarity(left_str, record_id)
+
+            # Apply heuristics if enabled (this is still expensive but unavoidable)
+            if heuristic_engine:
+                try:
+                    record = candidate_cache.get_record(record_id)
+                    candidate_action = heuristic_engine.apply_stage_heuristics(
+                        "candidate_generation", left_record, record
+                    )
+                    if candidate_action and hasattr(candidate_action, "similarity_boost"):
+                        score += candidate_action.similarity_boost * candidate_action.confidence
+                        score = min(score, 1.0)
+                except Exception:
+                    pass
+
+            trigram_scores.append((score, record_id))
+
+        # Sort and take top candidates for semantic reranking
+        trigram_scores.sort(key=lambda x: x[0], reverse=True)
+        top_candidates = trigram_scores[:trigram_candidates]
+
+        # Second pass: Semantic similarity with cached embeddings
+        if cfg.embeddings is not None:
+            try:
+                candidates = []
+                for trigram_score, record_id in top_candidates:
+                    record = candidate_cache.get_record(record_id)
+                    semantic_score = semantic_similarity_cached(left_record, record, cfg.embeddings)
+
+                    # Weighted combination
+                    combined_score = (1 - cfg.semantic_weight) * trigram_score + cfg.semantic_weight * semantic_score
+
+                    # Apply heuristics if enabled
+                    if heuristic_engine:
+                        try:
+                            heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, record)
+                            combined_score += heuristic_adjustment
+                        except Exception:
+                            pass
+
+                    candidates.append((combined_score, record_id, record))
+
+            except Exception as e:
+                print(f"Warning: Semantic similarity failed, falling back to trigram: {e}")
+                # Fall back to trigram only
+                candidates = []
+                for score, record_id in top_candidates[:max_candidates]:
+                    record = candidate_cache.get_record(record_id)
+                    final_score = score
+
+                    # Apply heuristics if enabled
+                    if heuristic_engine:
+                        try:
+                            heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, record)
+                            final_score += heuristic_adjustment
+                        except Exception:
+                            pass
+
+                    candidates.append((final_score, record_id, record))
+        else:
+            # Fall back to trigram only
+            candidates = []
+            for score, record_id in top_candidates[:max_candidates]:
+                record = candidate_cache.get_record(record_id)
+                final_score = score
+
+                # Apply heuristics if enabled
+                if heuristic_engine:
+                    try:
+                        heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, record)
+                        final_score += heuristic_adjustment
+                    except Exception:
+                        pass
+
+                candidates.append((final_score, record_id, record))
+    else:
+        # Trigram only mode - ultra fast!
+        candidates = []
+
+        for record_id in candidate_cache.get_all_ids():
+            score = candidate_cache.compute_trigram_similarity(left_str, record_id)
+            record = candidate_cache.get_record(record_id)
+
+            # Apply heuristics if enabled
+            if heuristic_engine:
+                try:
+                    # Candidate generation heuristics
+                    candidate_action = heuristic_engine.apply_stage_heuristics(
+                        "candidate_generation", left_record, record
+                    )
+                    if candidate_action and hasattr(candidate_action, "similarity_boost"):
+                        score += candidate_action.similarity_boost * candidate_action.confidence
+                        score = min(score, 1.0)
+
+                    # Other heuristics
+                    heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, record)
+                    score += heuristic_adjustment
+                except Exception:
+                    pass
+
+            candidates.append((score, record_id, record))
+
+    # Sort and return top candidates
+    candidates.sort(key=lambda x: x[0], reverse=True)
+    return [(idx, record) for _, idx, record in candidates[:max_candidates]]
+
+
+def get_top_candidates(
+    left_record: dict, right_records, max_candidates: int, cfg: Config, dataset: str = None
+) -> List[tuple]:
     """Get top candidates for a left record using combined similarity and heuristics"""
     left_str = json.dumps(left_record, ensure_ascii=False).lower()
-    
+
     # Get heuristic engine if enabled
     heuristic_engine = get_heuristic_engine(cfg, dataset) if dataset else None
 
@@ -275,48 +496,76 @@ def get_top_candidates(left_record: dict, right_records, max_candidates: int, cf
         # First pass: Get top candidates using trigram similarity (more candidates than final)
         trigram_candidates = max_candidates * 3  # 3x candidates for semantic reranking
         trigram_scores = []
-        
+
         # Handle both list and dict access patterns
         if isinstance(right_records, dict):
             # Dict access (ID-based)
             for record_id, right_record in right_records.items():
                 right_str = json.dumps(right_record, ensure_ascii=False).lower()
                 score = trigram_similarity(left_str, right_str)
+
+                # Apply candidate generation heuristics to boost similarity for candidate selection
+                if heuristic_engine:
+                    try:
+                        candidate_action = heuristic_engine.apply_stage_heuristics(
+                            "candidate_generation", left_record, right_record
+                        )
+                        if candidate_action and hasattr(candidate_action, "similarity_boost"):
+                            score += candidate_action.similarity_boost * candidate_action.confidence
+                            score = min(score, 1.0)  # Cap at 1.0
+                    except Exception:
+                        # Don't let heuristic failures break candidate generation
+                        pass
+
                 trigram_scores.append((score, record_id, right_record, right_str))
         else:
             # List access (index-based)
             for i, right_record in enumerate(right_records):
                 right_str = json.dumps(right_record, ensure_ascii=False).lower()
                 score = trigram_similarity(left_str, right_str)
+
+                # Apply candidate generation heuristics to boost similarity for candidate selection
+                if heuristic_engine:
+                    try:
+                        candidate_action = heuristic_engine.apply_stage_heuristics(
+                            "candidate_generation", left_record, right_record
+                        )
+                        if candidate_action and hasattr(candidate_action, "similarity_boost"):
+                            score += candidate_action.similarity_boost * candidate_action.confidence
+                            score = min(score, 1.0)  # Cap at 1.0
+                    except Exception:
+                        # Don't let heuristic failures break candidate generation
+                        pass
+
                 trigram_scores.append((score, i, right_record, right_str))
-        
+
         # Sort by trigram similarity and take top candidates for semantic reranking
         trigram_scores.sort(key=lambda x: x[0], reverse=True)
         top_trigram = trigram_scores[:trigram_candidates]
-        
+
         # Second pass: Semantic similarity using cached embeddings
         if cfg.embeddings is not None:
             try:
                 # Calculate combined scores with cached embeddings
                 candidates = []
-                for trigram_score, orig_idx, record, right_str in top_trigram:
+                for trigram_score, orig_idx, record, _right_str in top_trigram:
                     # Use cached semantic similarity
                     semantic_score = semantic_similarity_cached(left_record, record, cfg.embeddings)
-                    
+
                     # Weighted combination
                     combined_score = (1 - cfg.semantic_weight) * trigram_score + cfg.semantic_weight * semantic_score
-                    
+
                     # Apply heuristic adjustments if available
                     if heuristic_engine:
                         try:
                             heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, record)
                             combined_score += heuristic_adjustment
-                        except Exception as e:
+                        except Exception:
                             # Don't let heuristic failures break the matching
                             pass
-                    
+
                     candidates.append((combined_score, orig_idx, record))
-                
+
             except Exception as e:
                 print(f"Warning: Semantic similarity failed, falling back to trigram: {e}")
                 # Fall back to trigram only with heuristics
@@ -347,55 +596,80 @@ def get_top_candidates(left_record: dict, right_records, max_candidates: int, cf
     else:
         # Trigram only with heuristics
         candidates = []
-        
+
         # Handle both list and dict access patterns
         if isinstance(right_records, dict):
             # Dict access (ID-based)
             for record_id, right_record in right_records.items():
                 right_str = json.dumps(right_record, ensure_ascii=False).lower()
                 score = trigram_similarity(left_str, right_str)
-                
-                # Apply heuristic adjustments if available
+
+                # Apply candidate generation heuristics first
+                if heuristic_engine:
+                    try:
+                        candidate_action = heuristic_engine.apply_stage_heuristics(
+                            "candidate_generation", left_record, right_record
+                        )
+                        if candidate_action and hasattr(candidate_action, "similarity_boost"):
+                            score += candidate_action.similarity_boost * candidate_action.confidence
+                            score = min(score, 1.0)  # Cap at 1.0
+                    except Exception:
+                        pass
+
+                # Apply other heuristic adjustments if available
                 if heuristic_engine:
                     try:
                         heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, right_record)
                         score += heuristic_adjustment
                     except Exception:
                         pass
-                        
+
                 candidates.append((score, record_id, right_record))
         else:
             # List access (index-based)
             for i, right_record in enumerate(right_records):
                 right_str = json.dumps(right_record, ensure_ascii=False).lower()
                 score = trigram_similarity(left_str, right_str)
-                
-                # Apply heuristic adjustments if available
+
+                # Apply candidate generation heuristics first
+                if heuristic_engine:
+                    try:
+                        candidate_action = heuristic_engine.apply_stage_heuristics(
+                            "candidate_generation", left_record, right_record
+                        )
+                        if candidate_action and hasattr(candidate_action, "similarity_boost"):
+                            score += candidate_action.similarity_boost * candidate_action.confidence
+                            score = min(score, 1.0)  # Cap at 1.0
+                    except Exception:
+                        pass
+
+                # Apply other heuristic adjustments if available
                 if heuristic_engine:
                     try:
                         heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, right_record)
                         score += heuristic_adjustment
                     except Exception:
                         pass
-                        
+
                 candidates.append((score, i, right_record))
 
     # Sort by similarity and take top candidates
     candidates.sort(key=lambda x: x[0], reverse=True)
     return [(idx, record) for _, idx, record in candidates[:max_candidates]]
 
+
 async def match_single_record(left_record: dict, candidates: List[tuple], cfg: Config, client: AsyncOpenAI) -> int:
     """Match a single left record against its filtered candidates"""
 
     # Create mapping from position numbers to actual IDs for robust parsing
     id_mapping = {}  # position_number -> actual_database_id
-    
+
     # Build prompt with sequential position numbers (1, 2, 3...) regardless of actual IDs
     candidates_lines = []
     for position, (actual_id, record) in enumerate(candidates, 1):
         id_mapping[position] = actual_id
         candidates_lines.append(f"{position}) {json.dumps(record, ensure_ascii=False)}")
-    
+
     candidates_text = "\n".join(candidates_lines)
 
     # Create prompt
@@ -437,7 +711,7 @@ async def match_single_record(left_record: dict, candidates: List[tuple], cfg: C
         print(f"  WARNING: Prompt too large ({total_tokens:,} tokens)")
 
     # Log the prompt for o4 debugging
-    if cfg.model.startswith(('o3', 'o4')):
+    if cfg.model.startswith(("o3", "o4")):
         print(f"  DEBUG: Sending prompt to {cfg.model}:")
         print(f"  Prompt length: {len(prompt)} chars")
         print(f"  First 200 chars: {prompt[:200]}")
@@ -448,49 +722,99 @@ async def match_single_record(left_record: dict, candidates: List[tuple], cfg: C
 
     # Parse response
     if not response:
-        if cfg.model.startswith(('o3', 'o4')):
+        if cfg.model.startswith(("o3", "o4")):
             print(f"  DEBUG: Empty response from {cfg.model} - logging prompt to debug_prompt.txt")
             with open("debug_prompt.txt", "w") as f:
                 f.write(f"=== FAILED PROMPT FOR {cfg.model} ===\n")
                 f.write(f"Prompt length: {len(prompt)} characters\n")
                 f.write(f"Token count: {token_count(prompt, cfg.model)} tokens\n")
-                f.write(f"=== FULL PROMPT START ===\n")
+                f.write("=== FULL PROMPT START ===\n")
                 f.write(prompt)
-                f.write(f"\n=== FULL PROMPT END ===\n")
+                f.write("\n=== FULL PROMPT END ===\n")
         raise ValueError("Empty response from LLM")
-    
+
     try:
         # First try direct integer parsing for position number
         position_number = int(response.strip())
         if position_number == -1:
             return -1  # No match
-        elif position_number in id_mapping:
+        if position_number in id_mapping:
             return id_mapping[position_number]  # Convert position to actual database ID
-        else:
-            print(f"Warning: LLM returned position {position_number} but only {len(candidates)} candidates available")
-            return -1
+        print(f"Warning: LLM returned position {position_number} but only {len(candidates)} candidates available")
+        return -1
     except ValueError:
         # Try to extract number from response using regex
         import re
-        numbers = re.findall(r'-?\d+', response.strip())
+
+        numbers = re.findall(r"-?\d+", response.strip())
         if numbers:
             try:
                 position_number = int(numbers[0])
                 if position_number == -1:
                     return -1  # No match
-                elif position_number in id_mapping:
+                if position_number in id_mapping:
                     return id_mapping[position_number]  # Convert position to actual database ID
-                else:
-                    print(f"Warning: LLM returned position {position_number} but only {len(candidates)} candidates available")
-                    return -1
+                print(
+                    f"Warning: LLM returned position {position_number} but only {len(candidates)} candidates available"
+                )
+                return -1
             except ValueError:
                 pass
-        
+
         # If all else fails, return -1 (no match) and log the issue
         print(f"Warning: Could not parse LLM response as integer: '{response}', defaulting to -1 (no match)")
         return -1
 
-async def process_batch(batch_pairs: List[tuple], semaphore: asyncio.Semaphore, A: List[dict], B: List[dict], max_candidates: int, cfg: Config, client: AsyncOpenAI, dataset: str) -> Dict[int, int]:
+
+async def process_batch_cached(
+    batch_pairs: List[tuple],
+    semaphore: asyncio.Semaphore,
+    A: List[dict],
+    candidate_cache: CandidateCache,
+    B: List[dict],
+    max_candidates: int,
+    cfg: Config,
+    client: AsyncOpenAI,
+    dataset: str,
+    use_cache: bool = True,
+) -> Dict[int, int]:
+    """Process a batch of pairs with concurrency control using cached candidate generation"""
+    async with semaphore:
+        tasks = []
+        for _, row in batch_pairs:
+            left_id = row.ltable_id
+            left_record = A[left_id]
+
+            # Get top candidates for this left record (FAST with cache!)
+            if use_cache and candidate_cache:
+                candidates = get_top_candidates_cached(left_record, candidate_cache, max_candidates, cfg, dataset)
+            else:
+                candidates = get_top_candidates(left_record, B, max_candidates, cfg, dataset)
+
+            # Create async task for matching
+            task = match_single_record(left_record, candidates, cfg, client)
+            tasks.append((left_id, task))
+
+        # Execute all tasks in this batch
+        batch_results = {}
+        for left_id, task in tasks:
+            match_idx = await task
+            if match_idx != -1:
+                batch_results[left_id] = match_idx
+
+        return batch_results
+
+
+async def process_batch(
+    batch_pairs: List[tuple],
+    semaphore: asyncio.Semaphore,
+    A: List[dict],
+    B: List[dict],
+    max_candidates: int,
+    cfg: Config,
+    client: AsyncOpenAI,
+    dataset: str,
+) -> Dict[int, int]:
     """Process a batch of pairs with concurrency control"""
     async with semaphore:
         tasks = []
@@ -514,25 +838,29 @@ async def process_batch(batch_pairs: List[tuple], semaphore: asyncio.Semaphore, 
 
         return batch_results
 
-async def run_matching(dataset: str, 
-                      limit: Optional[int] = None,
-                      max_candidates: Optional[int] = None,
-                      candidate_ratio: Optional[float] = None,
-                      model: str = "gpt-4.1-nano",
-                      concurrency: int = 20,
-                      output_json: Optional[str] = None,
-                      output_csv: Optional[str] = None,
-                      use_semantic: bool = True,
-                      semantic_weight: float = 0.5,
-                      use_heuristics: bool = False,
-                      heuristic_file: Optional[str] = None) -> Dict:
+
+async def run_matching(
+    dataset: str,
+    limit: Optional[int] = None,
+    max_candidates: Optional[int] = None,
+    candidate_ratio: Optional[float] = None,
+    model: str = "gpt-4.1-nano",
+    concurrency: int = 20,
+    output_json: Optional[str] = None,
+    output_csv: Optional[str] = None,
+    use_semantic: bool = True,
+    semantic_weight: float = 0.5,
+    use_heuristics: bool = False,
+    heuristic_file: Optional[str] = None,
+    embeddings_cache_dataset: Optional[str] = None,
+) -> Dict:
     """
     Main function to run entity matching
-    
+
     Returns:
         Dict with results including metrics, cost, etc.
     """
-    
+
     # Initialize configuration
     cfg = Config()
     cfg.model = model
@@ -540,7 +868,7 @@ async def run_matching(dataset: str,
     cfg.semantic_weight = semantic_weight
     cfg.use_heuristics = use_heuristics
     cfg.heuristic_file = heuristic_file
-    
+
     # Check for API key
     if not os.getenv("OPENAI_API_KEY"):
         print("ERROR: OPENAI_API_KEY environment variable not set")
@@ -553,20 +881,20 @@ async def run_matching(dataset: str,
     print(f"Using OpenAI API with model: {cfg.model}")
 
     # Load data with proper ID mapping
-    root = pathlib.Path('data')/'raw'/dataset
-    A_df = pd.read_csv(root/'tableA.csv')
-    B_df = pd.read_csv(root/'tableB.csv')
-    
+    root = pathlib.Path("data") / "raw" / dataset
+    A_df = pd.read_csv(root / "tableA.csv")
+    B_df = pd.read_csv(root / "tableB.csv")
+
     # Check if this dataset has non-sequential IDs (like zomato_yelp)
-    if 'id' in A_df.columns:
+    if "id" in A_df.columns:
         # Create ID-to-record mappings
-        A = {row['id']: row.to_dict() for _, row in A_df.iterrows()}
-        B = {row['id']: row.to_dict() for _, row in B_df.iterrows()}
+        A = {row["id"]: row.to_dict() for _, row in A_df.iterrows()}
+        B = {row["id"]: row.to_dict() for _, row in B_df.iterrows()}
         print(f"Dataset uses ID mapping: A has {len(A)} records (IDs {min(A.keys())}-{max(A.keys())})")
     else:
         # Use list indexing for datasets without ID column
-        A = A_df.to_dict(orient='records')
-        B = B_df.to_dict(orient='records')
+        A = A_df.to_dict(orient="records")
+        B = B_df.to_dict(orient="records")
         print(f"Dataset uses list indexing: A has {len(A)} records")
 
     # Set default if neither option provided
@@ -582,10 +910,10 @@ async def run_matching(dataset: str,
         max_candidates = max(1, int(len(B) * candidate_ratio))
         candidate_method = f"{candidate_ratio:.1%} of table B ({max_candidates} candidates)"
     else:
-        candidate_method = f"{max_candidates} candidates ({max_candidates/len(B):.1%} of table B)"
+        candidate_method = f"{max_candidates} candidates ({max_candidates / len(B):.1%} of table B)"
 
     # load test pairs
-    pairs = pd.read_csv(root/'test.csv')
+    pairs = pd.read_csv(root / "test.csv")
     if limit:
         pairs = pairs.head(limit)
 
@@ -593,10 +921,11 @@ async def run_matching(dataset: str,
 
     print(f"Processing {len(pairs)} pairs with {candidate_method} per record")
     print(f"Concurrency: {concurrency} parallel requests")
-    
+
     # Initialize embeddings cache if using semantic similarity
     if cfg.use_semantic and SEMANTIC_AVAILABLE:
-        cfg.embeddings = compute_dataset_embeddings(dataset, cfg)
+        cache_dataset = embeddings_cache_dataset or dataset
+        cfg.embeddings = compute_dataset_embeddings(cache_dataset, cfg)
 
     # Create semaphore for concurrency control
     semaphore = asyncio.Semaphore(concurrency)
@@ -605,7 +934,7 @@ async def run_matching(dataset: str,
     batch_size = max(1, len(pairs) // 20)  # 20 progress updates
     batches = []
     for i in range(0, len(pairs), batch_size):
-        batch = list(pairs.iloc[i:i+batch_size].iterrows())
+        batch = list(pairs.iloc[i : i + batch_size].iterrows())
         batches.append(batch)
 
     # Process batches with progress bar
@@ -613,7 +942,7 @@ async def run_matching(dataset: str,
 
     # Process batches with progress tracking
     tasks = [process_batch(batch, semaphore, A, B, max_candidates, cfg, client, dataset) for batch in batches]
-    
+
     # Use tqdm with gather for proper progress tracking
     with tqdm(total=len(batches), desc="Processing batches", unit="batch") as pbar:
         for task in asyncio.as_completed(tasks):
@@ -662,13 +991,13 @@ async def run_matching(dataset: str,
         input_cost_per_1k, output_cost_per_1k = MODEL_COSTS[cfg.model]
     except KeyError:
         print(f"WARNING: Model {cfg.model} not found in MODEL_COSTS. Using gpt-4o-mini pricing.")
-        input_cost_per_1k, output_cost_per_1k = MODEL_COSTS.get('gpt-4o-mini', (0.00015, 0.0006))
+        input_cost_per_1k, output_cost_per_1k = MODEL_COSTS.get("gpt-4o-mini", (0.00015, 0.0006))
 
     input_cost = (cfg.total_input_tokens / 1_000_000) * input_cost_per_1k
     output_cost = (cfg.total_output_tokens / 1_000_000) * output_cost_per_1k
     total_cost = input_cost + output_cost
 
-    print(f"\n=== EVALUATION RESULTS ===")
+    print("\n=== EVALUATION RESULTS ===")
     print(f"Dataset: {dataset}")
     print(f"Model: {cfg.model}")
     print(f"Processed: {len(pairs)} pairs")
@@ -702,24 +1031,21 @@ async def run_matching(dataset: str,
             "tp": tp,
             "fp": fp,
             "fn": fn,
-            "tn": tn
+            "tn": tn,
         },
         "cost_usd": total_cost,
         "tokens": {
             "input": cfg.total_input_tokens,
             "output": cfg.total_output_tokens,
-            "total": cfg.total_input_tokens + cfg.total_output_tokens
+            "total": cfg.total_input_tokens + cfg.total_output_tokens,
         },
-        "table_sizes": {
-            "table_a": len(A),
-            "table_b": len(B)
-        },
-        "predictions": all_predictions  # Include predictions for heuristic analysis
+        "table_sizes": {"table_a": len(A), "table_b": len(B)},
+        "predictions": all_predictions,  # Include predictions for heuristic analysis
     }
 
     # Save JSON results if requested
     if output_json:
-        with open(output_json, 'w') as f:
+        with open(output_json, "w") as f:
             json.dump(results, f, indent=2)
         print(f"Detailed results saved to: {output_json}")
 
@@ -751,13 +1077,13 @@ async def run_matching(dataset: str,
             "output_tokens": results["tokens"]["output"],
             "total_tokens": results["tokens"]["total"],
             "table_a_size": results["table_sizes"]["table_a"],
-            "table_b_size": results["table_sizes"]["table_b"]
+            "table_b_size": results["table_sizes"]["table_b"],
         }
 
         # Check if file exists to determine if we need headers
         file_exists = os.path.exists(output_csv)
 
-        with open(output_csv, 'a', newline='') as f:
+        with open(output_csv, "a", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=csv_row.keys())
             if not file_exists:
                 writer.writeheader()
@@ -767,33 +1093,40 @@ async def run_matching(dataset: str,
 
     return results
 
+
 async def main():
     """CLI entry point"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', required=True)
-    parser.add_argument('--limit', type=int, default=None, help='number of test rows')
+    parser.add_argument("--dataset", required=True)
+    parser.add_argument("--limit", type=int, default=None, help="number of test rows")
 
     # Candidate selection - mutually exclusive options
     candidate_group = parser.add_mutually_exclusive_group()
-    candidate_group.add_argument('--max-candidates', type=int, help='maximum candidates per left record (absolute number)')
-    candidate_group.add_argument('--candidate-ratio', type=float, help='candidates as ratio of table B size (e.g., 0.02 = 2%% of table B)')
+    candidate_group.add_argument(
+        "--max-candidates", type=int, help="maximum candidates per left record (absolute number)"
+    )
+    candidate_group.add_argument(
+        "--candidate-ratio", type=float, help="candidates as ratio of table B size (e.g., 0.02 = 2%% of table B)"
+    )
 
-    parser.add_argument('--model', default="gpt-4.1-nano")
-    parser.add_argument('--concurrency', type=int, default=20, help='number of concurrent API calls')
-    parser.add_argument('--output-json', type=str, help='save detailed results to JSON file')
-    parser.add_argument('--output-csv', type=str, help='append results to CSV file')
-    
+    parser.add_argument("--model", default="gpt-4.1-nano")
+    parser.add_argument("--concurrency", type=int, default=20, help="number of concurrent API calls")
+    parser.add_argument("--output-json", type=str, help="save detailed results to JSON file")
+    parser.add_argument("--output-csv", type=str, help="append results to CSV file")
+
     # Semantic similarity options
-    parser.add_argument('--no-semantic', action='store_true', help='disable semantic similarity (use only trigram)')
-    parser.add_argument('--semantic-weight', type=float, default=0.5, help='weight for semantic similarity (0.0-1.0, default 0.5)')
-    
+    parser.add_argument("--no-semantic", action="store_true", help="disable semantic similarity (use only trigram)")
+    parser.add_argument(
+        "--semantic-weight", type=float, default=0.5, help="weight for semantic similarity (0.0-1.0, default 0.5)"
+    )
+
     # Heuristic options
-    parser.add_argument('--use-heuristics', action='store_true', help='enable domain-specific heuristic rules')
-    parser.add_argument('--heuristic-file', type=str, help='path to heuristics JSON file')
-    
+    parser.add_argument("--use-heuristics", action="store_true", help="enable domain-specific heuristic rules")
+    parser.add_argument("--heuristic-file", type=str, help="path to heuristics JSON file")
+
     args = parser.parse_args()
 
-    results = await run_matching(
+    return await run_matching(
         dataset=args.dataset,
         limit=args.limit,
         max_candidates=args.max_candidates,
@@ -805,9 +1138,9 @@ async def main():
         use_semantic=not args.no_semantic,
         semantic_weight=args.semantic_weight,
         use_heuristics=args.use_heuristics,
-        heuristic_file=args.heuristic_file
+        heuristic_file=args.heuristic_file,
     )
-    return results
+
 
 if __name__ == "__main__":
     results = asyncio.run(main())

@@ -1,0 +1,57 @@
+{
+  "timestamp": "2025-07-07T17:08:43.410323",
+  "dataset": "itunes_amazon",
+  "pipeline_version": "complete_v3_working_rules",
+  "dev_results": {
+    "f1": 0.6153846153846153,
+    "precision": 1.0,
+    "recall": 0.4444444444444444,
+    "cost_usd": 0.1293578,
+    "processing_time": 3872.373190164566
+  },
+  "optimal_params": {
+    "max_candidates": 55,
+    "semantic_weight": 0.85,
+    "model": "gpt-4.1-nano",
+    "use_semantic": true
+  },
+  "heuristics_file": "results/generated_rules/itunes_amazon_generated_heuristics.json",
+  "rule_generation": "claude_sdk_success",
+  "baseline_results": {
+    "f1": 0.6153846153846153,
+    "precision": 1.0,
+    "recall": 0.4444444444444444,
+    "cost_usd": 0.2618844,
+    "processing_time": 414.6270661354065
+  },
+  "enhanced_results": {
+    "f1": 0.65,
+    "precision": 1.0,
+    "recall": 0.48148148148148145,
+    "cost_usd": 0.0129488,
+    "processing_time": 495.20269203186035,
+    "early_decisions": 37,
+    "llm_calls": 72,
+    "llm_call_reduction": 33.944954128440365
+  },
+  "ab_comparison": {
+    "f1_improvement": 0.034615384615384714,
+    "cost_change": -0.2489356,
+    "rules_helped": true
+  },
+  "summary": {
+    "dev_f1": 0.6153846153846153,
+    "baseline_f1": 0.6153846153846153,
+    "enhanced_f1": 0.65,
+    "f1_improvement": 0.034615384615384714,
+    "total_cost_usd": 0.97707165,
+    "rule_generation_cost_usd": 0.57288065,
+    "rule_generation_method": "agentic",
+    "total_time_seconds": 4782.202948331833,
+    "beat_leaderboard": false,
+    "leaderboard_target": 82.3
+  },
+  "failure_analysis": {
+    "failure_analysis": "No predictions available for failure analysis"
+  }
+}

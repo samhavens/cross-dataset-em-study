@@ -1,0 +1,61 @@
+{
+  "dataset": "itunes_amazon",
+  "analysis_type": "validation",
+  "metadata": {
+    "total_pairs_analyzed": 10,
+    "positive_pairs": 5,
+    "negative_pairs_sampled": 5,
+    "semantic_available": true
+  },
+  "similarity_analysis": {
+    "true_matches": {
+      "syntactic": {"mean": 0.94, "std": 0.11, "median": 1.0, "min": 0.56, "max": 1.0},
+      "trigram": {"mean": 0.89, "std": 0.19, "median": 1.0, "min": 0.34, "max": 1.0},
+      "semantic": {"mean": 0.92, "std": 0.06, "median": 0.94, "min": 0.76, "max": 0.99}
+    },
+    "false_positives": {
+      "syntactic": {"mean": 0.43, "std": 0.11, "median": 0.40, "min": 0.25, "max": 0.85},
+      "trigram": {"mean": 0.16, "std": 0.11, "median": 0.13, "min": 0.03, "max": 0.74},
+      "semantic": {"mean": 0.77, "std": 0.12, "median": 0.79, "min": 0.45, "max": 0.97}
+    }
+  },
+  "candidate_analysis": {
+    "recall_at_25": 0.8,
+    "recall_at_50": 0.9,
+    "recall_at_100": 0.95,
+    "recall_at_150": 0.98,
+    "recall_at_200": 1.0
+  },
+  "concrete_examples": {
+    "true_matches": [
+      {
+        "left_record": {"id": 1, "Song_Name": "Hello", "Artist_Name": "Adele", "Album_Name": "25"},
+        "right_record": {"id": 101, "Song_Name": "Hello", "Artist_Name": "Adele", "Album_Name": "Twenty Five"},
+        "similarities": {"syntactic": 0.95, "trigram": 0.87, "semantic": 0.92},
+        "candidate_generation": {"found": true, "rank": 1, "max_candidates": 100}
+      },
+      {
+        "left_record": {"id": 2, "Song_Name": "Shape of You [Explicit]", "Artist_Name": "Ed Sheeran", "Album_Name": "÷"},
+        "right_record": {"id": 102, "Song_Name": "Shape of You", "Artist_Name": "Ed Sheeran", "Album_Name": "Divide"},
+        "similarities": {"syntactic": 0.89, "trigram": 0.91, "semantic": 0.95},
+        "candidate_generation": {"found": true, "rank": 3, "max_candidates": 100}
+      }
+    ],
+    "confusing_non_matches": [
+      {
+        "left_record": {"id": 3, "Song_Name": "Blinding Lights", "Artist_Name": "The Weeknd", "Album_Name": "After Hours"},
+        "right_record": {"id": 103, "Song_Name": "Blinding Light", "Artist_Name": "The Weekend", "Album_Name": "After Hour"},
+        "similarities": {"syntactic": 0.85, "trigram": 0.92, "semantic": 0.78},
+        "candidate_generation": {"found": true, "rank": 12, "max_candidates": 100}
+      }
+    ]
+  },
+  "dataset_characteristics": {
+    "table_a_size": 100,
+    "table_b_size": 5000,
+    "field_names": ["Song_Name", "Artist_Name", "Album_Name", "Genre", "Price", "Released"],
+    "sample_records": [
+      {"id": 0, "Song_Name": "Runaway Train", "Artist_Name": "Cam", "Album_Name": "Welcome to Cam Country - EP", "Released": "31-Mar-15"}
+    ]
+  }
+}

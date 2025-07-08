@@ -1,20 +1,21 @@
 import argparse
 import csv
 import random
+
 from typing import Dict, List, Tuple
 
 DATASET_DIRS = {
-    'abt': 'abt_buy',
-    'amgo': 'amazon_google',
-    'beer': 'beer',
-    'dbac': 'dblp_acm',
-    'dbgo': 'dblp_scholar',
-    'foza': 'fodors_zagat',
-    'itam': 'itunes_amazon',
-    'roim': 'rotten_imdb',
-    'waam': 'walmart_amazon',
-    'wdc': 'wdc',
-    'zoye': 'zomato_yelp',
+    "abt": "abt_buy",
+    "amgo": "amazon_google",
+    "beer": "beer",
+    "dbac": "dblp_acm",
+    "dbgo": "dblp_scholar",
+    "foza": "fodors_zagat",
+    "itam": "itunes_amazon",
+    "roim": "rotten_imdb",
+    "waam": "walmart_amazon",
+    "wdc": "wdc",
+    "zoye": "zomato_yelp",
 }
 
 
@@ -26,7 +27,7 @@ def load_pairs(dataset: str) -> List[Tuple[str, str, int]]:
         with open(path, newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                pairs.append((row["ltable_id"], row["rtable_id"], int(row["label"])) )
+                pairs.append((row["ltable_id"], row["rtable_id"], int(row["label"])))
     except FileNotFoundError:
         return []
     return pairs

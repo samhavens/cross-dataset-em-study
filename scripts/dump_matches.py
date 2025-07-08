@@ -18,14 +18,14 @@ import pathlib
 import sys
 
 from difflib import SequenceMatcher
-from typing import Dict
+from typing import Dict, Tuple
 
 import pandas as pd
 
 # Add src to path
 sys.path.append(str(pathlib.Path(__file__).parent.parent / "src"))
 
-from entity_matching.hybrid_matcher import Config, get_top_candidates, semantic_similarity, compute_dataset_embeddings
+from entity_matching.hybrid_matcher import Config, compute_dataset_embeddings, get_top_candidates, semantic_similarity
 
 
 def get_syntactic_similarity(text1: str, text2: str) -> float:
@@ -71,10 +71,35 @@ def format_record(record: Dict, max_len: int = 80) -> str:
     return " | ".join(formatted)
 
 
+def get_dev_dataset(dataset: str, max_pairs: int = 100) -> Tuple[pd.DataFrame, str]:
+    """Get development dataset without test leakage, following pipeline logic"""
+    data_root = pathlib.Path("data/raw") / dataset
+
+    # Priority: validation > train slice > test (with warning)
+    if (data_root / "valid.csv").exists():
+        print("✅ Using validation set for analysis (no test leakage)")
+        pairs = pd.read_csv(data_root / "valid.csv")
+        dataset_type = "validation"
+    elif (data_root / "train.csv").exists():
+        print("✅ Using slice of training set for analysis (no test leakage)")
+        train_pairs = pd.read_csv(data_root / "train.csv")
+        dev_slice_size = min(max_pairs, len(train_pairs))
+        pairs = train_pairs.head(dev_slice_size)
+        print(f"📊 Using {dev_slice_size} pairs from training set for analysis")
+        dataset_type = "train_slice"
+    else:
+        print("⚠️ No validation or training set - using test set for analysis (test won't be clean)")
+        pairs = pd.read_csv(data_root / "test.csv")
+        dataset_type = "test"
+
+    return pairs, dataset_type
+
+
 def get_semantic_similarity(left_record: dict, right_record: dict, cfg: Config) -> float:
     """Get semantic similarity between two records using the embedding model"""
     try:
         import json
+
         left_str = json.dumps(left_record, ensure_ascii=False).lower()
         right_str = json.dumps(right_record, ensure_ascii=False).lower()
         return semantic_similarity(left_str, right_str, cfg)
@@ -83,7 +108,9 @@ def get_semantic_similarity(left_record: dict, right_record: dict, cfg: Config) 
         return 0.0
 
 
-def dump_matches(dataset: str, limit: int = 20, max_candidates: int = 100, semantic_weight: float = 0.5):
+def dump_matches(
+    dataset: str, limit: int = 20, max_candidates: int = 100, semantic_weight: float = 0.5, use_dev: bool = True
+):
     """Dump semantic and syntactic matches for analysis"""
     print(f"🔍 ANALYZING MATCHES FOR {dataset.upper()}")
     print("=" * 80)
@@ -93,12 +120,18 @@ def dump_matches(dataset: str, limit: int = 20, max_candidates: int = 100, seman
     A_df = pd.read_csv(data_root / "tableA.csv")
     B_df = pd.read_csv(data_root / "tableB.csv")
 
-    # Load test pairs to get ground truth
-    test_pairs = pd.read_csv(data_root / "test.csv")
+    # Load pairs for analysis - use dev set if requested
+    if use_dev:
+        pairs, dataset_type = get_dev_dataset(dataset, max_pairs=200)  # Get more pairs for dev analysis
+        print(f"📊 Using {dataset_type} dataset for analysis")
+    else:
+        pairs = pd.read_csv(data_root / "test.csv")
+        dataset_type = "test"
+        print("📊 Using test dataset for analysis")
 
     print(f"📊 Dataset: {len(A_df)} records in A, {len(B_df)} records in B")
-    print(f"📊 Test pairs: {len(test_pairs)} pairs")
-    print(f"📊 Positive pairs: {len(test_pairs[test_pairs.label == 1])} matches")
+    print(f"📊 Analysis pairs: {len(pairs)} pairs ({dataset_type})")
+    print(f"📊 Positive pairs: {len(pairs[pairs.label == 1])} matches")
     print()
 
     # Convert to records dict
@@ -106,14 +139,14 @@ def dump_matches(dataset: str, limit: int = 20, max_candidates: int = 100, seman
     B_records = {row["id"]: row.to_dict() for _, row in B_df.iterrows()}
 
     # Get some positive and negative examples
-    positive_pairs = test_pairs[test_pairs.label == 1].head(limit // 2)
-    negative_pairs = test_pairs[test_pairs.label == 0].head(limit // 2)
+    positive_pairs = pairs[pairs.label == 1].head(limit // 2)
+    negative_pairs = pairs[pairs.label == 0].head(limit // 2)
 
     # Initialize config for candidate generation
     cfg = Config()
     cfg.use_semantic = True
     cfg.semantic_weight = semantic_weight
-    
+
     # Try to compute embeddings for semantic similarity (may take time on first run)
     try:
         print("🧮 Loading/computing embeddings for semantic similarity...")
@@ -213,7 +246,9 @@ def dump_matches(dataset: str, limit: int = 20, max_candidates: int = 100, seman
             semantic_sim = get_semantic_similarity(sample_left, candidate_record, cfg)
 
             print(f"   {i}. {format_record(candidate_record)}")
-            print(f"      SIMILARITY: Syntactic={syntactic_sim:.3f}, Trigram={trigram_sim:.3f}, Semantic={semantic_sim:.3f}")
+            print(
+                f"      SIMILARITY: Syntactic={syntactic_sim:.3f}, Trigram={trigram_sim:.3f}, Semantic={semantic_sim:.3f}"
+            )
     except Exception as e:
         print(f"   Error getting candidates: {e}")
 
@@ -232,6 +267,7 @@ def main():
     parser.add_argument("--limit", type=int, default=20, help="Number of examples to show")
     parser.add_argument("--max-candidates", type=int, default=100, help="Number of candidates to generate")
     parser.add_argument("--semantic-weight", type=float, default=0.5, help="Weight for semantic similarity (0.0-1.0)")
+    parser.add_argument("--use-test", action="store_true", help="Use test set instead of dev/validation set")
 
     args = parser.parse_args()
 
@@ -253,7 +289,7 @@ def main():
         print(f"❌ test.csv not found in {data_root}")
         return
 
-    dump_matches(args.dataset, args.limit, args.max_candidates, args.semantic_weight)
+    dump_matches(args.dataset, args.limit, args.max_candidates, args.semantic_weight, use_dev=not args.use_test)
 
 
 if __name__ == "__main__":

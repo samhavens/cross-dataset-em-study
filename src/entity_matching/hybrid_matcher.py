@@ -9,13 +9,13 @@ import pickle
 import textwrap
 import time
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
 import tiktoken
 
-from tqdm.asyncio import tqdm
+from tqdm import tqdm
 
 from openai import AsyncOpenAI
 
@@ -285,6 +285,195 @@ def combined_similarity(s1: str, s2: str, cfg: Config) -> float:
     return (1 - cfg.semantic_weight) * trigram_score + cfg.semantic_weight * semantic_score
 
 
+class CandidateCache:
+    """Pre-computed cache for expensive candidate operations"""
+
+    def __init__(self, right_records: Union[List[dict], Dict[int, dict]]):
+        """Pre-compute all expensive operations on right records"""
+        print("🔄 Building candidate cache...")
+
+        self.right_records = right_records
+        self.json_strings = {}  # id -> json string
+        self.trigram_sets = {}  # id -> trigram set
+        self.is_dict_access = isinstance(right_records, dict)
+
+        # Pre-compute JSON strings and trigram sets
+        if self.is_dict_access:
+            # Dict access (ID-based)
+            for record_id, record in tqdm(right_records.items(), desc="Caching records"):
+                json_str = json.dumps(record, ensure_ascii=False).lower()
+                self.json_strings[record_id] = json_str
+                self.trigram_sets[record_id] = self._get_trigrams(json_str)
+        else:
+            # List access (index-based)
+            for i, record in tqdm(enumerate(right_records), desc="Caching records"):
+                json_str = json.dumps(record, ensure_ascii=False).lower()
+                self.json_strings[i] = json_str
+                self.trigram_sets[i] = self._get_trigrams(json_str)
+
+        print(f"✅ Cached {len(self.json_strings)} records")
+
+    def _get_trigrams(self, s: str) -> set:
+        """Get trigram set for a string"""
+        if len(s) < 3:
+            return {s}
+        return {s[i : i + 3] for i in range(len(s) - 2)}
+
+    def compute_trigram_similarity(self, left_str: str, right_id: Union[int, str]) -> float:
+        """Fast trigram similarity using pre-computed trigrams"""
+        left_trigrams = self._get_trigrams(left_str)
+        right_trigrams = self.trigram_sets[right_id]
+
+        if not left_trigrams and not right_trigrams:
+            return 1.0
+        if not left_trigrams or not right_trigrams:
+            return 0.0
+
+        intersection = len(left_trigrams & right_trigrams)
+        union = len(left_trigrams | right_trigrams)
+        return intersection / union if union > 0 else 0.0
+
+    def get_record(self, record_id: Union[int, str]) -> dict:
+        """Get record by ID"""
+        if self.is_dict_access:
+            return self.right_records[record_id]
+        return self.right_records[record_id]
+
+    def get_json_string(self, record_id: Union[int, str]) -> str:
+        """Get pre-computed JSON string"""
+        return self.json_strings[record_id]
+
+    def get_all_ids(self) -> List[Union[int, str]]:
+        """Get all record IDs"""
+        if self.is_dict_access:
+            return list(self.right_records.keys())
+        return list(range(len(self.right_records)))
+
+
+def get_top_candidates_cached(
+    left_record: dict, candidate_cache: CandidateCache, max_candidates: int, cfg: Config, dataset: str = None
+) -> List[tuple]:
+    """FAST get_top_candidates using pre-computed cache"""
+    left_str = json.dumps(left_record, ensure_ascii=False).lower()
+
+    # Get heuristic engine if enabled
+    heuristic_engine = get_heuristic_engine(cfg, dataset) if dataset else None
+
+    # Fast scoring using pre-computed values
+    if cfg.use_semantic and SEMANTIC_AVAILABLE:
+        # First pass: Fast trigram scoring with 3x candidates for semantic reranking
+        trigram_candidates = max_candidates * 3
+        trigram_scores = []
+
+        for record_id in candidate_cache.get_all_ids():
+            # Ultra-fast trigram similarity using pre-computed trigrams
+            score = candidate_cache.compute_trigram_similarity(left_str, record_id)
+
+            # Apply heuristics if enabled (this is still expensive but unavoidable)
+            if heuristic_engine:
+                try:
+                    record = candidate_cache.get_record(record_id)
+                    candidate_action = heuristic_engine.apply_stage_heuristics(
+                        "candidate_generation", left_record, record
+                    )
+                    if candidate_action and hasattr(candidate_action, "similarity_boost"):
+                        score += candidate_action.similarity_boost * candidate_action.confidence
+                        score = min(score, 1.0)
+                except Exception:
+                    pass
+
+            trigram_scores.append((score, record_id))
+
+        # Sort and take top candidates for semantic reranking
+        trigram_scores.sort(key=lambda x: x[0], reverse=True)
+        top_candidates = trigram_scores[:trigram_candidates]
+
+        # Second pass: Semantic similarity with cached embeddings
+        if cfg.embeddings is not None:
+            try:
+                candidates = []
+                for trigram_score, record_id in top_candidates:
+                    record = candidate_cache.get_record(record_id)
+                    semantic_score = semantic_similarity_cached(left_record, record, cfg.embeddings)
+
+                    # Weighted combination
+                    combined_score = (1 - cfg.semantic_weight) * trigram_score + cfg.semantic_weight * semantic_score
+
+                    # Apply heuristics if enabled
+                    if heuristic_engine:
+                        try:
+                            heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, record)
+                            combined_score += heuristic_adjustment
+                        except Exception:
+                            pass
+
+                    candidates.append((combined_score, record_id, record))
+
+            except Exception as e:
+                print(f"Warning: Semantic similarity failed, falling back to trigram: {e}")
+                # Fall back to trigram only
+                candidates = []
+                for score, record_id in top_candidates[:max_candidates]:
+                    record = candidate_cache.get_record(record_id)
+                    final_score = score
+
+                    # Apply heuristics if enabled
+                    if heuristic_engine:
+                        try:
+                            heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, record)
+                            final_score += heuristic_adjustment
+                        except Exception:
+                            pass
+
+                    candidates.append((final_score, record_id, record))
+        else:
+            # Fall back to trigram only
+            candidates = []
+            for score, record_id in top_candidates[:max_candidates]:
+                record = candidate_cache.get_record(record_id)
+                final_score = score
+
+                # Apply heuristics if enabled
+                if heuristic_engine:
+                    try:
+                        heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, record)
+                        final_score += heuristic_adjustment
+                    except Exception:
+                        pass
+
+                candidates.append((final_score, record_id, record))
+    else:
+        # Trigram only mode - ultra fast!
+        candidates = []
+
+        for record_id in candidate_cache.get_all_ids():
+            score = candidate_cache.compute_trigram_similarity(left_str, record_id)
+            record = candidate_cache.get_record(record_id)
+
+            # Apply heuristics if enabled
+            if heuristic_engine:
+                try:
+                    # Candidate generation heuristics
+                    candidate_action = heuristic_engine.apply_stage_heuristics(
+                        "candidate_generation", left_record, record
+                    )
+                    if candidate_action and hasattr(candidate_action, "similarity_boost"):
+                        score += candidate_action.similarity_boost * candidate_action.confidence
+                        score = min(score, 1.0)
+
+                    # Other heuristics
+                    heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, record)
+                    score += heuristic_adjustment
+                except Exception:
+                    pass
+
+            candidates.append((score, record_id, record))
+
+    # Sort and return top candidates
+    candidates.sort(key=lambda x: x[0], reverse=True)
+    return [(idx, record) for _, idx, record in candidates[:max_candidates]]
+
+
 def get_top_candidates(
     left_record: dict, right_records, max_candidates: int, cfg: Config, dataset: str = None
 ) -> List[tuple]:
@@ -351,7 +540,7 @@ def get_top_candidates(
             try:
                 # Calculate combined scores with cached embeddings
                 candidates = []
-                for trigram_score, orig_idx, record, right_str in top_trigram:
+                for trigram_score, orig_idx, record, _right_str in top_trigram:
                     # Use cached semantic similarity
                     semantic_score = semantic_similarity_cached(left_record, record, cfg.embeddings)
 
@@ -567,6 +756,45 @@ async def match_single_record(left_record: dict, candidates: List[tuple], cfg: C
         # If all else fails, return -1 (no match) and log the issue
         print(f"Warning: Could not parse LLM response as integer: '{response}', defaulting to -1 (no match)")
         return -1
+
+
+async def process_batch_cached(
+    batch_pairs: List[tuple],
+    semaphore: asyncio.Semaphore,
+    A: List[dict],
+    candidate_cache: CandidateCache,
+    B: List[dict],
+    max_candidates: int,
+    cfg: Config,
+    client: AsyncOpenAI,
+    dataset: str,
+    use_cache: bool = True,
+) -> Dict[int, int]:
+    """Process a batch of pairs with concurrency control using cached candidate generation"""
+    async with semaphore:
+        tasks = []
+        for _, row in batch_pairs:
+            left_id = row.ltable_id
+            left_record = A[left_id]
+
+            # Get top candidates for this left record (FAST with cache!)
+            if use_cache and candidate_cache:
+                candidates = get_top_candidates_cached(left_record, candidate_cache, max_candidates, cfg, dataset)
+            else:
+                candidates = get_top_candidates(left_record, B, max_candidates, cfg, dataset)
+
+            # Create async task for matching
+            task = match_single_record(left_record, candidates, cfg, client)
+            tasks.append((left_id, task))
+
+        # Execute all tasks in this batch
+        batch_results = {}
+        for left_id, task in tasks:
+            match_idx = await task
+            if match_idx != -1:
+                batch_results[left_id] = match_idx
+
+        return batch_results
 
 
 async def process_batch(

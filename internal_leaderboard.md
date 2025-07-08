@@ -13,11 +13,11 @@ Our best results on entity matching datasets. Shows the better of baseline (opti
 |---------|--------|--------|-----------|-------------------|-------|
 | abt_buy | **0.956** | Baseline (optimal) | ✅ Beat | 92.4 | P:0.965, R:0.947, 25c, sw:0.2 |
 | amazon_google | 0.737 | Baseline (optimal) | 📈 -0.013 | 75.0 | P:0.694, R:0.786, 25c, sw:0.2 |
-| beer | 0.900 | Baseline (optimal) | 📈 -0.053 | 95.3 | P:0.964, R:0.844, 300c, sw:0.8 |
+| beer | 0.933 | Baseline (optimal) | 📈 -0.020 | 95.3 | P:0.875, R:1.000, 10c, sw:0.15 |
 | dblp_acm | 0.000 | ❌ Not tested | ❌ Not tested | 96.5 | Run: python run_complete_pipeline.py --dataset dblp_acm |
 | dblp_scholar | 0.000 | ❌ Not tested | ❌ Not tested | 89.8 | Run: python run_complete_pipeline.py --dataset dblp_scholar |
 | fodors_zagat | **1.000** | Baseline (optimal) | ✅ Beat | 99.6 | P:1.000, R:1.000, 28c, sw:0.2 |
-| itunes_amazon | 0.714 | Baseline (optimal) | 📈 -0.136 | 85.0 | P:1.000, R:0.556, 25c, sw:0.5 |
+| itunes_amazon | 0.650 | Enhanced (rules) | 📈 -0.200 | 85.0 | P:1.000, R:0.481, Early:37, -LLM:33.9% |
 | rotten_imdb | **0.974** | Baseline (optimal) | ✅ Beat | 97.2 | P:0.950, R:1.000, 640c, sw:0.8 |
 | walmart_amazon | **0.857** | Enhanced (rules) | ✅ Beat | 85.1 | P:0.857, R:0.857, Early:0, -LLM:0.0% |
 | zomato_yelp | **1.000** | Baseline (optimal) | ✅ Beat | 98.2 | P:1.000, R:1.000, 50c, sw:0.5 |

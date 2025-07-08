@@ -1,0 +1,11 @@
+{
+  "heuristics_file": "results/generated_rules/beer_generated_heuristics.json",
+  "rule_generation_cost": {
+    "total_cost_usd": 0.5429370000000001,
+    "session_id": "bbea0c13-836e-4eb8-88c7-dac5061a970c",
+    "duration_ms": 404486,
+    "turn_count": 32,
+    "response_length": 2371,
+    "method": "agentic"
+  }
+}

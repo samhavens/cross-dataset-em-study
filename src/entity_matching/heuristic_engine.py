@@ -9,10 +9,48 @@ Claude Code SDK to improve matching accuracy.
 import json
 import os
 import pathlib
-from typing import Dict, List, Optional, Callable, Any
+from typing import Dict, List, Optional, Callable, Any, Union
 from dataclasses import dataclass
 import importlib.util
 import sys
+
+
+@dataclass  
+class CandidateAction:
+    """Action to boost similarity during candidate generation"""
+    similarity_boost: float
+    confidence: float
+    reason: str
+
+
+@dataclass
+class ScoreAction:
+    """Action to adjust similarity score"""
+    score_adjustment: float
+    confidence: float
+    reason: str
+
+
+@dataclass
+class DecisionAction:
+    """Action to make early decision (auto-accept/reject)"""
+    terminate_early: bool
+    final_result: int  # 1 for match, 0 for no match
+    confidence: float
+    reason: str
+    skip_llm: bool = False
+
+
+@dataclass
+class WeightAction:
+    """Action to adjust semantic/trigram weights"""
+    semantic_weight: float
+    confidence: float
+    reason: str
+
+
+# Type alias for all possible actions
+HeuristicAction = Union[CandidateAction, ScoreAction, DecisionAction, WeightAction, None]
 
 
 @dataclass
@@ -22,6 +60,7 @@ class HeuristicRule:
     description: str
     implementation: str
     confidence: float
+    stage: str  # candidate_generation, pre_llm, post_semantic, pre_semantic
     test_cases: List[Dict[str, Any]]
     compiled_function: Optional[Callable] = None
 
@@ -33,6 +72,13 @@ class HeuristicEngine:
         self.dataset = dataset
         self.rules: List[HeuristicRule] = []
         self.compiled_rules: Dict[str, Callable] = {}
+        # Organize rules by stage for efficient lookup
+        self.rules_by_stage: Dict[str, List[HeuristicRule]] = {
+            'candidate_generation': [],
+            'pre_llm': [],
+            'post_semantic': [],
+            'pre_semantic': []
+        }
         
     def load_heuristics(self, heuristic_file: str) -> int:
         """Load heuristic rules from JSON file"""
@@ -44,26 +90,44 @@ class HeuristicEngine:
             with open(heuristic_file, 'r') as f:
                 data = json.load(f)
             
-            rules_data = data.get('rules', [])
-            print(f"📋 Loading {len(rules_data)} heuristic rules for {self.dataset}")
+            # Load categorized rules
+            rule_categories = [
+                ('candidate_rules', data.get('candidate_rules', [])),
+                ('score_rules', data.get('score_rules', [])),
+                ('decision_rules', data.get('decision_rules', [])),
+                ('weight_rules', data.get('weight_rules', [])),
+                ('pipeline_rules', data.get('pipeline_rules', []))
+            ]
             
-            for rule_data in rules_data:
-                rule = HeuristicRule(
-                    rule_name=rule_data['rule_name'],
-                    description=rule_data['description'],
-                    implementation=rule_data['implementation'],
-                    confidence=rule_data['confidence'],
-                    test_cases=rule_data.get('test_cases', [])
-                )
+            total_loaded = 0
+            for category, rules_data in rule_categories:
+                if not rules_data:
+                    continue
+                    
+                print(f"📋 Loading {len(rules_data)} {category} for {self.dataset}")
                 
-                # Compile the rule function
-                if self._compile_rule(rule):
-                    self.rules.append(rule)
-                    print(f"  ✅ {rule.rule_name} (confidence: {rule.confidence:.2f})")
-                else:
-                    print(f"  ❌ Failed to compile {rule.rule_name}")
+                for rule_data in rules_data:
+                    rule = HeuristicRule(
+                        rule_name=rule_data['rule_name'],
+                        description=rule_data['description'],
+                        implementation=rule_data['implementation'],
+                        confidence=rule_data['confidence'],
+                        stage=rule_data.get('stage', 'post_semantic'),
+                        test_cases=rule_data.get('test_cases', [])
+                    )
+                    
+                    # Compile the rule function
+                    if self._compile_rule(rule):
+                        self.rules.append(rule)
+                        # Add to stage-specific list
+                        if rule.stage in self.rules_by_stage:
+                            self.rules_by_stage[rule.stage].append(rule)
+                        print(f"  ✅ {rule.rule_name} ({rule.stage}, confidence: {rule.confidence:.2f})")
+                        total_loaded += 1
+                    else:
+                        print(f"  ❌ Failed to compile {rule.rule_name}")
             
-            return len(self.rules)
+            return total_loaded
             
         except Exception as e:
             print(f"Error loading heuristics: {e}")
@@ -75,12 +139,51 @@ class HeuristicEngine:
             # Create a temporary module to execute the function
             module_name = f"heuristic_{rule.rule_name}"
             
-            # Add necessary imports to the function code
+            # Add necessary imports and action classes to the function code
             function_code = f"""
 import re
 import math
 from difflib import SequenceMatcher
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
+from dataclasses import dataclass
+
+# Action classes available to heuristic functions
+@dataclass  
+class CandidateAction:
+    similarity_boost: float
+    confidence: float
+    reason: str
+
+@dataclass
+class ScoreAction:
+    score_adjustment: float
+    confidence: float
+    reason: str
+
+@dataclass
+class DecisionAction:
+    terminate_early: bool
+    final_result: int
+    confidence: float
+    reason: str
+    skip_llm: bool = False
+
+@dataclass
+class WeightAction:
+    semantic_weight: float
+    confidence: float
+    reason: str
+
+# Utility functions
+def normalize(text):
+    '''Normalize text for comparison'''
+    if not text:
+        return ""
+    return str(text).lower().strip()
+
+def get_similarity(text1, text2):
+    '''Get similarity between two texts'''
+    return SequenceMatcher(None, normalize(text1), normalize(text2)).ratio()
 
 {rule.implementation}
 """
@@ -106,23 +209,61 @@ from typing import Dict, Any, Optional
             return False
     
     def apply_heuristics(self, left_record: Dict[str, Any], right_record: Dict[str, Any]) -> float:
-        """Apply all loaded heuristic rules to a record pair"""
-        total_score_adjustment = 0.0
+        """Apply score heuristic rules to a record pair"""
+        return self.apply_stage_heuristics('post_semantic', left_record, right_record)
+    
+    def apply_stage_heuristics(self, stage: str, left_record: Dict[str, Any], right_record: Dict[str, Any], current_score: Optional[float] = None) -> Union[float, HeuristicAction]:
+        """Apply heuristic rules for a specific stage"""
+        if stage not in self.rules_by_stage:
+            return 0.0 if stage != 'candidate_generation' else None
         
-        for rule in self.rules:
+        total_score_adjustment = 0.0
+        actions = []
+        
+        for rule in self.rules_by_stage[stage]:
             if rule.compiled_function:
                 try:
                     # Apply the heuristic rule
-                    score_adjustment = rule.compiled_function(left_record, right_record)
+                    if stage == 'pre_llm' and current_score is not None:
+                        result = rule.compiled_function(left_record, right_record, current_score)
+                    else:
+                        result = rule.compiled_function(left_record, right_record)
                     
-                    # Weight by confidence
-                    weighted_adjustment = score_adjustment * rule.confidence
-                    total_score_adjustment += weighted_adjustment
+                    if result is None:
+                        continue
+                    
+                    # Handle different action types
+                    if isinstance(result, (CandidateAction, ScoreAction, DecisionAction, WeightAction)):
+                        actions.append(result)
+                    elif isinstance(result, (int, float)):
+                        # Legacy score adjustment
+                        weighted_adjustment = float(result) * rule.confidence
+                        total_score_adjustment += weighted_adjustment
                     
                 except Exception as e:
                     # Don't let individual rule failures break the whole process
                     print(f"    Warning: Rule {rule.rule_name} failed: {e}")
                     continue
+        
+        # Return appropriate result based on stage
+        if stage == 'candidate_generation':
+            # For candidate generation, return the first CandidateAction or None
+            candidate_actions = [a for a in actions if isinstance(a, CandidateAction)]
+            return candidate_actions[0] if candidate_actions else None
+        elif stage == 'pre_llm':
+            # For pre_llm, return the first DecisionAction or score adjustment
+            decision_actions = [a for a in actions if isinstance(a, DecisionAction)]
+            if decision_actions:
+                return decision_actions[0]
+        elif stage == 'pre_semantic':
+            # For pre_semantic, return the first WeightAction or None
+            weight_actions = [a for a in actions if isinstance(a, WeightAction)]
+            return weight_actions[0] if weight_actions else None
+        
+        # For post_semantic and other stages, return score adjustments
+        score_actions = [a for a in actions if isinstance(a, ScoreAction)]
+        for action in score_actions:
+            total_score_adjustment += action.score_adjustment * action.confidence
         
         return total_score_adjustment
     

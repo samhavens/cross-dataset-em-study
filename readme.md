@@ -1,14 +1,14 @@
 # Cross-Dataset Entity Matching Pipeline
 
-A sophisticated automated entity matching system that combines traditional ML techniques with LLM-powered reasoning and rule generation.
+An agentic entity matching system where Claude analyzes matching failures and writes executable code to fix them. The system provides comprehensive candidate generation analysis and multi-stage heuristic optimization.
 
 ## 🚀 What This System Does
 
-1. **Automatically optimizes hyperparameters** on dev/validation sets (no test leakage)
-2. **Generates executable matching rules** using Claude SDK analysis  
-3. **Tests both baseline and enhanced approaches** on clean test sets
-4. **Provides A/B comparison** and recommendations
-5. **Tracks costs and performance** across the entire pipeline
+1. **Analyzes candidate generation failures** - identifies when correct matches aren't even in the candidate list
+2. **Generates multi-stage executable rules** using agentic Claude SDK analysis 
+3. **Automatically optimizes hyperparameters** with dataset-aware ranges (no test leakage)
+4. **Tests both baseline and enhanced approaches** on clean test sets
+5. **Provides detailed failure analysis** with actual record examples and candidate diagnostics
 
 ## ⚡ Quick Start
 
@@ -28,59 +28,85 @@ python run_complete_pipeline.py --dataset walmart_amazon --resume
 python run_complete_pipeline.py --dataset beer --validate-rules
 ```
 
-## 📊 Pipeline Overview
+## 📊 System Architecture
 
-The system runs a **3-step automated pipeline**:
+The system runs a **4-stage agentic pipeline**:
 
-### Step 1: Hyperparameter Optimization (Dev Set)
-- Runs intelligent parameter sweep on validation/training data
-- Finds optimal: candidate count, semantic weights, model choice
-- **Zero test leakage** - uses only dev/validation sets
+### Stage 1: Improved Hyperparameter Sweep
+- **Dataset-aware ranges**: Calculates candidate limits based on context window and dataset size
+- **Geometric optimization**: Uses geometric mean between min (0.1% of candidates) and max (85% of context capacity)
+- **Embeddings cache reuse**: Eliminates duplicate embedding computation across sweep configurations
+- **Zero test leakage**: Uses only validation/training data
 
-### Step 2: Rule Generation (Claude SDK)
-- Analyzes dev set performance patterns
-- Generates executable matching rules using Claude SDK
-- Creates heuristics for early matching decisions
-- Optional: Validates and optimizes rules on dev set
+### Stage 2: Candidate Generation Analysis
+- **Failure diagnosis**: Identifies when ground truth matches aren't in candidate lists  
+- **Comprehensive coverage**: Analyzes ALL false negatives, not just samples
+- **Ranking analysis**: Reports where ground truth ranked in candidates (if present)
+- **Root cause identification**: Distinguishes candidate generation failures from LLM decision errors
 
-### Step 3: A/B Test Evaluation (Test Set)  
-- Tests **baseline** approach (optimal params only)
-- Tests **enhanced** approach (optimal params + generated rules)
-- Compares F1, cost, and performance
-- Provides clear recommendation
+### Stage 3: Agentic Multi-Stage Rule Generation
+Claude iteratively writes and tests executable rules across **4 pipeline stages**:
+
+- **`candidate_generation`**: Boost similarity to surface missed matches in candidate lists
+- **`pre_llm`**: Make early decisions to skip expensive LLM calls  
+- **`post_semantic`**: Adjust scores after semantic similarity calculation
+- **`pre_semantic`**: Modify semantic/trigram weights dynamically
+
+**Rule Types Generated**:
+```python
+CandidateAction(similarity_boost=0.4, confidence=0.8, reason="Partial name match")
+DecisionAction(terminate_early=True, final_result=1, confidence=0.95, reason="Exact match")
+ScoreAction(score_adjustment=0.3, confidence=0.8, reason="Strong field match")
+WeightAction(semantic_weight=0.9, confidence=0.7, reason="Text-heavy comparison")
+```
+
+### Stage 4: A/B Test Evaluation
+- **Baseline**: Optimal hyperparameters only
+- **Enhanced**: Optimal hyperparameters + multi-stage generated rules
+- **Detailed comparison**: F1, cost, performance, and LLM call reduction analysis
 
 ## 🎯 Example Output
 
 ```
-🚀 COMPLETE ENTITY MATCHING PIPELINE
-Dataset: beer
+🚀 COMPLETE ENTITY MATCHING PIPELINE: beer
 ================================================================
 
-🎯 STEP 1: Hyperparameter optimization on dev set
-✅ Best Dev Results: F1=0.8500, Cost=$0.045
-🎯 Optimal Parameters: 75 candidates, 0.60 semantic weight, gpt-4o-mini
+🎯 STAGE 1: Improved hyperparameter sweep
+📊 Dataset size: 3000 candidates
+🎯 Candidate sweep: [10, 39, 150] (0.3%, 1.3%, 5.0%)
+⚖️ Semantic weights: [0.15, 0.5, 0.85]
+✅ Best config: F1=0.8571, 150 candidates, 0.5 semantic weight
 
-🧠 STEP 2: Rule generation (analyzing dev results...)
-✅ Generated executable rules saved to: results/generated_rules/beer_generated_heuristics.json
+🔍 STAGE 2: Candidate generation analysis
+📊 Analyzing 77 pairs for candidate generation failures...
+📊 False negatives: 3 total
+📊 FN where ground truth NOT in candidates: 2/3 (66.7%)
+🚨 MAJOR ISSUE: 66.7% of false negatives are candidate generation failures!
 
-🎯 STEP 3A: FINAL TEST EVALUATION WITHOUT rules (optimal params baseline)
-✅ Baseline Results (no rules): F1=0.8889, Cost=$0.052
+🧠 STAGE 3: Agentic multi-stage rule generation
+🤖 Claude is analyzing error patterns and writing executable rules...
+✅ Generated candidate_rules: 2 rules for candidate generation stage
+✅ Generated score_rules: 3 rules for post_semantic stage  
+✅ Generated decision_rules: 1 rule for pre_llm stage
+📄 Rules saved to: results/beer_generated_heuristics.json
 
-🎯 STEP 3B: FINAL TEST EVALUATION WITH rules (enhanced approach)
-✅ Enhanced Results (with rules): F1=0.9200, Cost=$0.031
+🎯 STAGE 4A: Baseline evaluation (optimal params only)
+✅ Baseline: F1=0.8571, Cost=$0.052, 150 candidates/0.5 weight
+
+🎯 STAGE 4B: Enhanced evaluation (optimal params + multi-stage rules)
+✅ Enhanced: F1=0.9200, Cost=$0.031, with candidate generation fixes
 
 📊 A/B COMPARISON:
-F1 Change: +0.0311 (✅ IMPROVED)
-Cost Change: $-0.021
-Rules ✅ HELPED
+F1 Change: +0.0629 (✅ SIGNIFICANT IMPROVEMENT)
+Cost Change: $-0.021 (40% reduction via early decisions)
+Candidate generation issues: ✅ RESOLVED
 
 🏆 FINAL RESULTS FOR BEER
-Dev F1:        0.8500 ($0.045)
-Test Baseline: 0.8889 ($0.052) - optimal params only  
-Test Enhanced: 0.9200 ($0.031) - optimal params + rules
-Improvement:   +0.0311 F1 points
-Total Cost: $0.128
-LLM Call Reduction: 40.2%
+Hyperparameter Optimization: F1=0.8571 ($0.045)
+Baseline (params only):       F1=0.8571 ($0.052)
+Enhanced (params + rules):    F1=0.9200 ($0.031)
+Total Improvement:           +0.0629 F1 points
+LLM Call Reduction:          40.2%
 ```
 
 ## 🛠️ Individual Components
@@ -113,25 +139,25 @@ generator = ClaudeSDKHeuristicGenerator('beer')
 ## 📁 Project Structure
 
 ```
-├── run_complete_pipeline.py           # 🚀 Main automated pipeline
-├── run_enhanced_matching.py           # Enhanced matching with rules  
-├── llm_em_hybrid.py                   # Basic hybrid matching
+├── run_complete_pipeline.py           # 🚀 Main agentic pipeline
+├── run_enhanced_matching.py           # Enhanced matching with multi-stage rules
 ├── generate_internal_leaderboard.py   # Performance tracking
 │
 ├── src/
 │   ├── entity_matching/
-│   │   ├── hybrid_matcher.py          # Core matching logic
-│   │   └── enhanced_heuristic_engine.py # Rule execution engine
+│   │   ├── hybrid_matcher.py          # Core matching with candidate generation heuristics
+│   │   └── heuristic_engine.py        # Multi-stage rule execution engine
 │   │
 │   ├── experiments/
-│   │   ├── claude_sdk_heuristic_generator.py # Rule generation
-│   │   ├── claude_sdk_optimizer.py           # Parameter optimization  
-│   │   └── intelligent_sweep.py              # Smart hyperparameter search
+│   │   ├── agentic_heuristic_generator.py    # 🧠 Agentic rule generation with candidate analysis
+│   │   ├── improved_sweep.py                 # Dataset-aware hyperparameter optimization
+│   │   └── claude_sdk_heuristic_generator.py # Legacy rule generation (deprecated)
 │   │
 │   └── scripts/                       # Utility scripts
 │
-├── results/                           # Generated results and rules
+├── results/                           # Generated rules and detailed results
 ├── data/raw/                         # Entity matching datasets
+├── .embeddings_cache/                # Cached semantic embeddings (reused across runs)
 └── leaderboard.md                    # Performance comparison
 ```
 
@@ -192,20 +218,69 @@ Current leaderboard performance (F1 scores):
 
 The pipeline achieves **state-of-the-art performance** on most datasets while maintaining cost efficiency through rule-based early decisions.
 
+## 🧠 How the Agentic System Works
+
+### Candidate Generation Analysis
+The system first **reproduces the exact candidate selection** that the original model used, then analyzes:
+- Whether ground truth matches made it into the candidate list
+- Where ground truth ranked in the candidates (if present)  
+- Patterns in missed candidates vs. successful ones
+
+This identifies the **root cause** of false negatives:
+- **Candidate generation failure**: Correct match wasn't even considered (needs candidate rules)
+- **LLM decision failure**: Correct match was in candidates but LLM chose wrong (needs score/decision rules)
+
+### Multi-Stage Rule Architecture
+Claude writes rules that execute at different pipeline stages:
+
+```
+Record Pair → [candidate_generation] → [pre_semantic] → [post_semantic] → [pre_llm] → LLM → Decision
+                     ↑                     ↑               ↑              ↑
+            CandidateAction         WeightAction    ScoreAction    DecisionAction
+         (boost similarity)    (adjust weights)  (adjust scores) (skip LLM)
+```
+
+### Agentic Rule Generation Process
+1. **Claude reads actual error data** - false positives, false negatives with candidate analysis
+2. **Claude writes Python functions** that return Action objects based on record patterns
+3. **Claude tests rules** by running the matching pipeline with `--heuristic-file`
+4. **Claude iterates** - analyzes results, refines rules, tests again
+5. **Claude outputs final rules** in multi-stage JSON format
+
+### Example Generated Rule
+```python
+def boost_partial_name_candidates(left_record, right_record):
+    left_name = normalize(left_record.get('Beer_Name', ''))
+    right_name = normalize(right_record.get('Beer_Name', ''))
+    if left_name and right_name and (left_name in right_name or right_name in left_name):
+        return CandidateAction(similarity_boost=0.4, confidence=0.8, 
+                              reason='Partial name match - surface in candidates')
+    return None
+```
+
+This rule runs during `candidate_generation` stage and boosts trigram similarity by 0.4×0.8=0.32 for partial name matches, helping them surface in the candidate list.
+
 ## 🔬 Research Features
 
-- **Zero test leakage**: Strict dev/test separation
-- **Automated rule discovery**: Claude SDK generates domain-specific rules
-- **Adaptive optimization**: Smart hyperparameter search
-- **Cost-performance tradeoffs**: Balances accuracy with efficiency
+- **Zero test leakage**: Strict dev/test separation with temporary datasets
+- **Agentic rule discovery**: Claude analyzes real failures and writes executable fixes
+- **Multi-stage optimization**: Rules execute at 4 different pipeline stages
+- **Candidate generation diagnosis**: Identifies root causes of matching failures
+- **Embeddings cache efficiency**: Reuses expensive embeddings across experiments
 - **Reproducible experiments**: Full checkpoint and resume support
 
 ## 🤝 Contributing
 
-1. Add new datasets to `data/raw/` following the standard format
-2. Extend rule generation in `src/experiments/claude_sdk_heuristic_generator.py`
-3. Add new matching strategies in `src/entity_matching/`
-4. Update leaderboard with `python generate_internal_leaderboard.py`
+1. **Add new datasets** to `data/raw/` following the standard format (tableA.csv, tableB.csv, train/valid/test.csv)
+2. **Extend agentic rule generation** in `src/experiments/agentic_heuristic_generator.py`
+3. **Add new action types** to `src/entity_matching/heuristic_engine.py` and integrate into `hybrid_matcher.py`
+4. **Enhance candidate analysis** by improving the failure diagnosis in candidate generation analysis
+5. **Update leaderboard** with `python generate_internal_leaderboard.py`
+
+### Key Files to Understand:
+- `src/experiments/agentic_heuristic_generator.py` - Where Claude analyzes failures and generates rules
+- `src/entity_matching/heuristic_engine.py` - Multi-stage rule execution engine
+- `src/entity_matching/hybrid_matcher.py` - Core matching logic with candidate generation heuristics integration
 
 ## 📄 License
 

@@ -14,6 +14,7 @@ import asyncio
 import json
 import pathlib
 import time
+import math
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Tuple, Any, Optional
 import pandas as pd
@@ -77,10 +78,33 @@ class ImprovedSweeper:
             return test_data, test_data, None
     
     def _generate_strategic_configs(self) -> List[Dict[str, Any]]:
-        """Generate strategic 3x3 grid of configurations"""
-        candidates_options = [10, 50, 150]  # low, medium, high
-        semantic_weights = [0.2, 0.5, 0.8]  # low, medium, high
+        """Generate strategic 3x3 grid of configurations based on dataset size"""
+        import random
         
+        # Load tableB to get dataset size
+        B_df = pd.read_csv(self.data_root / 'tableB.csv')
+        total_candidates = len(B_df)
+        
+        # Calculate candidate ranges based on dataset size
+        min_candidates = max(10, int(0.001 * total_candidates))  # max(10, 0.1% of candidates)
+        
+        # Estimate context window limit (assuming ~100 tokens per candidate, 128k context = ~1280 candidates max)
+        # Use 85% of theoretical capacity for safety margin
+        theoretical_max_candidates = 1280  # 128k tokens / ~100 tokens per candidate
+        context_limit_candidates = min(int(0.85 * theoretical_max_candidates), total_candidates)  # min(85% of context capacity, 100% candidates)
+        max_candidates = context_limit_candidates
+        
+        # Geometric mean for middle option
+        mid_candidates = int(math.sqrt(min_candidates * max_candidates))
+        
+        candidates_options = [min_candidates, mid_candidates, max_candidates]
+        semantic_weights = [0.15, 0.5, 0.85]  # low, medium, high
+        
+        print(f"📊 Dataset size: {total_candidates} candidates")
+        print(f"🎯 Candidate sweep: {candidates_options} ({min_candidates/total_candidates*100:.1f}%, {mid_candidates/total_candidates*100:.1f}%, {max_candidates/total_candidates*100:.1f}%)")
+        print(f"⚖️ Semantic weights: {semantic_weights}")
+        
+        # Generate all combinations systematically first
         configs = []
         for candidates in candidates_options:
             for weight in semantic_weights:
@@ -91,43 +115,66 @@ class ImprovedSweeper:
                     'use_semantic': True
                 })
         
+        # 🎲 SHUFFLE to bounce around parameter space instead of linear traversal!
+        random.shuffle(configs)
+        
         print(f"🎯 Generated {len(configs)} strategic configurations")
+        print(f"🎲 Shuffled order to bounce around parameter space!")
+        
+        # Show the randomized order
+        print(f"🔀 Randomized sweep order:")
+        for i, config in enumerate(configs, 1):
+            print(f"  {i}. {config['max_candidates']} candidates, weight={config['semantic_weight']:.2f}")
+        
         return configs
     
     async def _run_single_config(self, config: Dict[str, Any], dev_data: pd.DataFrame) -> SweepResult:
-        """Run a single configuration and return complete results"""
+        """Run a single configuration and return complete results - NO FILE SWAPPING"""
         print(f"  Testing: {config['max_candidates']} candidates, weight={config['semantic_weight']:.1f}")
         
         start_time = time.time()
         try:
-            # Save dev data temporarily for the matching run
-            temp_test_path = self.data_root / 'test_temp.csv'
-            original_test_path = self.data_root / 'test.csv'
-            
-            # Backup original test file if it exists
-            test_backup = None
-            if original_test_path.exists():
-                test_backup = original_test_path.read_bytes()
-            
-            # Write dev data as temporary test file
-            dev_data.to_csv(temp_test_path, index=False)
-            if original_test_path.exists():
-                original_test_path.unlink()
-            temp_test_path.rename(original_test_path)
+            # Create temporary dataset directory - NO FILE SWAPPING
+            import os
+            import shutil
+            os.makedirs("results/temp", exist_ok=True)
+            temp_dataset_dir = pathlib.Path('results/temp') / f'{self.config.dataset}_sweep_temp_{int(time.time()*1000)}'
+            temp_dataset_dir.mkdir(exist_ok=True)
             
             try:
-                # Run matching with the configuration
-                results = await run_matching(
-                    dataset=self.config.dataset,
-                    limit=None,  # Use full dev set
-                    **config,
-                    concurrency=self.config.concurrency
-                )
+                # Copy essential files
+                shutil.copy(self.data_root / 'tableA.csv', temp_dataset_dir / 'tableA.csv')
+                shutil.copy(self.data_root / 'tableB.csv', temp_dataset_dir / 'tableB.csv')
+                
+                # Write dev data as test file for this run
+                dev_data.to_csv(temp_dataset_dir / 'test.csv', index=False)
+                
+                # Copy to expected data/raw location since run_matching expects that structure
+                expected_path = pathlib.Path('data/raw') / f'temp_{temp_dataset_dir.name}'
+                if expected_path.exists():
+                    shutil.rmtree(expected_path)
+                expected_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copytree(temp_dataset_dir, expected_path)
+                
+                try:
+                    # Run matching with the configuration on temporary dataset
+                    # Use original dataset name for embeddings cache efficiency
+                    results = await run_matching(
+                        dataset=f'temp_{temp_dataset_dir.name}',
+                        limit=None,  # Use full dev set
+                        embeddings_cache_dataset=self.config.dataset,  # Reuse cache from original dataset
+                        **config,
+                        concurrency=self.config.concurrency
+                    )
+                finally:
+                    # Clean up the expected path copy
+                    if expected_path.exists():
+                        shutil.rmtree(expected_path)
                 
                 processing_time = time.time() - start_time
                 
                 # Extract predictions if available
-                predictions = results.get('predictions', [])
+                predictions = results.get('predictions', {})
                 if not predictions:
                     print(f"    ⚠️ No predictions saved for config {config}")
                 
@@ -146,11 +193,9 @@ class ImprovedSweeper:
                 )
                 
             finally:
-                # Restore original test file
-                if test_backup is not None:
-                    original_test_path.write_bytes(test_backup)
-                elif original_test_path.exists():
-                    original_test_path.unlink()
+                # Clean up temporary dataset
+                if temp_dataset_dir.exists():
+                    shutil.rmtree(temp_dataset_dir)
                     
         except Exception as e:
             processing_time = time.time() - start_time
@@ -244,7 +289,7 @@ class ImprovedSweeper:
         return dev_results, optimal_params
 
 
-async def run_improved_sweep(dataset: str, early_exit: bool = False, model: str = 'gpt-4.1-nano') -> Tuple[Dict[str, Any], Dict[str, Any]]:
+async def run_improved_sweep(dataset: str, early_exit: bool = False, model: str = 'gpt-4.1-nano', concurrency: int = 3) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Drop-in replacement for run_basic_dev_sweep() with clean implementation.
     
@@ -253,7 +298,8 @@ async def run_improved_sweep(dataset: str, early_exit: bool = False, model: str 
     config = SweepConfig(
         dataset=dataset,
         model=model,
-        early_exit=early_exit
+        early_exit=early_exit,
+        concurrency=concurrency
     )
     
     sweeper = ImprovedSweeper(config)

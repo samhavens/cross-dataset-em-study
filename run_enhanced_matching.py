@@ -354,7 +354,8 @@ async def run_enhanced_matching(
         "cost": total_cost,
         "early_decisions": early_decisions,
         "llm_calls": llm_calls,
-        "llm_call_reduction": (1 - llm_calls/len(pairs))*100
+        "llm_call_reduction": (1 - llm_calls/len(pairs))*100,
+        "predictions": all_predictions  # Include predictions for failure analysis
     }
 
 

@@ -282,12 +282,36 @@ def get_top_candidates(left_record: dict, right_records, max_candidates: int, cf
             for record_id, right_record in right_records.items():
                 right_str = json.dumps(right_record, ensure_ascii=False).lower()
                 score = trigram_similarity(left_str, right_str)
+                
+                # Apply candidate generation heuristics to boost similarity for candidate selection
+                if heuristic_engine:
+                    try:
+                        candidate_action = heuristic_engine.apply_stage_heuristics('candidate_generation', left_record, right_record)
+                        if candidate_action and hasattr(candidate_action, 'similarity_boost'):
+                            score += candidate_action.similarity_boost * candidate_action.confidence
+                            score = min(score, 1.0)  # Cap at 1.0
+                    except Exception as e:
+                        # Don't let heuristic failures break candidate generation
+                        pass
+                
                 trigram_scores.append((score, record_id, right_record, right_str))
         else:
             # List access (index-based)
             for i, right_record in enumerate(right_records):
                 right_str = json.dumps(right_record, ensure_ascii=False).lower()
                 score = trigram_similarity(left_str, right_str)
+                
+                # Apply candidate generation heuristics to boost similarity for candidate selection
+                if heuristic_engine:
+                    try:
+                        candidate_action = heuristic_engine.apply_stage_heuristics('candidate_generation', left_record, right_record)
+                        if candidate_action and hasattr(candidate_action, 'similarity_boost'):
+                            score += candidate_action.similarity_boost * candidate_action.confidence
+                            score = min(score, 1.0)  # Cap at 1.0
+                    except Exception as e:
+                        # Don't let heuristic failures break candidate generation
+                        pass
+                
                 trigram_scores.append((score, i, right_record, right_str))
         
         # Sort by trigram similarity and take top candidates for semantic reranking
@@ -355,7 +379,17 @@ def get_top_candidates(left_record: dict, right_records, max_candidates: int, cf
                 right_str = json.dumps(right_record, ensure_ascii=False).lower()
                 score = trigram_similarity(left_str, right_str)
                 
-                # Apply heuristic adjustments if available
+                # Apply candidate generation heuristics first
+                if heuristic_engine:
+                    try:
+                        candidate_action = heuristic_engine.apply_stage_heuristics('candidate_generation', left_record, right_record)
+                        if candidate_action and hasattr(candidate_action, 'similarity_boost'):
+                            score += candidate_action.similarity_boost * candidate_action.confidence
+                            score = min(score, 1.0)  # Cap at 1.0
+                    except Exception:
+                        pass
+                
+                # Apply other heuristic adjustments if available
                 if heuristic_engine:
                     try:
                         heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, right_record)
@@ -370,7 +404,17 @@ def get_top_candidates(left_record: dict, right_records, max_candidates: int, cf
                 right_str = json.dumps(right_record, ensure_ascii=False).lower()
                 score = trigram_similarity(left_str, right_str)
                 
-                # Apply heuristic adjustments if available
+                # Apply candidate generation heuristics first
+                if heuristic_engine:
+                    try:
+                        candidate_action = heuristic_engine.apply_stage_heuristics('candidate_generation', left_record, right_record)
+                        if candidate_action and hasattr(candidate_action, 'similarity_boost'):
+                            score += candidate_action.similarity_boost * candidate_action.confidence
+                            score = min(score, 1.0)  # Cap at 1.0
+                    except Exception:
+                        pass
+                
+                # Apply other heuristic adjustments if available
                 if heuristic_engine:
                     try:
                         heuristic_adjustment = heuristic_engine.apply_heuristics(left_record, right_record)
@@ -525,7 +569,8 @@ async def run_matching(dataset: str,
                       use_semantic: bool = True,
                       semantic_weight: float = 0.5,
                       use_heuristics: bool = False,
-                      heuristic_file: Optional[str] = None) -> Dict:
+                      heuristic_file: Optional[str] = None,
+                      embeddings_cache_dataset: Optional[str] = None) -> Dict:
     """
     Main function to run entity matching
     
@@ -596,7 +641,8 @@ async def run_matching(dataset: str,
     
     # Initialize embeddings cache if using semantic similarity
     if cfg.use_semantic and SEMANTIC_AVAILABLE:
-        cfg.embeddings = compute_dataset_embeddings(dataset, cfg)
+        cache_dataset = embeddings_cache_dataset or dataset
+        cfg.embeddings = compute_dataset_embeddings(cache_dataset, cfg)
 
     # Create semaphore for concurrency control
     semaphore = asyncio.Semaphore(concurrency)

@@ -162,7 +162,7 @@ class ClaudeSDKHeuristicGenerator:
         
         return A, B, validation_pairs, test_pairs
     
-    async def run_comprehensive_analysis(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    async def run_comprehensive_analysis(self, config: Dict[str, Any], concurrency: int = 3) -> Dict[str, Any]:
         """Run comprehensive analysis on ONLY validation/dev set for heuristic generation (no test leakage)"""
         print(f"🔍 RUNNING COMPREHENSIVE ANALYSIS FOR HEURISTIC GENERATION")
         print(f"Config: {config}")
@@ -191,7 +191,7 @@ class ClaudeSDKHeuristicGenerator:
                     model=config['model'],
                     use_semantic=config.get('use_semantic', True),
                     semantic_weight=config.get('semantic_weight', 0.5),
-                    concurrency=3  # Lower concurrency to avoid timeouts
+                    concurrency=concurrency
                 )
                 results['validation'] = val_results
             finally:
@@ -228,7 +228,7 @@ class ClaudeSDKHeuristicGenerator:
                     model=config['model'],
                     use_semantic=config.get('use_semantic', True),
                     semantic_weight=config.get('semantic_weight', 0.5),
-                    concurrency=3  # Lower concurrency to avoid timeouts
+                    concurrency=concurrency
                 )
                 results['validation'] = val_results  # Store as validation for consistency
             finally:

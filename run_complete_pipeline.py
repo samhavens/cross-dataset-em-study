@@ -20,227 +20,170 @@ import time
 import os
 import subprocess
 from datetime import datetime
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 import pandas as pd
 
 from src.entity_matching.hybrid_matcher import run_matching
 from src.experiments.claude_sdk_heuristic_generator import ClaudeSDKHeuristicGenerator
 from src.experiments.agentic_heuristic_generator import generate_agentic_heuristics
-from src.experiments.intelligent_sweep import IntelligentSweeper
 from run_enhanced_matching import run_enhanced_matching
 from src.experiments.claude_sdk_optimizer import ClaudeSDKOptimizer
 from src.experiments.improved_sweep import run_improved_sweep
 
 
-async def run_basic_dev_sweep(dataset: str, early_exit: bool = False, model: str = 'gpt-4.1-nano') -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Run basic hyperparameter sweep on dev set to find good parameters quickly"""
+async def run_basic_dev_sweep(dataset: str, early_exit: bool = False, model: str = 'gpt-4.1-nano', concurrency: int = 3) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """DEPRECATED: Use run_improved_sweep instead - this function now redirects to the clean implementation"""
+    print("⚠️ LEGACY SWEEP: Redirecting to improved sweep (no file swapping)")
+    from src.experiments.improved_sweep import run_improved_sweep
+    return await run_improved_sweep(dataset, early_exit, model, concurrency)
+
+
+async def run_dev_only_analysis_with_params(dataset: str, params: Dict[str, Any], model: str = 'gpt-4.1-nano', concurrency: int = 3) -> Dict[str, Any]:
+    """Run dev set analysis with specific hyperparameters - NO FILE SWAPPING"""
     data_root = pathlib.Path('data') / 'raw' / dataset
     
-    # Set up dev set (no test leakage)
-    limit = None  # Use full dev set for reliable optimization
+    # Create temporary dataset - NO FILE SWAPPING
+    os.makedirs("results/temp", exist_ok=True)
+    temp_dataset_dir = pathlib.Path('results/temp') / f'{dataset}_dev_temp'
+    temp_dataset_dir.mkdir(exist_ok=True)
     
-    if (data_root / 'valid.csv').exists():
-        print("✅ Using validation set for hyperparameter sweep (no test leakage)")
-        # Temporarily swap test.csv with valid.csv for dev analysis
-        test_backup = data_root / 'test.csv.backup'
-        valid_file = data_root / 'valid.csv'
-        test_file = data_root / 'test.csv'
+    try:
+        import shutil
+        # Copy essential files
+        shutil.copy(data_root / 'tableA.csv', temp_dataset_dir / 'tableA.csv')
+        shutil.copy(data_root / 'tableB.csv', temp_dataset_dir / 'tableB.csv')
         
-        # Backup original test and use validation
-        test_file.rename(test_backup)
-        valid_file.rename(test_file)
+        # Decide what to use as dev set
+        if (data_root / 'valid.csv').exists():
+            print("✅ Using validation set for dev analysis (no test leakage)")
+            shutil.copy(data_root / 'valid.csv', temp_dataset_dir / 'test.csv')
+        elif (data_root / 'train.csv').exists():
+            print("✅ Using slice of training set for dev analysis (no test leakage)")
+            train_pairs = pd.read_csv(data_root / 'train.csv')
+            dev_slice_size = min(100, len(train_pairs))
+            train_slice = train_pairs.head(dev_slice_size)
+            print(f"📊 Using {dev_slice_size} pairs from training set for dev analysis")
+            train_slice.to_csv(temp_dataset_dir / 'test.csv', index=False)
+        else:
+            print("⚠️ No validation or training set - using test set for dev analysis (test won't be clean)")
+            shutil.copy(data_root / 'test.csv', temp_dataset_dir / 'test.csv')
+        
+        # Run matching on temporary dataset
+        # We need to use a different approach since run_matching expects data/raw/dataset structure
+        # Let's create a symlink or copy to the expected location
+        expected_path = pathlib.Path('data/raw') / f'temp_{dataset}_dev_temp'
+        if expected_path.exists():
+            shutil.rmtree(expected_path)
+        expected_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(temp_dataset_dir, expected_path)
         
         try:
-            # Run strategic sweep - extreme/low/middle candidates × low/medium/high semantic weights
-            sweeper = IntelligentSweeper(dataset, limit, early_exit, model)
-            await sweeper.run_strategic_sweep()  # Strategic 3×3 grid sweep
-            
-            # Get best result - break ties by preferring higher max_candidates for better generalization
-            best_result = max(sweeper.results, key=lambda r: (r.f1_score, r.config.max_candidates))
-            
-            # Convert to format expected by rest of pipeline
-            dev_results = {
-                'metrics': {
-                    'f1': best_result.f1_score,
-                    'precision': best_result.precision,
-                    'recall': best_result.recall,
-                },
-                'cost_usd': best_result.cost_usd,
-                'processed_pairs': best_result.processed_pairs,
-                'predictions_made': best_result.predictions_made
-            }
-            
-            # Extract optimal parameters
-            optimal_params = {
-                'max_candidates': best_result.config.max_candidates,
-                'semantic_weight': best_result.config.semantic_weight,
-                'model': best_result.config.model,
-                'use_semantic': best_result.config.use_semantic
-            }
-            
+            dev_results = await run_matching(
+                dataset=f'temp_{dataset}_dev_temp',
+                limit=None,
+                max_candidates=params.get('max_candidates', 150),
+                model=model,
+                semantic_weight=params.get('semantic_weight', 0.5),
+                use_semantic=params.get('use_semantic', True),
+                embeddings_cache_dataset=dataset,  # Reuse cache from original dataset
+                concurrency=concurrency
+            )
         finally:
-            # Restore original files
-            test_file.rename(valid_file)
-            test_backup.rename(test_file)
-            
-    elif (data_root / 'train.csv').exists():
-        print("✅ Using slice of training set for hyperparameter sweep (no test leakage)")
-        # Use a reasonable slice of training set
-        train_pairs = pd.read_csv(data_root / 'train.csv')
-        dev_slice_size = min(100, len(train_pairs))  # Take up to 100 pairs for sweep
-        train_slice = train_pairs.head(dev_slice_size)
+            # Clean up the expected path copy
+            if expected_path.exists():
+                shutil.rmtree(expected_path)
         
-        print(f"📊 Using {dev_slice_size} pairs from training set for hyperparameter optimization")
+        return dev_results
         
-        # Create temporary dev file
-        dev_file = data_root / 'dev_temp.csv'
-        train_slice.to_csv(dev_file, index=False)
-        
-        # Temporarily swap test.csv with dev slice
-        test_backup = data_root / 'test.csv.backup'
-        test_file = data_root / 'test.csv'
-        
-        # Backup original test and use dev slice
-        test_file.rename(test_backup)
-        dev_file.rename(test_file)
-        
-        try:
-            # Run strategic sweep - extreme/low/middle candidates × low/medium/high semantic weights
-            sweeper = IntelligentSweeper(dataset, None, early_exit, model)  # Use full dev slice
-            await sweeper.run_strategic_sweep()  # Strategic 3×3 grid sweep
-            
-            # Get best result - break ties by preferring higher max_candidates for better generalization
-            best_result = max(sweeper.results, key=lambda r: (r.f1_score, r.config.max_candidates))
-            
-            # Convert to format expected by rest of pipeline
-            dev_results = {
-                'metrics': {
-                    'f1': best_result.f1_score,
-                    'precision': best_result.precision,
-                    'recall': best_result.recall,
-                },
-                'cost_usd': best_result.cost_usd,
-                'processed_pairs': best_result.processed_pairs,
-                'predictions_made': best_result.predictions_made
-            }
-            
-            # Extract optimal parameters
-            optimal_params = {
-                'max_candidates': best_result.config.max_candidates,
-                'semantic_weight': best_result.config.semantic_weight,
-                'model': best_result.config.model,
-                'use_semantic': best_result.config.use_semantic
-            }
-            
-        finally:
-            # Restore original files
-            test_file.rename(dev_file)
-            test_backup.rename(test_file)
-            # Clean up temp file
-            dev_file.unlink()
-    else:
-        print("⚠️ No validation or training set - using fallback parameters")
-        # Fallback to reasonable defaults
-        dev_results = {
-            'metrics': {'f1': 0.0, 'precision': 0.0, 'recall': 0.0},
-            'cost_usd': 0.0,
-            'processed_pairs': 0,
-            'predictions_made': 0
-        }
-        optimal_params = {
-            'max_candidates': 50,
-            'semantic_weight': 0.5,
-            'model': model,
-            'use_semantic': True
-        }
-    
-    return dev_results, optimal_params
+    finally:
+        # Clean up temporary dataset
+        if temp_dataset_dir.exists():
+            shutil.rmtree(temp_dataset_dir)
 
 
 async def run_dev_only_analysis(dataset: str, model: str = 'gpt-4.1-nano', concurrency: int = 3) -> Dict[str, Any]:
-    """Run dev set analysis without test set leakage"""
+    """Run dev set analysis without test set leakage - NO FILE SWAPPING"""
+    return await run_dev_only_analysis_with_params(
+        dataset=dataset,
+        params={'max_candidates': 150, 'semantic_weight': 0.5, 'use_semantic': True},
+        model=model,
+        concurrency=concurrency
+    )
+
+
+async def run_train_for_rule_data(dataset: str, optimal_params: Dict[str, Any], model: str = 'gpt-4.1-nano', concurrency: int = 3) -> Dict[str, Any]:
+    """Run on train set with optimal params to get more error examples for rule generation - NO FILE SWAPPING"""
     data_root = pathlib.Path('data') / 'raw' / dataset
     
-    # Check if validation set exists
-    if (data_root / 'valid.csv').exists():
-        print("✅ Using validation set for dev analysis (no test leakage)")
-        # Temporarily swap test.csv with valid.csv for dev analysis
-        test_backup = data_root / 'test.csv.backup'
-        valid_file = data_root / 'valid.csv'
-        test_file = data_root / 'test.csv'
-        
-        # Backup original test and use validation
-        test_file.rename(test_backup)
-        valid_file.rename(test_file)
-        
-        try:
-            dev_results = await run_matching(
-                dataset=dataset,
-                limit=None,
-                max_candidates=150,
-                model=model,
-                semantic_weight=0.5,
-                use_semantic=True,
-                concurrency=concurrency
-            )
-        finally:
-            # Restore original files
-            test_file.rename(valid_file)
-            test_backup.rename(test_file)
-    elif (data_root / 'train.csv').exists():
-        print("✅ Using slice of training set for dev analysis (no test leakage)")
-        
-        # Load train.csv and take a reasonable slice (e.g., first 100 pairs)
-        train_pairs = pd.read_csv(data_root / 'train.csv')
-        dev_slice_size = min(100, len(train_pairs))  # Take up to 100 pairs
-        train_slice = train_pairs.head(dev_slice_size)
-        
-        print(f"📊 Using {dev_slice_size} pairs from training set for dev analysis")
-        
-        # Create temporary dev file
-        dev_file = data_root / 'dev_temp.csv'
-        train_slice.to_csv(dev_file, index=False)
-        
-        # Temporarily swap test.csv with dev slice
-        test_backup = data_root / 'test.csv.backup'
-        test_file = data_root / 'test.csv'
-        
-        # Backup original test and use dev slice
-        test_file.rename(test_backup)
-        dev_file.rename(test_file)
-        
-        try:
-            dev_results = await run_matching(
-                dataset=dataset,
-                limit=None,
-                max_candidates=150,
-                model=model,
-                semantic_weight=0.5,
-                use_semantic=True,
-                concurrency=concurrency
-            )
-        finally:
-            # Restore original files
-            test_file.rename(dev_file)
-            test_backup.rename(test_file)
-            # Clean up temp file
-            dev_file.unlink()
-    else:
-        print("⚠️ No validation or training set - using test set for dev analysis (test won't be clean)")
-        dev_results = await run_matching(
-            dataset=dataset,
-            limit=None,
-            max_candidates=150,
-            model='gpt-4.1-nano',
-            semantic_weight=0.5,
-            use_semantic=True,
-            concurrency=concurrency
-        )
+    if not (data_root / 'train.csv').exists():
+        print("⚠️ No train.csv found - cannot use train set for rule data")
+        return None
     
-    return dev_results
+    print(f"🎯 Running on TRAIN SET with optimal params to get more error examples...")
+    print(f"   This gives Claude much better signal for rule generation")
+    print(f"   📁 NO FILE SWAPPING - using temporary dataset parameter")
+    
+    # Load train data directly - NO FILE MANIPULATION
+    train_pairs = pd.read_csv(data_root / 'train.csv')
+    
+    # Use a reasonable subset for better error signal, but avoid timeouts
+    # Adjust size based on dataset - larger datasets need smaller samples
+    max_train_size = min(200 if len(train_pairs) > 1000 else 300, len(train_pairs))  # Smaller for large datasets
+    train_subset = train_pairs.head(max_train_size)
+    
+    print(f"📊 Using {len(train_subset)} pairs from train set for error analysis")
+    
+    # Create a temporary dataset file in results/temp
+    os.makedirs("results/temp", exist_ok=True)
+    temp_train_file = f"results/temp/{dataset}_train_subset.csv"
+    train_subset.to_csv(temp_train_file, index=False)
+    
+    try:
+        # Run matching on the temporary train subset file by temporarily creating a mini-dataset
+        temp_dataset_dir = pathlib.Path('results/temp') / f'{dataset}_train_temp'
+        temp_dataset_dir.mkdir(exist_ok=True)
+        
+        # Copy the essential files
+        import shutil
+        shutil.copy(data_root / 'tableA.csv', temp_dataset_dir / 'tableA.csv')
+        shutil.copy(data_root / 'tableB.csv', temp_dataset_dir / 'tableB.csv')
+        shutil.copy(temp_train_file, temp_dataset_dir / 'test.csv')  # Use train subset as test for this run
+        
+        # Run matching on temporary dataset
+        # Copy to expected data/raw location since run_matching expects that structure
+        expected_path = pathlib.Path('data/raw') / f'temp_{dataset}_train_temp'
+        if expected_path.exists():
+            shutil.rmtree(expected_path)
+        expected_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(temp_dataset_dir, expected_path)
+        
+        try:
+            train_results = await run_matching(
+                dataset=f'temp_{dataset}_train_temp',
+                limit=None,
+                max_candidates=optimal_params['max_candidates'],
+                model=model,
+                semantic_weight=optimal_params['semantic_weight'],
+                use_semantic=optimal_params.get('use_semantic', True),
+                concurrency=concurrency
+            )
+        finally:
+            # Clean up the expected path copy
+            if expected_path.exists():
+                shutil.rmtree(expected_path)
+        
+        print(f"✅ Train analysis: F1={train_results['metrics']['f1']:.4f}, {len(train_results.get('predictions', {}))} predictions")
+        return train_results
+        
+    finally:
+        # Clean up temporary files
+        if os.path.exists(temp_train_file):
+            os.unlink(temp_train_file)
+        if temp_dataset_dir.exists():
+            shutil.rmtree(temp_dataset_dir)
 
 
-async def generate_actual_rules(dataset: str, dev_results: Dict[str, Any], model: str = 'gpt-4.1-nano', use_agentic: bool = True) -> str:
+async def generate_actual_rules(dataset: str, dev_results: Dict[str, Any], model: str = 'gpt-4.1-nano', use_agentic: bool = True, use_train_for_rules: bool = False, optimal_params: Optional[Dict[str, Any]] = None, concurrency: int = 3) -> Tuple[str, Dict[str, Any]]:
     """Generate actual executable rules using Claude SDK heuristic generator"""
     print(f"🧠 STEP 2: Generating ACTUAL EXECUTABLE RULES using Claude SDK")
     
@@ -248,17 +191,37 @@ async def generate_actual_rules(dataset: str, dev_results: Dict[str, Any], model
     heuristics_file = f"results/generated_rules/{dataset}_generated_heuristics.json"
     
     try:
-        print(f"🔄 Using existing dev results (F1={dev_results['metrics']['f1']:.4f}) for rule generation")
+        # Decide which data to use for rule generation
+        rule_data = dev_results
+        if use_train_for_rules and optimal_params:
+            print(f"🎯 Using TRAIN SET for better error signal in rule generation")
+            try:
+                train_results = await run_train_for_rule_data(dataset, optimal_params, model, concurrency)
+                if train_results:
+                    rule_data = train_results
+                    print(f"🔄 Using train results (F1={train_results['metrics']['f1']:.4f}) for rule generation")
+                else:
+                    print(f"⚠️ Train analysis failed, falling back to dev results")
+                    print(f"🔄 Using dev results (F1={dev_results['metrics']['f1']:.4f}) for rule generation")
+            except Exception as e:
+                print(f"⚠️ Train analysis failed with error: {e}")
+                print(f"🔄 Falling back to dev results (F1={dev_results['metrics']['f1']:.4f}) for rule generation")
+        else:
+            print(f"🔄 Using dev results (F1={dev_results['metrics']['f1']:.4f}) for rule generation")
+        
+        rule_cost_info = {'total_cost_usd': 0.0, 'method': 'unknown'}
         
         if use_agentic:
             print(f"🤖 Using AGENTIC rule generation (Claude can test and iterate)")
-            heuristics_file = await generate_agentic_heuristics(dataset, dev_results, heuristics_file)
+            heuristics_file, rule_cost_info = await generate_agentic_heuristics(dataset, rule_data, heuristics_file)
+            print(f"💰 Agentic rule generation cost: ${rule_cost_info.get('total_cost_usd', 0):.4f}")
+            rule_cost_info['method'] = 'agentic'
         else:
             print(f"📋 Using LEGACY rule generation (simple prompt-response)")
             generator = ClaudeSDKHeuristicGenerator(dataset)
             
-            # Generate failure patterns from existing results
-            patterns = generator.analyze_comprehensive_failure_patterns(dev_results)
+            # Generate failure patterns from rule_data (could be dev or train)
+            patterns = generator.analyze_comprehensive_failure_patterns(rule_data)
             
             # Generate heuristics from the patterns
             rules = await generator.generate_heuristics(patterns)
@@ -266,9 +229,11 @@ async def generate_actual_rules(dataset: str, dev_results: Dict[str, Any], model
             # Save the generated rules
             if rules:
                 generator.save_heuristics(rules, heuristics_file)
+            
+            rule_cost_info = {'total_cost_usd': 0.0, 'method': 'legacy'}  # Legacy doesn't track costs yet
         
         print(f"✅ Generated executable rules saved to: {heuristics_file}")
-        return heuristics_file
+        return heuristics_file, rule_cost_info
         
     except Exception as e:
         print(f"❌ CRITICAL ERROR: Rule generation failed: {e}")
@@ -278,7 +243,7 @@ async def generate_actual_rules(dataset: str, dev_results: Dict[str, Any], model
 
 
 async def validate_and_optimize_rules(dataset: str, heuristic_file: str, optimal_params: Dict[str, Any], concurrency: int) -> str:
-    """Validate rules on dev set and optimize them using Claude SDK"""
+    """Validate rules on dev set and optimize them using Claude SDK - NO FILE SWAPPING"""
     data_root = pathlib.Path('data') / 'raw' / dataset
     claude_optimizer = ClaudeSDKOptimizer()
     
@@ -288,22 +253,48 @@ async def validate_and_optimize_rules(dataset: str, heuristic_file: str, optimal
     
     print(f"🔍 Running rule validation on dev set...")
     
-    # Run enhanced matching on dev/validation set
-    if (data_root / 'valid.csv').exists():
-        print("✅ Using validation set for rule validation")
-        # Temporarily swap test.csv with valid.csv
-        test_backup = data_root / 'test.csv.backup'
-        valid_file = data_root / 'valid.csv'
-        test_file = data_root / 'test.csv'
+    # Create temporary dataset for validation - NO FILE SWAPPING
+    os.makedirs("results/temp", exist_ok=True)
+    temp_dataset_dir = pathlib.Path('results/temp') / f'{dataset}_validation_temp'
+    temp_dataset_dir.mkdir(exist_ok=True)
+    
+    try:
+        import shutil
+        # Copy essential files
+        shutil.copy(data_root / 'tableA.csv', temp_dataset_dir / 'tableA.csv')
+        shutil.copy(data_root / 'tableB.csv', temp_dataset_dir / 'tableB.csv')
         
-        # Backup original test and use validation
-        test_file.rename(test_backup)
-        valid_file.rename(test_file)
+        # Choose validation data
+        if (data_root / 'valid.csv').exists():
+            print("✅ Using validation set for rule validation")
+            shutil.copy(data_root / 'valid.csv', temp_dataset_dir / 'test.csv')
+        elif (data_root / 'train.csv').exists():
+            print("✅ Using slice of training set for rule validation")
+            train_pairs = pd.read_csv(data_root / 'train.csv')
+            dev_slice_size = min(200, len(train_pairs))
+            train_slice = train_pairs.head(dev_slice_size)
+            print(f"📊 Using {dev_slice_size} pairs from training set for rule validation")
+            train_slice.to_csv(temp_dataset_dir / 'test.csv', index=False)
+        else:
+            print("⚠️ No validation or training set - skipping rule optimization to avoid test leakage")
+            return heuristic_file
+        
+        # Run enhanced matching on temporary dataset
+        print(f"🔄 RULE VALIDATION: Testing rules on validation data...")
+        print(f"   📊 This is NOT the final test - just validating rules")
+        print(f"   🎯 Purpose: Check if rules help/hurt performance before final test")
+        
+        # Copy to expected data/raw location
+        expected_path = pathlib.Path('data/raw') / f'temp_{dataset}_validation_temp'
+        if expected_path.exists():
+            shutil.rmtree(expected_path)
+        expected_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(temp_dataset_dir, expected_path)
         
         try:
             dev_results = await run_enhanced_matching(
-                dataset=dataset,
-                limit=None,  # Use full validation set
+                dataset=f'temp_{dataset}_validation_temp',
+                limit=None,
                 max_candidates=optimal_params['max_candidates'],
                 model=optimal_params['model'],
                 semantic_weight=optimal_params['semantic_weight'],
@@ -311,54 +302,16 @@ async def validate_and_optimize_rules(dataset: str, heuristic_file: str, optimal
                 concurrency=concurrency
             )
         finally:
-            # Restore original files
-            test_file.rename(valid_file)
-            test_backup.rename(test_file)
-            
-    elif (data_root / 'train.csv').exists():
-        print("✅ Using slice of training set for rule validation")
-        # Use a reasonable slice of training set
-        train_pairs = pd.read_csv(data_root / 'train.csv')
-        dev_slice_size = min(200, len(train_pairs))  # Use up to 200 pairs for validation
-        train_slice = train_pairs.head(dev_slice_size)
+            # Clean up the expected path copy
+            if expected_path.exists():
+                shutil.rmtree(expected_path)
         
-        print(f"📊 Using {dev_slice_size} pairs from training set for rule validation")
+        print(f"✅ RULE VALIDATION completed: F1={dev_results['f1']:.4f}, Early decisions={dev_results.get('early_decisions', 0)}")
         
-        # Create temporary dev file
-        dev_file = data_root / 'dev_temp.csv'
-        train_slice.to_csv(dev_file, index=False)
-        
-        # Temporarily swap test.csv with dev slice
-        test_backup = data_root / 'test.csv.backup'
-        test_file = data_root / 'test.csv'
-        
-        # Backup original test and use dev slice
-        test_file.rename(test_backup)
-        dev_file.rename(test_file)
-        
-        try:
-            print(f"🔄 RULE VALIDATION: Running enhanced matching on {dev_slice_size} training pairs...")
-            print(f"   📊 This is NOT the final test - just validating rules on training data")
-            print(f"   🎯 Purpose: Check if rules help/hurt performance before final test")
-            dev_results = await run_enhanced_matching(
-                dataset=dataset,
-                limit=None,  # Use full dev slice
-                max_candidates=optimal_params['max_candidates'],
-                model=optimal_params['model'],
-                semantic_weight=optimal_params['semantic_weight'],
-                heuristic_file=heuristic_file,
-                concurrency=concurrency
-            )
-            print(f"✅ RULE VALIDATION completed: F1={dev_results['f1']:.4f}, Early decisions={dev_results.get('early_decisions', 0)}")
-        finally:
-            # Restore original files
-            test_file.rename(dev_file)
-            test_backup.rename(test_file)
-            # Clean up temp file
-            dev_file.unlink()
-    else:
-        print("⚠️ No validation or training set - skipping rule optimization to avoid test leakage")
-        return heuristic_file
+    finally:
+        # Clean up temporary dataset
+        if temp_dataset_dir.exists():
+            shutil.rmtree(temp_dataset_dir)
     
     # Analyze performance and optimize rules
     print(f"📊 Dev Results: F1={dev_results['f1']:.4f}, P={dev_results['precision']:.4f}, R={dev_results['recall']:.4f}")
@@ -448,7 +401,7 @@ Only disable rules if F1 < target. If F1 >= target, return empty rules_to_disabl
         return heuristic_file
 
 
-async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: bool = False, concurrency: int = 3, validate_rules: bool = False, model: str = 'gpt-4.1-nano', use_improved_sweep: bool = False, use_agentic_rules: bool = True) -> Dict[str, Any]:
+async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: bool = False, concurrency: int = 3, validate_rules: bool = False, model: str = 'gpt-4.1-nano', use_agentic_rules: bool = True, known_best_params: Optional[Dict[str, Any]] = None, use_train_for_rules: bool = False) -> Dict[str, Any]:
     """Complete pipeline: dev analysis -> ACTUAL rule generation -> test with enhanced matching"""
     
     print(f"🚀 COMPLETE ENTITY MATCHING PIPELINE", flush=True)
@@ -472,7 +425,25 @@ async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: 
     }
     
     # STEP 1: Basic hyperparameter optimization on dev set (NO TEST LEAKAGE)
-    if 'dev_results' in checkpoint and 'optimal_params' in checkpoint:
+    if known_best_params:
+        print(f"✅ STEP 1: Using provided hyperparameters: {known_best_params}")
+        print(f"⏳ Running single dev evaluation to get predictions for rule generation...")
+        
+        start_time = time.time()
+        dev_results = await run_dev_only_analysis_with_params(dataset, known_best_params, model, concurrency)
+        dev_time = time.time() - start_time
+        
+        # Ensure optimal_params has all required fields
+        optimal_params = {
+            'max_candidates': known_best_params.get('max_candidates', 150),
+            'semantic_weight': known_best_params.get('semantic_weight', 0.5),
+            'model': known_best_params.get('model', model),  # Use dev model if not specified
+            'use_semantic': known_best_params.get('use_semantic', True)
+        }
+        
+        print(f"✅ Dev Results with known params: F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}")
+        
+    elif 'dev_results' in checkpoint and 'optimal_params' in checkpoint:
         print(f"✅ STEP 1: Using cached dev results from checkpoint")
         dev_results = checkpoint['dev_results']
         optimal_params = checkpoint['optimal_params']
@@ -498,23 +469,41 @@ async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: 
         print(f"⏳ This will run a basic sweep to find good parameters quickly...")
         
         start_time = time.time()
-        if use_improved_sweep:
-            print("🔧 Using improved sweep implementation")
-            dev_results, optimal_params = await run_improved_sweep(dataset, early_exit, model)
-        else:
-            print("⚠️ Using legacy sweep implementation")
-            dev_results, optimal_params = await run_basic_dev_sweep(dataset, early_exit, model)
+        print("🔧 Using improved sweep implementation (no file swapping)")
+        dev_results, optimal_params = await run_improved_sweep(dataset, early_exit, model, concurrency)
         dev_time = time.time() - start_time
         
-        # Save checkpoint
+        # Save checkpoint with robust JSON handling - convert numpy types
+        def clean_for_json(obj):
+            """Convert numpy/pandas types to JSON-serializable types"""
+            if hasattr(obj, 'item'):  # numpy/pandas scalar
+                return obj.item()
+            elif isinstance(obj, dict):
+                return {k: clean_for_json(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [clean_for_json(item) for item in obj]
+            else:
+                return obj
+        
         checkpoint.update({
-            'dev_results': dev_results,
-            'optimal_params': optimal_params,
+            'dev_results': clean_for_json(dev_results),
+            'optimal_params': clean_for_json(optimal_params),
             'dev_time': dev_time
         })
         os.makedirs("results", exist_ok=True)
-        with open(checkpoint_file, 'w') as f:
-            json.dump(checkpoint, f, indent=2)
+        
+        # Write checkpoint atomically to avoid corruption
+        temp_checkpoint_file = checkpoint_file + '.tmp'
+        try:
+            with open(temp_checkpoint_file, 'w') as f:
+                json.dump(checkpoint, f, indent=2)
+            # Only replace the real file if write succeeded
+            import shutil
+            shutil.move(temp_checkpoint_file, checkpoint_file)
+        except Exception as e:
+            print(f"⚠️ Warning: Could not save checkpoint: {e}")
+            if os.path.exists(temp_checkpoint_file):
+                os.unlink(temp_checkpoint_file)
     
     print(f"✅ Best Dev Results: F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}")
     print(f"🎯 Optimal Parameters: {optimal_params['max_candidates']} candidates, {optimal_params['semantic_weight']:.2f} semantic weight, {optimal_params['model']}")
@@ -530,17 +519,31 @@ async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: 
     
     # STEP 2: Generate ACTUAL EXECUTABLE RULES using Claude SDK heuristic generator
     heuristics_file = f"results/generated_rules/{dataset}_generated_heuristics.json"
+    rule_generation_cost = {'total_cost_usd': 0.0, 'method': 'cached'}
+    
     if 'heuristics_file' in checkpoint and os.path.exists(checkpoint['heuristics_file']):
         print(f"✅ STEP 2: Using cached heuristics from checkpoint")
         heuristics_file = checkpoint['heuristics_file']
+        # Check if cached cost info exists
+        if 'rule_generation_cost' in checkpoint:
+            rule_generation_cost = checkpoint['rule_generation_cost']
     else:
         print(f"\n🧠 STEP 2: Rule generation (analyzing dev results...)")
-        heuristics_file = await generate_actual_rules(dataset, dev_results, model, use_agentic=use_agentic_rules)
+        heuristics_file, rule_generation_cost = await generate_actual_rules(dataset, dev_results, model, use_agentic=use_agentic_rules, use_train_for_rules=use_train_for_rules, optimal_params=optimal_params, concurrency=concurrency)
         
-        # Save checkpoint
+        # Save checkpoint with robust JSON handling
         checkpoint['heuristics_file'] = heuristics_file
-        with open(checkpoint_file, 'w') as f:
-            json.dump(checkpoint, f, indent=2)
+        checkpoint['rule_generation_cost'] = rule_generation_cost
+        temp_checkpoint_file = checkpoint_file + '.tmp'
+        try:
+            with open(temp_checkpoint_file, 'w') as f:
+                json.dump(checkpoint, f, indent=2)
+            import shutil
+            shutil.move(temp_checkpoint_file, checkpoint_file)
+        except Exception as e:
+            print(f"⚠️ Warning: Could not save checkpoint: {e}")
+            if os.path.exists(temp_checkpoint_file):
+                os.unlink(temp_checkpoint_file)
     
     if heuristics_file:
         results['heuristics_file'] = heuristics_file
@@ -633,7 +636,8 @@ async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: 
         'processing_time': enhanced_time,
         'early_decisions': enhanced_results.get('early_decisions', 0),
         'llm_calls': enhanced_results.get('llm_calls', 0),
-        'llm_call_reduction': enhanced_results.get('llm_call_reduction', 0)
+        'llm_call_reduction': enhanced_results.get('llm_call_reduction', 0),
+        'predictions': enhanced_results.get('predictions', {})  # Include predictions for failure analysis
     }
     
     results['ab_comparison'] = {
@@ -643,11 +647,13 @@ async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: 
     }
     
     # FINAL SUMMARY
-    total_cost = dev_results['cost_usd'] + baseline_results['cost_usd'] + enhanced_results['cost']
+    rule_gen_cost = rule_generation_cost.get('total_cost_usd', 0.0)
+    total_cost = dev_results['cost_usd'] + baseline_results['cost_usd'] + enhanced_results['cost'] + rule_gen_cost
     total_time = dev_time + baseline_time + enhanced_time
     
     print(f"\\n🏆 FINAL RESULTS FOR {dataset.upper()}")
     print(f"Dev F1:        {dev_results['metrics']['f1']:.4f} (${dev_results['cost_usd']:.3f})")
+    print(f"Rule Generation: {rule_generation_cost.get('method', 'unknown')} (${rule_gen_cost:.4f})")
     print(f"Test Baseline: {baseline_results['metrics']['f1']:.4f} (${baseline_results['cost_usd']:.3f}) - optimal params only")
     print(f"Test Enhanced: {enhanced_results['f1']:.4f} (${enhanced_results['cost']:.3f}) - optimal params + rules")
     print(f"Improvement:   {f1_improvement:+.4f} F1 points")
@@ -691,6 +697,8 @@ async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: 
         'enhanced_f1': enhanced_results['f1'],
         'f1_improvement': f1_improvement,
         'total_cost_usd': total_cost,
+        'rule_generation_cost_usd': rule_gen_cost,
+        'rule_generation_method': rule_generation_cost.get('method', 'unknown'),
         'total_time_seconds': total_time,
         'beat_leaderboard': beat_leaderboard,
         'leaderboard_target': target_f1
@@ -703,6 +711,18 @@ async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: 
         json.dump(results, f, indent=2)
     
     print(f"📋 Results saved to: {results_file}")
+    
+    # Extract detailed failure analysis
+    print(f"🔍 Extracting detailed failure analysis...")
+    failure_analysis = extract_failure_records(dataset, results)
+    results['failure_analysis'] = failure_analysis
+    
+    if failure_analysis.get('detailed_failures'):
+        print(f"📊 Captured {failure_analysis['total_failures']} failures ({failure_analysis['false_positives']} FP, {failure_analysis['false_negatives']} FN)")
+    
+    # Re-save results with failure analysis
+    with open(results_file, 'w') as f:
+        json.dump(results, f, indent=2)
     
     # Generate updated internal leaderboard
     print(f"📊 Generating updated internal leaderboard...")
@@ -719,6 +739,62 @@ async def run_complete_pipeline(dataset: str, early_exit: bool = False, resume: 
     return results
 
 
+def extract_failure_records(dataset: str, results: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract detailed failure records from results for analysis"""
+    data_root = pathlib.Path('data') / 'raw' / dataset
+    
+    # Load the original tables
+    try:
+        A_df = pd.read_csv(data_root / 'tableA.csv')
+        B_df = pd.read_csv(data_root / 'tableB.csv')
+        test_pairs = pd.read_csv(data_root / 'test.csv')
+        
+        A_records = {row['id']: row.to_dict() for _, row in A_df.iterrows()}
+        B_records = {row['id']: row.to_dict() for _, row in B_df.iterrows()}
+        
+        predictions = results.get('enhanced_results', {}).get('predictions', {})
+        if not predictions:
+            return {'failure_analysis': 'No predictions available for failure analysis'}
+        
+        failures = []
+        
+        for _, row in test_pairs.iterrows():
+            left_id = row.ltable_id
+            right_id = row.rtable_id
+            true_label = row.label
+            
+            if left_id in predictions:
+                predicted_right_id = predictions[left_id]
+                predicted_match = (predicted_right_id == right_id)
+                predicted_label = 1 if predicted_match else 0
+                
+                # Check if this is a failure
+                if true_label != predicted_label:
+                    failure_type = 'false_positive' if (true_label == 0 and predicted_label == 1) else 'false_negative'
+                    
+                    failures.append({
+                        'left_id': left_id,
+                        'right_id': right_id,
+                        'true_label': true_label,
+                        'predicted_label': predicted_label,
+                        'failure_type': failure_type,
+                        'left_record': A_records.get(left_id, {}),
+                        'right_record': B_records.get(right_id, {}),
+                        'predicted_right_id': predicted_right_id,
+                        'predicted_right_record': B_records.get(predicted_right_id, {}) if predicted_right_id else None
+                    })
+        
+        return {
+            'total_failures': len(failures),
+            'false_positives': len([f for f in failures if f['failure_type'] == 'false_positive']),
+            'false_negatives': len([f for f in failures if f['failure_type'] == 'false_negative']),
+            'detailed_failures': failures
+        }
+        
+    except Exception as e:
+        return {'failure_analysis_error': f"Could not extract failure records: {e}"}
+
+
 async def main():
     parser = argparse.ArgumentParser(description="Complete entity matching pipeline")
     parser.add_argument('--dataset', required=True, help='Dataset name (e.g. beer, walmart_amazon)')
@@ -727,11 +803,23 @@ async def main():
     parser.add_argument('--concurrency', type=int, default=3, help='Number of concurrent API requests')
     parser.add_argument('--validate-rules', action='store_true', help='Validate and optimize rules on dev set before test')
     parser.add_argument('--model', default='gpt-4.1-nano', help='Model to use for dev sweep (default: gpt-4.1-nano)')
-    parser.add_argument('--use-improved-sweep', action='store_true', help='Use the improved sweep implementation (recommended)')
+
     parser.add_argument('--use-agentic-rules', action='store_true', default=True, help='Use agentic rule generation (default: True)')
     parser.add_argument('--use-legacy-rules', dest='use_agentic_rules', action='store_false', help='Use legacy rule generation instead of agentic')
+    parser.add_argument('--known-best-params', help='JSON string with known best hyperparameters (e.g. \'{"max_candidates": 50, "semantic_weight": 0.7}\')')
+    parser.add_argument('--use-train-for-rules', action='store_true', help='Use train set with optimal params to get more error examples for rule generation')
     
     args = parser.parse_args()
+    
+    # Parse known best params if provided
+    known_best_params = None
+    if args.known_best_params:
+        try:
+            known_best_params = json.loads(args.known_best_params)
+            print(f"🎯 Using known best parameters: {known_best_params}")
+        except json.JSONDecodeError as e:
+            print(f"❌ Invalid JSON for known-best-params: {e}")
+            return
     
     # Update concurrency settings based on user input
     if args.concurrency != 3:
@@ -739,7 +827,7 @@ async def main():
         # Update concurrency in source files would require more complex logic
         # For now, just show the setting
     
-    results = await run_complete_pipeline(args.dataset, args.early_exit, args.resume, args.concurrency, args.validate_rules, args.model, args.use_improved_sweep, args.use_agentic_rules)
+    results = await run_complete_pipeline(args.dataset, args.early_exit, args.resume, args.concurrency, args.validate_rules, args.model, args.use_improved_sweep, args.use_agentic_rules, known_best_params, args.use_train_for_rules)
     return results
 
 

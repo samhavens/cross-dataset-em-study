@@ -119,6 +119,14 @@ async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> st
         return ""
 
 
+def syntactic_similarity(s1: str, s2: str) -> float:
+    """Calculate syntactic similarity using difflib.SequenceMatcher"""
+    from difflib import SequenceMatcher
+    if not s1 or not s2:
+        return 0.0
+    return SequenceMatcher(None, s1.lower(), s2.lower()).ratio()
+
+
 def trigram_similarity(s1: str, s2: str) -> float:
     """Calculate trigram similarity between two strings"""
 

@@ -4,4 +4,4 @@ Do not mock responses. API calls should fail loudly. If you catch an error and r
 
 Testing scripts are encouraged. Put them in scripts/, where you can leave them as reminders for yourself.
 
-Always lint your code, `./lint.sh [check|fix|format]`
+Always lint your code, `./lint.sh [check|fix|format]` — use a SubAgent / Task for this so you don't waste your tokens on linting errors.

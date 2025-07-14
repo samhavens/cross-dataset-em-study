@@ -1,0 +1,1249 @@
+{
+  "dataset": "beer",
+  "analysis_type": "validation",
+  "metadata": {
+    "total_pairs_analyzed": 91,
+    "positive_pairs": 14,
+    "negative_pairs_sampled": 30,
+    "semantic_available": true
+  },
+  "similarity_analysis": {
+    "true_matches": {
+      "syntactic": {
+        "mean": 0.7667856001558866,
+        "std": 0.13192385503204088,
+        "median": 0.789760348583878,
+        "min": 0.4888888888888889,
+        "max": 1.0
+      },
+      "trigram": {
+        "mean": 0.6191414953473464,
+        "std": 0.17914893072141697,
+        "median": 0.625,
+        "min": 0.3225806451612903,
+        "max": 1.0
+      },
+      "semantic": {
+        "mean": 0.9553365664822715,
+        "std": 0.041662078786419636,
+        "median": 0.9669202566146851,
+        "min": 0.8138793706893921,
+        "max": 0.9854633808135986
+      }
+    },
+    "false_positives": {
+      "syntactic": {
+        "mean": 0.58368867197607,
+        "std": 0.11043483421381232,
+        "median": 0.5847701149425287,
+        "min": 0.38461538461538464,
+        "max": 0.9787234042553191
+      },
+      "trigram": {
+        "mean": 0.30929949281359814,
+        "std": 0.10628638611458498,
+        "median": 0.2736185383244207,
+        "min": 0.20833333333333334,
+        "max": 0.7916666666666666
+      },
+      "semantic": {
+        "mean": 0.9276847759882609,
+        "std": 0.0212871615499768,
+        "median": 0.9275202453136444,
+        "min": 0.87890625,
+        "max": 0.9764837622642517
+      }
+    }
+  },
+  "candidate_analysis": {
+    "recall_at_1": 0.7857142857142857,
+    "recall_at_5": 0.8571428571428571,
+    "recall_at_10": 0.8571428571428571,
+    "recall_at_25": 0.8571428571428571,
+    "recall_at_50": 0.8571428571428571,
+    "recall_at_100": 0.8571428571428571
+  },
+  "concrete_examples": {
+    "true_matches": [
+      {
+        "left_record": {
+          "id": 3622,
+          "Beer_Name": "Buckleys Original Ale",
+          "Brew_Factory_Name": "Buckley 's Beers",
+          "Style": "American Amber / Red Ale",
+          "ABV": "4.50 %"
+        },
+        "right_record": {
+          "id": 2020,
+          "Beer_Name": "Buckleys Original Ale",
+          "Brew_Factory_Name": "Yarra Flats Brewery",
+          "Style": "English Pale Ale",
+          "ABV": "4.90 %"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.946
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1004,
+          "Beer_Name": "Indian Red Head",
+          "Brew_Factory_Name": "Catawba Brewing Co. .",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.00 %"
+        },
+        "right_record": {
+          "id": 20,
+          "Beer_Name": "Catawba Valley Indian Head Red",
+          "Brew_Factory_Name": "Catawba Valley Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "5 %"
+        },
+        "similarities": {
+          "syntactic": 0.489,
+          "trigram": 0.323,
+          "semantic": 0.973
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1522,
+          "Beer_Name": "Radeau Red Ale",
+          "Brew_Factory_Name": "Cooper 's Cave Ale Company",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.50 %"
+        },
+        "right_record": {
+          "id": 467,
+          "Beer_Name": "Coopers Cave Radeau Red Ale",
+          "Brew_Factory_Name": "Coopers Cave Ale Company",
+          "Style": "Irish Ale",
+          "ABV": "-"
+        },
+        "similarities": {
+          "syntactic": 0.683,
+          "trigram": 0.48,
+          "semantic": 0.954
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2491,
+          "Beer_Name": "5 Star Amber Ale",
+          "Brew_Factory_Name": "The Civil Life Brewing Company",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.00 %"
+        },
+        "right_record": {
+          "id": 1230,
+          "Beer_Name": "The Civil Life Stevie_s 5 Star Amber Ale",
+          "Brew_Factory_Name": "The Civil Life Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "5 %"
+        },
+        "similarities": {
+          "syntactic": 0.571,
+          "trigram": 0.361,
+          "semantic": 0.963
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1748,
+          "Beer_Name": "Rock Steady Red",
+          "Brew_Factory_Name": "The Rock Wood Fire Pizza & Brewery",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.00 %"
+        },
+        "right_record": {
+          "id": 652,
+          "Beer_Name": "Acoustic Rock Steady Red Cider",
+          "Brew_Factory_Name": "Acoustic Brewing Company",
+          "Style": "Cider",
+          "ABV": "6 %"
+        },
+        "similarities": {
+          "syntactic": 0.667,
+          "trigram": 0.464,
+          "semantic": 0.814
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2700,
+          "Beer_Name": "British Knight Scotch Red Ale",
+          "Brew_Factory_Name": "Oskar Blues Grill & Brew",
+          "Style": "American Amber / Red Ale",
+          "ABV": "7.40 %"
+        },
+        "right_record": {
+          "id": 1380,
+          "Beer_Name": "Oskar Blues British Knight Scotch Red Ale",
+          "Brew_Factory_Name": "Oskar Blues Brewery",
+          "Style": "Scottish Ale",
+          "ABV": "7.40 %"
+        },
+        "similarities": {
+          "syntactic": 0.829,
+          "trigram": 0.692,
+          "semantic": 0.971
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3468,
+          "Beer_Name": "Red RYEding Hood",
+          "Brew_Factory_Name": "Chapman 's Brewing Company",
+          "Style": "American Amber / Red Ale",
+          "ABV": "10.00 %"
+        },
+        "right_record": {
+          "id": 1921,
+          "Beer_Name": "Chapman_s Red RYEding Hood",
+          "Brew_Factory_Name": "Chapman_s Brewing Company",
+          "Style": "Specialty Grain",
+          "ABV": "10 %"
+        },
+        "similarities": {
+          "syntactic": 0.762,
+          "trigram": 0.583,
+          "semantic": 0.943
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1474,
+          "Beer_Name": "Revenuers Red Ale",
+          "Brew_Factory_Name": "Catawba Brewing Co. .",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.20 %"
+        },
+        "right_record": {
+          "id": 427,
+          "Beer_Name": "Catawba Valley Revenuers Red Ale",
+          "Brew_Factory_Name": "Catawba Valley Brewing Company",
+          "Style": "Irish Ale",
+          "ABV": "5.20 %"
+        },
+        "similarities": {
+          "syntactic": 0.694,
+          "trigram": 0.517,
+          "semantic": 0.975
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1030,
+          "Beer_Name": "Sierra Amber Ale",
+          "Brew_Factory_Name": "Silver Peak Restaurant & Brewery",
+          "Style": "American Amber / Red Ale",
+          "ABV": "4.50 %"
+        },
+        "right_record": {
+          "id": 43,
+          "Beer_Name": "Chy_e Sierra Amber Ale",
+          "Brew_Factory_Name": "Zamecky Pivovar Chy_e",
+          "Style": "Amber Ale",
+          "ABV": "5.30 %"
+        },
+        "similarities": {
+          "syntactic": 0.842,
+          "trigram": 0.7,
+          "semantic": 0.951
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 193,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3073,
+          "Beer_Name": "MovAmber Moustache Ale",
+          "Brew_Factory_Name": "Bull City Burger And Brewery",
+          "Style": "American Amber / Red Ale",
+          "ABV": "-"
+        },
+        "right_record": {
+          "id": 1647,
+          "Beer_Name": "Bull City Movamber Moustache Ale",
+          "Brew_Factory_Name": "Bull City Burger and Brewery",
+          "Style": "Amber Ale",
+          "ABV": "-"
+        },
+        "similarities": {
+          "syntactic": 0.815,
+          "trigram": 0.69,
+          "semantic": 0.98
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1394,
+          "Beer_Name": "Hooligan Amber Ale",
+          "Brew_Factory_Name": "Bentley Brewing Company / Dark Horse Tavern",
+          "Style": "American Amber / Red Ale",
+          "ABV": "6.00 %"
+        },
+        "right_record": {
+          "id": 358,
+          "Beer_Name": "Bentley Hooligan Amber Ale",
+          "Brew_Factory_Name": "Bentley Brewing Co. / Dark Horse Tavern",
+          "Style": "Amber Ale",
+          "ABV": "6 %"
+        },
+        "similarities": {
+          "syntactic": 0.818,
+          "trigram": 0.667,
+          "semantic": 0.981
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2163,
+          "Beer_Name": "Bitter Orange Blossom",
+          "Brew_Factory_Name": "I & I Brewing",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.30 %"
+        },
+        "right_record": {
+          "id": 985,
+          "Beer_Name": "I & I Bitter Orange Blossom",
+          "Brew_Factory_Name": "I & I Brewing",
+          "Style": "Amber Ale",
+          "ABV": "5.30 %"
+        },
+        "similarities": {
+          "syntactic": 0.875,
+          "trigram": 0.76,
+          "semantic": 0.985
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2764,
+          "Beer_Name": "Willimantic Riverfest Red",
+          "Brew_Factory_Name": "Willimantic Brewing Co. .",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.20 %"
+        },
+        "right_record": {
+          "id": 1423,
+          "Beer_Name": "Willimantic Riverfest Red Ale",
+          "Brew_Factory_Name": "Willimantic Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "5.20 %"
+        },
+        "similarities": {
+          "syntactic": 0.926,
+          "trigram": 0.852,
+          "semantic": 0.984
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2867,
+          "Beer_Name": "Red Curry Ale",
+          "Brew_Factory_Name": "Hideout Brewing Company",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.50 %"
+        },
+        "right_record": {
+          "id": 1493,
+          "Beer_Name": "Hideout Red Curry Ale",
+          "Brew_Factory_Name": "The Hideout Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "-"
+        },
+        "similarities": {
+          "syntactic": 0.765,
+          "trigram": 0.579,
+          "semantic": 0.954
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      }
+    ],
+    "confusing_non_matches": [
+      {
+        "left_record": {
+          "id": 252,
+          "Beer_Name": "Red Rose Amber Ale",
+          "Brew_Factory_Name": "Baird Brewing Company / Fishmarket Taproom",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.40 %"
+        },
+        "right_record": {
+          "id": 1073,
+          "Beer_Name": "Upland Rad Red Amber Ale",
+          "Brew_Factory_Name": "Upland Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "5.60 %"
+        },
+        "similarities": {
+          "syntactic": 0.619,
+          "trigram": 0.423,
+          "semantic": 0.958
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2975,
+          "Beer_Name": "Rock River Red Ale",
+          "Brew_Factory_Name": "Berghoff Brewery",
+          "Style": "American Amber / Red Ale",
+          "ABV": "-"
+        },
+        "right_record": {
+          "id": 2899,
+          "Beer_Name": "Boxing Rock Temptation Red Ale",
+          "Brew_Factory_Name": "Boxing Rock Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "6 %"
+        },
+        "similarities": {
+          "syntactic": 0.583,
+          "trigram": 0.257,
+          "semantic": 0.941
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 153,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 928,
+          "Beer_Name": "Old Detroit Amber Ale",
+          "Brew_Factory_Name": "Frankenmuth Brewery",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.60 %"
+        },
+        "right_record": {
+          "id": 2275,
+          "Beer_Name": "Maldita Old Continent American Amber Ale",
+          "Brew_Factory_Name": "Faustino Microcervejeira",
+          "Style": "Amber Ale",
+          "ABV": "6 %"
+        },
+        "similarities": {
+          "syntactic": 0.59,
+          "trigram": 0.244,
+          "semantic": 0.937
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 496,
+          "Beer_Name": "Mountain Goat Fancy Pants Amber Ale",
+          "Brew_Factory_Name": "Mountain Goat Beer Pty Ltd",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.40 %"
+        },
+        "right_record": {
+          "id": 1535,
+          "Beer_Name": "Breckenridge Mountain Series : Hoppy Amber Ale",
+          "Brew_Factory_Name": "Breckenridge Brewery",
+          "Style": "Amber Ale",
+          "ABV": "6.10 %"
+        },
+        "similarities": {
+          "syntactic": 0.519,
+          "trigram": 0.242,
+          "semantic": 0.906
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 287,
+          "Beer_Name": "Flying Monkey Amber Ale",
+          "Brew_Factory_Name": "Flying Monkey Brewing Company",
+          "Style": "American Amber / Red Ale",
+          "ABV": "4.60 %"
+        },
+        "right_record": {
+          "id": 2581,
+          "Beer_Name": "Flying Monkeys Amber Ale",
+          "Brew_Factory_Name": "Flying Monkeys Craft Brewery",
+          "Style": "Amber Ale",
+          "ABV": "5 %"
+        },
+        "similarities": {
+          "syntactic": 0.979,
+          "trigram": 0.792,
+          "semantic": 0.976
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 7,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 4104,
+          "Beer_Name": "Kickin ' Chicken Bourbon Barrel Barley Wine",
+          "Brew_Factory_Name": "Santa Fe Brewing Company",
+          "Style": "American Barleywine",
+          "ABV": "12.00 %"
+        },
+        "right_record": {
+          "id": 2416,
+          "Beer_Name": "Elevator Barrel Aged Barley Wine",
+          "Brew_Factory_Name": "Elevator Brewing Company",
+          "Style": "Barley Wine",
+          "ABV": "-"
+        },
+        "similarities": {
+          "syntactic": 0.587,
+          "trigram": 0.275,
+          "semantic": 0.921
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 27,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3246,
+          "Beer_Name": "Buffalo Trace Bourbon Barrel Aged Amber Ale",
+          "Brew_Factory_Name": "Wolf Hills Brewing Company",
+          "Style": "American Amber / Red Ale",
+          "ABV": "-"
+        },
+        "right_record": {
+          "id": 709,
+          "Beer_Name": "Bull & Barrel Session Style - Amber Ale",
+          "Brew_Factory_Name": "Bull & Barrel Brew Pub",
+          "Style": "Amber Ale",
+          "ABV": "4.70 %"
+        },
+        "similarities": {
+          "syntactic": 0.561,
+          "trigram": 0.238,
+          "semantic": 0.914
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 487,
+          "Beer_Name": "Three Beavers Imperial Red Ale",
+          "Brew_Factory_Name": "Howe Sound Inn & Brewing Company",
+          "Style": "American Amber / Red Ale",
+          "ABV": "7.50 %"
+        },
+        "right_record": {
+          "id": 2582,
+          "Beer_Name": "Worthy Eruption Imperial Red Ale",
+          "Brew_Factory_Name": "Worthy Brewing Company",
+          "Style": "American Strong Ale",
+          "ABV": "8 %"
+        },
+        "similarities": {
+          "syntactic": 0.71,
+          "trigram": 0.349,
+          "semantic": 0.944
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 14,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 4323,
+          "Beer_Name": "Ole ' Redbeard Barleywine ( Bourbon Barrel Aged )",
+          "Brew_Factory_Name": "Fitger 's Brewhouse",
+          "Style": "American Barleywine",
+          "ABV": "-"
+        },
+        "right_record": {
+          "id": 2378,
+          "Beer_Name": "Columbus Bourbon Barrel Aged Uncle Rusty",
+          "Brew_Factory_Name": "Columbus Brewing Company",
+          "Style": "American Strong Ale",
+          "ABV": "-"
+        },
+        "similarities": {
+          "syntactic": 0.539,
+          "trigram": 0.317,
+          "semantic": 0.903
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1322,
+          "Beer_Name": "The Live Bait Amber Ale",
+          "Brew_Factory_Name": "Mudhook Brewing Company",
+          "Style": "American Amber / Red Ale",
+          "ABV": "6.00 %"
+        },
+        "right_record": {
+          "id": 1308,
+          "Beer_Name": "BNS The Hills Have Eyes Amber Ale",
+          "Brew_Factory_Name": "BNS Brewing & Distilling",
+          "Style": "Amber Ale",
+          "ABV": "5.20 %"
+        },
+        "similarities": {
+          "syntactic": 0.643,
+          "trigram": 0.268,
+          "semantic": 0.921
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 128,
+          "Beer_Name": "The Unforgiven Amber Ale",
+          "Brew_Factory_Name": "Rush River Brewing Company",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.80 %"
+        },
+        "right_record": {
+          "id": 1230,
+          "Beer_Name": "The Civil Life Stevie_s 5 Star Amber Ale",
+          "Brew_Factory_Name": "The Civil Life Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "5 %"
+        },
+        "similarities": {
+          "syntactic": 0.531,
+          "trigram": 0.208,
+          "semantic": 0.944
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 125,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 4336,
+          "Beer_Name": "Old Blarney Barleywine - Bourbon Barrel Aged",
+          "Brew_Factory_Name": "Moylan 's Brewery",
+          "Style": "American Barleywine",
+          "ABV": "10.00 %"
+        },
+        "right_record": {
+          "id": 2510,
+          "Beer_Name": "21st Amendment Bourbon Barrel Lower da Boom Barleywine",
+          "Brew_Factory_Name": "21st Amendment Brewery",
+          "Style": "Barley Wine",
+          "ABV": "9.50 %"
+        },
+        "similarities": {
+          "syntactic": 0.408,
+          "trigram": 0.313,
+          "semantic": 0.934
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3661,
+          "Beer_Name": "Double Red Hot Ale",
+          "Brew_Factory_Name": "Midnight Sun Brewing Co. .",
+          "Style": "American Amber / Red Ale",
+          "ABV": "7.57 %"
+        },
+        "right_record": {
+          "id": 1090,
+          "Beer_Name": "Below Grade Super Duty Double Red Ale",
+          "Brew_Factory_Name": "Below Grade Brewing LLC",
+          "Style": "American Strong Ale",
+          "ABV": "7.70 %"
+        },
+        "similarities": {
+          "syntactic": 0.509,
+          "trigram": 0.275,
+          "semantic": 0.944
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 34,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2934,
+          "Beer_Name": "Ale Mania Imperial Red Ale",
+          "Brew_Factory_Name": "Ale-Mania",
+          "Style": "American Amber / Red Ale",
+          "ABV": "9.50 %"
+        },
+        "right_record": {
+          "id": 2582,
+          "Beer_Name": "Worthy Eruption Imperial Red Ale",
+          "Brew_Factory_Name": "Worthy Brewing Company",
+          "Style": "American Strong Ale",
+          "ABV": "8 %"
+        },
+        "similarities": {
+          "syntactic": 0.655,
+          "trigram": 0.395,
+          "semantic": 0.949
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 50,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 113,
+          "Beer_Name": "Alexander Keith 's Red Amber Ale",
+          "Brew_Factory_Name": "Alexander Keith 's",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.00 %"
+        },
+        "right_record": {
+          "id": 2975,
+          "Beer_Name": "Swashbuckler Red Sea Amber Ale",
+          "Brew_Factory_Name": "Swashbuckler Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "-"
+        },
+        "similarities": {
+          "syntactic": 0.581,
+          "trigram": 0.25,
+          "semantic": 0.879
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3402,
+          "Beer_Name": "Red Shedman 's Imperial Amber Ale",
+          "Brew_Factory_Name": "57 Brew Pub & Bistro",
+          "Style": "American Amber / Red Ale",
+          "ABV": "7.60 %"
+        },
+        "right_record": {
+          "id": 1096,
+          "Beer_Name": "Boxing Cat Firecracker Imperial Red Ale",
+          "Brew_Factory_Name": "Boxing Cat Brewery",
+          "Style": "Amber Ale",
+          "ABV": "6.60 %"
+        },
+        "similarities": {
+          "syntactic": 0.5,
+          "trigram": 0.236,
+          "semantic": 0.936
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 20,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 732,
+          "Beer_Name": "Saint Gleason Imperial Red Ale",
+          "Brew_Factory_Name": "Abita Brewing Co. .",
+          "Style": "American Amber / Red Ale",
+          "ABV": "-"
+        },
+        "right_record": {
+          "id": 1414,
+          "Beer_Name": "Renegade Scarlett Letter Imperial Red Ale",
+          "Brew_Factory_Name": "Renegade Brewing Company",
+          "Style": "American Strong Ale",
+          "ABV": "8.50 %"
+        },
+        "similarities": {
+          "syntactic": 0.648,
+          "trigram": 0.3,
+          "semantic": 0.926
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 62,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2246,
+          "Beer_Name": "Freedom Bridge Amber Ale",
+          "Brew_Factory_Name": "Barley Brothers Brewery & Grill",
+          "Style": "American Amber / Red Ale",
+          "ABV": "-"
+        },
+        "right_record": {
+          "id": 2249,
+          "Beer_Name": "Bridge Ambleside Amber Ale - Pomegranate & Galena Hops",
+          "Brew_Factory_Name": "Bridge Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "5.30 %"
+        },
+        "similarities": {
+          "syntactic": 0.41,
+          "trigram": 0.25,
+          "semantic": 0.904
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2751,
+          "Beer_Name": "Spencer Creek Amber Ale",
+          "Brew_Factory_Name": "Mia & Pia 's Pizzeria And Brewhouse",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.50 %"
+        },
+        "right_record": {
+          "id": 2550,
+          "Beer_Name": "Ruby Mountain Angel Creek Amber Ale",
+          "Brew_Factory_Name": "Ruby Mountain Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "-"
+        },
+        "similarities": {
+          "syntactic": 0.586,
+          "trigram": 0.359,
+          "semantic": 0.925
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3593,
+          "Beer_Name": "Escanaba River Amber Ale",
+          "Brew_Factory_Name": "Dead Bear Brewing Co. .",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.76 %"
+        },
+        "right_record": {
+          "id": 2636,
+          "Beer_Name": "Piney River McKinney Eddy Amber Ale",
+          "Brew_Factory_Name": "Piney River Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "-"
+        },
+        "similarities": {
+          "syntactic": 0.576,
+          "trigram": 0.316,
+          "semantic": 0.913
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 1743,
+          "Beer_Name": "Red 's Heaven 15th Anniversary Imperial Red Ale",
+          "Brew_Factory_Name": "Flying Bison Brewing Company",
+          "Style": "American Amber / Red Ale",
+          "ABV": "8.30 %"
+        },
+        "right_record": {
+          "id": 2334,
+          "Beer_Name": "Austin Beerworks Battle Axe Imperial Red Ale",
+          "Brew_Factory_Name": "Austin Beerworks",
+          "Style": "American Strong Ale",
+          "ABV": "8 %"
+        },
+        "similarities": {
+          "syntactic": 0.527,
+          "trigram": 0.214,
+          "semantic": 0.918
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3388,
+          "Beer_Name": "Stone Liberty Station Outbreak Series : Red Ale",
+          "Brew_Factory_Name": "Stone Brewing Co. .",
+          "Style": "American Amber / Red Ale",
+          "ABV": "7.00 %"
+        },
+        "right_record": {
+          "id": 838,
+          "Beer_Name": "Brew Bus Detour Series : Rollin Dirty Red Ale - Wood Aged",
+          "Brew_Factory_Name": "Cigar City Brewing",
+          "Style": "Irish Ale",
+          "ABV": "5 %"
+        },
+        "similarities": {
+          "syntactic": 0.385,
+          "trigram": 0.222,
+          "semantic": 0.886
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 655,
+          "Beer_Name": "Rhino Chaser Imperial Red Ale",
+          "Brew_Factory_Name": "Pizza Port Solana Beach",
+          "Style": "American Amber / Red Ale",
+          "ABV": "9.50 %"
+        },
+        "right_record": {
+          "id": 1661,
+          "Beer_Name": "Edge Imperial Red Ale &#40; Spring Seasonal &#41;",
+          "Brew_Factory_Name": "Edge Brewing Company",
+          "Style": "American Strong Ale",
+          "ABV": "8.50 %"
+        },
+        "similarities": {
+          "syntactic": 0.462,
+          "trigram": 0.268,
+          "semantic": 0.914
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 3963,
+          "Beer_Name": "Hop Around Imperial Red Ale",
+          "Brew_Factory_Name": "Big Bay Brewing Co. .",
+          "Style": "American Amber / Red Ale",
+          "ABV": "9.00 %"
+        },
+        "right_record": {
+          "id": 623,
+          "Beer_Name": "Oak Creek King Crimson Imperial Red Ale",
+          "Brew_Factory_Name": "Oak Creek Brewing Co. .",
+          "Style": "American Strong Ale",
+          "ABV": "9.50 %"
+        },
+        "similarities": {
+          "syntactic": 0.667,
+          "trigram": 0.326,
+          "semantic": 0.944
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2320,
+          "Beer_Name": "Fire Brew Red Ale",
+          "Brew_Factory_Name": "Minhas Craft Brewery",
+          "Style": "American Amber / Red Ale",
+          "ABV": "5.50 %"
+        },
+        "right_record": {
+          "id": 524,
+          "Beer_Name": "Conshohocken Hale Fire Red Ale",
+          "Brew_Factory_Name": "Conshohocken Brewing Co. .",
+          "Style": "Amber Ale",
+          "ABV": "6.60 %"
+        },
+        "similarities": {
+          "syntactic": 0.511,
+          "trigram": 0.273,
+          "semantic": 0.945
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 704,
+          "Beer_Name": "Redeemer Imperial Red Ale",
+          "Brew_Factory_Name": "Boston Beer Works - Canal Street",
+          "Style": "American Amber / Red Ale",
+          "ABV": "8.20 %"
+        },
+        "right_record": {
+          "id": 124,
+          "Beer_Name": "Laguna Beach Grateful Red Imperial Red Ale",
+          "Brew_Factory_Name": "Laguna Beach Brewing",
+          "Style": "American Strong Ale",
+          "ABV": "11 %"
+        },
+        "similarities": {
+          "syntactic": 0.597,
+          "trigram": 0.349,
+          "semantic": 0.907
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 75,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 429,
+          "Beer_Name": "Simeon Jones River Valley Amber Ale",
+          "Brew_Factory_Name": "Picaroons Brewing Co. .",
+          "Style": "American Amber / Red Ale",
+          "ABV": "4.50 %"
+        },
+        "right_record": {
+          "id": 2805,
+          "Beer_Name": "Metolius River Ales Rusty Spinner Amber Ale",
+          "Brew_Factory_Name": "Genesee Brewing Company &#40; North American Breweries &#41;",
+          "Style": "Amber Ale",
+          "ABV": "5.10 %"
+        },
+        "similarities": {
+          "syntactic": 0.641,
+          "trigram": 0.269,
+          "semantic": 0.959
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 138,
+          "Beer_Name": "Double Dread Imperial Red Ale",
+          "Brew_Factory_Name": "Mad River Brewing Company",
+          "Style": "American Amber / Red Ale",
+          "ABV": "8.60 %"
+        },
+        "right_record": {
+          "id": 1496,
+          "Beer_Name": "Kinetic Infrared Imperial Red Ale",
+          "Brew_Factory_Name": "Kinetic Brewing Company",
+          "Style": "American Strong Ale",
+          "ABV": "9.30 %"
+        },
+        "similarities": {
+          "syntactic": 0.71,
+          "trigram": 0.4,
+          "semantic": 0.934
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 15,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 4162,
+          "Beer_Name": "John Barleycorn - Bourbon Barrel Aged",
+          "Brew_Factory_Name": "Mad River Brewing Company",
+          "Style": "American Barleywine",
+          "ABV": "12.50 %"
+        },
+        "right_record": {
+          "id": 2936,
+          "Beer_Name": "Actual Bourbon Barrel Aged Elektron",
+          "Brew_Factory_Name": "Actual Brewing Company",
+          "Style": "Amber Ale",
+          "ABV": "7.30 %"
+        },
+        "similarities": {
+          "syntactic": 0.611,
+          "trigram": 0.383,
+          "semantic": 0.929
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 7,
+          "max_candidates": 100
+        }
+      },
+      {
+        "left_record": {
+          "id": 2614,
+          "Beer_Name": "Killer Red Fresh Hop India Red Ale",
+          "Brew_Factory_Name": "Double Mountain Brewery & Taproom",
+          "Style": "American Amber / Red Ale",
+          "ABV": "7.20 %"
+        },
+        "right_record": {
+          "id": 1645,
+          "Beer_Name": "8 Wired Tall Poppy India Red Ale",
+          "Brew_Factory_Name": "Renaissance Brewing",
+          "Style": "Amber Ale",
+          "ABV": "7 %"
+        },
+        "similarities": {
+          "syntactic": 0.667,
+          "trigram": 0.267,
+          "semantic": 0.92
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 120,
+          "max_candidates": 100
+        }
+      }
+    ]
+  },
+  "dataset_characteristics": {
+    "table_a_size": 4345,
+    "table_b_size": 3000,
+    "field_names": [
+      "Beer_Name",
+      "Brew_Factory_Name",
+      "Style",
+      "ABV"
+    ],
+    "sample_records": [
+      {
+        "id": 0,
+        "Beer_Name": "Tr\u00c3 \u00b6 egs Nugget Nectar",
+        "Brew_Factory_Name": "Tr\u00c3 \u00b6 egs Brewing Company",
+        "Style": "American Amber / Red Ale",
+        "ABV": "7.50 %"
+      },
+      {
+        "id": 1,
+        "Beer_Name": "Fat Tire Amber Ale",
+        "Brew_Factory_Name": "New Belgium Brewing",
+        "Style": "American Amber / Red Ale",
+        "ABV": "5.20 %"
+      },
+      {
+        "id": 2,
+        "Beer_Name": "Levitation Ale",
+        "Brew_Factory_Name": "Stone Brewing Co. .",
+        "Style": "American Amber / Red Ale",
+        "ABV": "4.40 %"
+      }
+    ]
+  }
+}

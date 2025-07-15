@@ -499,8 +499,30 @@ async def run_complete_pipeline(
             
             # Cache dev predictions
             os.makedirs(os.path.dirname(dev_cache_file), exist_ok=True)
+            
+            # Clean dev_results for JSON serialization
+            from src.entity_matching.analysis import clean_record_for_json
+            import numpy as np
+            
+            def clean_for_json(obj):
+                """Clean object for JSON serialization"""
+                if isinstance(obj, dict):
+                    return {str(k): clean_for_json(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [clean_for_json(item) for item in obj]
+                elif isinstance(obj, np.integer):
+                    return int(obj)
+                elif isinstance(obj, np.floating):
+                    return float(obj)
+                elif isinstance(obj, np.ndarray):
+                    return obj.tolist()
+                else:
+                    return obj
+            
+            cleaned_dev_results = clean_for_json(dev_results)
+            
             with open(dev_cache_file, 'w') as f:
-                json.dump(dev_results, f, indent=2)
+                json.dump(cleaned_dev_results, f, indent=2)
             print(f"💾 Cached dev predictions to {dev_cache_file}")
 
         print("🤖 Generating joint hyperparameter + rule optimization with Claude...")

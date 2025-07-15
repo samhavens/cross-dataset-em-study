@@ -373,12 +373,34 @@ class AgenticHeuristicGenerator:
 {f"- 🎯 PERFECT MATCHES: {(true_matches.get('syntactic', {}).get('max', 0) > 0.95) + (true_matches.get('trigram', {}).get('max', 0) > 0.95) + (true_matches.get('semantic', {}).get('max', 0) > 0.95 if true_matches.get('semantic') else 0)} similarity types reach near-perfect scores - auto-accept these" if any([true_matches.get('syntactic', {}).get('max', 0) > 0.95, true_matches.get('trigram', {}).get('max', 0) > 0.95, true_matches.get('semantic', {}).get('max', 0) > 0.95 if true_matches.get('semantic') else False]) else ""}
 {"- 📈 CONCRETE EXAMPLES: " + f"{len(insights.get('concrete_examples', {}).get('true_matches', []))} true match examples and {len(insights.get('concrete_examples', {}).get('confusing_non_matches', []))} confusing non-match examples available for pattern analysis" if insights.get('concrete_examples') else ""}"""
 
+        # Convert SampleData to dictionary for JSON serialization
+        from ..entity_matching.analysis import clean_record_for_json
+
+        def clean_dict_for_json(obj):
+            """Recursively clean dictionary for JSON serialization"""
+            if isinstance(obj, dict):
+                return {k: clean_dict_for_json(v) for k, v in obj.items()}
+            if isinstance(obj, list):
+                return [clean_dict_for_json(item) for item in obj]
+            return clean_record_for_json({"value": obj})["value"]
+
+        sample_data_dict = clean_dict_for_json({
+            "dataset": sample_data.dataset,
+            "dev_pairs": sample_data.dev_pairs,
+            "dev_predictions": sample_data.dev_predictions,
+            "dev_metrics": sample_data.dev_metrics,
+            "target_f1": sample_data.target_f1,
+            "table_a": sample_data.table_a,
+            "table_b": sample_data.table_b,
+            "candidate_analysis": sample_data.candidate_analysis,
+        })
+
         prompt = f"""You are an expert at entity matching optimization. You can iteratively develop and test BOTH hyperparameters AND rules for optimal performance.
 
 **DATASET**: {sample_data.dataset}
 **TARGET**: F1 > {sample_data.target_f1:.1f} (leaderboard target)
 **CURRENT DEV PERFORMANCE**: F1={sample_data.dev_metrics.get("f1", 0):.4f}, P={sample_data.dev_metrics.get("precision", 0):.4f}, R={sample_data.dev_metrics.get("recall", 0):.4f}
-**DETAILS**: {json.dumps(sample_data, indent=2)}
+**DETAILS**: {json.dumps(sample_data_dict, indent=2)}
 
 **YOUR TOOLS**:
 - `Read`: Read files (e.g., sample data, existing rules)
@@ -431,6 +453,8 @@ Model made {len(error_examples)} errors ({len([p for p in error_examples if p["c
 {"🎯 **BOOST RECALL**: Increase max_candidates and semantic_weight. Generate rules to catch missed matches (score boosts, relaxed thresholds)" if sample_data.dev_metrics.get("precision", 0) >= 0.99 and sample_data.dev_metrics.get("recall", 0) < 0.9 else "🎯 **IMPROVE PRECISION**: Lower decision threshold, add rejection rules to reduce false positives" if sample_data.dev_metrics.get("precision", 0) < 0.9 else "🎯 **BALANCED APPROACH**: Fine-tune hyperparameters and rules for optimal F1"}
 
 ⚠️ **HIGH SIGNAL DATA**: The sample file contains ALL false positives and false negatives (not just a subset). This gives you comprehensive error patterns to analyze.
+
+{analysis_section}
 
 **FALSE POSITIVE EXAMPLES** (incorrectly predicted as matches):
 """

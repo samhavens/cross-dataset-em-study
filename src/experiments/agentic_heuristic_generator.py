@@ -378,11 +378,23 @@ class AgenticHeuristicGenerator:
 
         def clean_dict_for_json(obj):
             """Recursively clean dictionary for JSON serialization"""
+            import numpy as np
+            
             if isinstance(obj, dict):
                 return {k: clean_dict_for_json(v) for k, v in obj.items()}
-            if isinstance(obj, list):
+            elif isinstance(obj, list):
                 return [clean_dict_for_json(item) for item in obj]
-            return clean_record_for_json({"value": obj})["value"]
+            elif isinstance(obj, np.integer):
+                return int(obj)
+            elif isinstance(obj, np.floating):
+                return float(obj)
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
+            elif obj is None or isinstance(obj, (str, int, float, bool)):
+                return obj
+            else:
+                # Use clean_record_for_json for complex objects
+                return clean_record_for_json({"value": obj})["value"]
 
         sample_data_dict = clean_dict_for_json({
             "dataset": sample_data.dataset,

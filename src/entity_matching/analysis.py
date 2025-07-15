@@ -374,8 +374,9 @@ def analyze_dataset_for_claude(
         try:
             with open(output_file) as f:
                 cached_result = json.load(f)
-            # Verify cache is complete and matches parameters
-            if (cached_result.get("metadata", {}).get("total_pairs_analyzed") == max_pairs and 
+            # Verify cache is complete and has at least the requested pairs
+            cached_pairs = cached_result.get("metadata", {}).get("total_pairs_analyzed", 0)
+            if (cached_pairs >= max_pairs and 
                 cached_result.get("candidate_analysis", {}).get("recall_at_100") is not None):
                 if verbose:
                     print("✅ Using cached analysis (complete)")

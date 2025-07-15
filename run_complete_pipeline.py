@@ -1009,7 +1009,7 @@ async def main():
     parser.add_argument("--dataset", required=True, help="Dataset name (e.g. beer, walmart_amazon)")
     parser.add_argument("--early-exit", action="store_true", help="Stop sweep early if F1 beats leaderboard target")
     parser.add_argument("--resume", action="store_true", help="Resume from checkpoint if available")
-    parser.add_argument("--concurrency", type=int, default=3, help="Number of concurrent API requests")
+    parser.add_argument("--concurrency", type=int, default=5, help="Number of concurrent API requests")
     parser.add_argument(
         "--validate-rules", action="store_true", help="Validate and optimize rules on dev set before test"
     )
@@ -1051,11 +1051,6 @@ async def main():
             print(f"❌ Invalid JSON for known-best-params: {e}")
             return None
 
-    # Update concurrency settings based on user input
-    if args.concurrency != 3:
-        print(f"🔧 Setting concurrency to {args.concurrency}")
-        # Update concurrency in source files would require more complex logic
-        # For now, just show the setting
 
     return await run_complete_pipeline(
         args.dataset,

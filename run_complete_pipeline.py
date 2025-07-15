@@ -477,18 +477,31 @@ async def run_complete_pipeline(
         )
 
         # Run a quick evaluation with default parameters to get real predictions for rule generation
-        print("🔄 Running quick evaluation to get predictions for rule generation...")
-        default_params = {
-            "max_candidates": 100,
-            "semantic_weight": 0.5,
-            "model": model,
-            "use_semantic": True,
-        }
+        dev_cache_file = f"results/temp/{dataset}_dev_predictions.json"
+        if os.path.exists(dev_cache_file):
+            print("📁 Loading cached dev predictions...")
+            with open(dev_cache_file) as f:
+                dev_results = json.load(f)
+            print(f"✅ Using cached dev predictions: F1={dev_results['metrics']['f1']:.4f}, {len(dev_results.get('predictions', {}))} predictions")
+        else:
+            print("🔄 Running quick evaluation to get predictions for rule generation...")
+            default_params = {
+                "max_candidates": 100,
+                "semantic_weight": 0.5,
+                "model": model,
+                "use_semantic": True,
+            }
 
-        # Use lower concurrency for analysis-driven mode to avoid Claude SDK conflicts
-        analysis_concurrency = min(2, concurrency)
-        dev_results = await run_dev_only_analysis_with_params(dataset, default_params, model, analysis_concurrency)
-        print(f"✅ Quick evaluation: F1={dev_results['metrics']['f1']:.4f}, {len(dev_results.get('predictions', {}))} predictions")
+            # Use lower concurrency for analysis-driven mode to avoid Claude SDK conflicts
+            analysis_concurrency = min(2, concurrency)
+            dev_results = await run_dev_only_analysis_with_params(dataset, default_params, model, analysis_concurrency)
+            print(f"✅ Quick evaluation: F1={dev_results['metrics']['f1']:.4f}, {len(dev_results.get('predictions', {}))} predictions")
+            
+            # Cache dev predictions
+            os.makedirs(os.path.dirname(dev_cache_file), exist_ok=True)
+            with open(dev_cache_file, 'w') as f:
+                json.dump(dev_results, f, indent=2)
+            print(f"💾 Cached dev predictions to {dev_cache_file}")
 
         print("🤖 Generating joint hyperparameter + rule optimization with Claude...")
         heuristics_file, rule_cost_info = await generate_agentic_heuristics(

@@ -367,6 +367,26 @@ def analyze_dataset_for_claude(
         print(f"🔍 ANALYZING DATASET: {dataset.upper()}")
         print("=" * 80)
 
+    # Check if cached analysis exists
+    if output_file and pathlib.Path(output_file).exists():
+        if verbose:
+            print(f"📁 Loading cached analysis from {output_file}")
+        try:
+            with open(output_file) as f:
+                cached_result = json.load(f)
+            # Verify cache is complete and matches parameters
+            if (cached_result.get("metadata", {}).get("total_pairs_analyzed") == max_pairs and 
+                cached_result.get("candidate_analysis", {}).get("recall_at_100") is not None):
+                if verbose:
+                    print("✅ Using cached analysis (complete)")
+                return cached_result
+            else:
+                if verbose:
+                    print("⚠️ Cached analysis incomplete or parameters changed, regenerating...")
+        except (json.JSONDecodeError, KeyError) as e:
+            if verbose:
+                print(f"⚠️ Cached analysis invalid: {e}, regenerating...")
+
     # Check if dataset exists
     data_root = pathlib.Path("data/raw") / dataset
     if not data_root.exists():

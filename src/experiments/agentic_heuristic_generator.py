@@ -238,7 +238,7 @@ class AgenticHeuristicGenerator:
 
         return candidate_analysis
 
-    def _create_sample_data(self, dev_results: Dict[str, Any]) -> SampleData:
+    def _create_sample_data(self, dev_results: Dict[str, Any], analysis_data: Optional[Dict] = None) -> SampleData:
         """Create clean sample data for Claude to work with"""
         A, B, dev_pairs = self._load_clean_data()
 
@@ -307,7 +307,7 @@ class AgenticHeuristicGenerator:
         )
         print(f"📊 Candidate issues: {len(candidate_issues)} false negatives where ground truth wasn't in candidates")
 
-        return SampleData(
+        sample_data = SampleData(
             dataset=self.dataset,
             dev_pairs=sample_pairs,
             dev_predictions=predictions,
@@ -317,6 +317,12 @@ class AgenticHeuristicGenerator:
             table_b=B,
             candidate_analysis=candidate_analysis,
         )
+
+        # Add rich analysis data if provided
+        if analysis_data:
+            sample_data.analysis_insights = analysis_data
+
+        return sample_data
 
     def _create_agentic_prompt(self, sample_data: SampleData) -> str:
         """Create agentic prompt that lets Claude test and iterate on rules"""
@@ -330,22 +336,61 @@ class AgenticHeuristicGenerator:
         fn_not_in_candidates = len([p for p in fn_examples if not p.get("ground_truth_in_candidates", True)])
         total_fn = len(fn_examples)
 
-        prompt = f"""You are an expert at entity matching rule generation. You can iteratively develop and test rules.
+        # Add rich analysis insights if available
+        analysis_section = ""
+        if hasattr(sample_data, 'analysis_insights') and sample_data.analysis_insights:
+            insights = sample_data.analysis_insights
+            similarity_stats = insights.get("similarity_analysis", {})
+            candidate_stats = insights.get("candidate_analysis", {})
+            true_matches = similarity_stats.get("true_matches", {})
+            false_positives = similarity_stats.get("false_positives", {})
+
+            analysis_section = f"""
+
+**🔬 RICH SIMILARITY ANALYSIS** (from {insights.get("metadata", {}).get("total_pairs_analyzed", 0)} validation pairs):
+
+**True Match Patterns**:
+- Syntactic similarity: {true_matches.get("syntactic", {}).get("mean", 0):.3f} ± {true_matches.get("syntactic", {}).get("std", 0):.3f} (range: {true_matches.get("syntactic", {}).get("min", 0):.3f}-{true_matches.get("syntactic", {}).get("max", 0):.3f})
+- Trigram similarity: {true_matches.get("trigram", {}).get("mean", 0):.3f} ± {true_matches.get("trigram", {}).get("std", 0):.3f} (range: {true_matches.get("trigram", {}).get("min", 0):.3f}-{true_matches.get("trigram", {}).get("max", 0):.3f})
+{"- Semantic similarity: " + f"{true_matches.get('semantic', {}).get('mean', 0):.3f} ± {true_matches.get('semantic', {}).get('std', 0):.3f} (range: {true_matches.get('semantic', {}).get('min', 0):.3f}-{true_matches.get('semantic', {}).get('max', 0):.3f})" if true_matches.get("semantic") else "- Semantic similarity: Not available"}
+
+**False Positive Patterns** (what the model mistakes for matches):
+- Syntactic similarity: {false_positives.get("syntactic", {}).get("mean", 0):.3f} ± {false_positives.get("syntactic", {}).get("std", 0):.3f} (range: {false_positives.get("syntactic", {}).get("min", 0):.3f}-{false_positives.get("syntactic", {}).get("max", 0):.3f})
+- Trigram similarity: {false_positives.get("trigram", {}).get("mean", 0):.3f} ± {false_positives.get("trigram", {}).get("std", 0):.3f} (range: {false_positives.get("trigram", {}).get("min", 0):.3f}-{false_positives.get("trigram", {}).get("max", 0):.3f})
+{"- Semantic similarity: " + f"{false_positives.get('semantic', {}).get('mean', 0):.3f} ± {false_positives.get('semantic', {}).get('std', 0):.3f} (range: {false_positives.get('semantic', {}).get('min', 0):.3f}-{false_positives.get('semantic', {}).get('max', 0):.3f})" if false_positives.get("semantic") else "- Semantic similarity: Not available"}
+
+**🎯 OPTIMAL THRESHOLDS** (based on data analysis):
+- Syntactic threshold: ~{max(0.6, (true_matches.get("syntactic", {}).get("mean", 0.7) + false_positives.get("syntactic", {}).get("mean", 0.4)) / 2):.3f} (separates true matches from false positives)
+- Trigram threshold: ~{max(0.3, (true_matches.get("trigram", {}).get("mean", 0.6) + false_positives.get("trigram", {}).get("mean", 0.2)) / 2):.3f}
+{"- Semantic threshold: ~" + f"{max(0.7, (true_matches.get('semantic', {}).get('mean', 0.8) + false_positives.get('semantic', {}).get('mean', 0.6)) / 2):.3f}" if true_matches.get("semantic") and false_positives.get("semantic") else ""}
+
+**📊 CANDIDATE GENERATION RECALL**:
+{chr(10).join([f"- Recall@{k.split('_')[-1]}: {v:.1%} ({int(v * insights.get('metadata', {}).get('positive_pairs', 27))}/{insights.get('metadata', {}).get('positive_pairs', 27)} matches found)" for k, v in candidate_stats.items() if k.startswith("recall_at")]) if candidate_stats else "- No candidate recall data available"}
+
+**🚨 KEY INSIGHTS FOR RULE GENERATION**:
+{"- ⚡ HIGH PRECISION OPPORTUNITY: True matches have much higher " + ("semantic" if true_matches.get("semantic", {}).get("mean", 0) - false_positives.get("semantic", {}).get("mean", 0) > 0.1 else "syntactic" if true_matches.get("syntactic", {}).get("mean", 0) - false_positives.get("syntactic", {}).get("mean", 0) > 0.2 else "trigram") + " similarity - use this for confident auto-accepts" if (true_matches.get("semantic", {}).get("mean", 0) - false_positives.get("semantic", {}).get("mean", 0) > 0.1) or (true_matches.get("syntactic", {}).get("mean", 0) - false_positives.get("syntactic", {}).get("mean", 0) > 0.2) else "- ⚠️ OVERLAPPING SIMILARITIES: True matches and false positives have similar scores - need nuanced rules"}
+- 🔍 RECALL OPPORTUNITY: {f"Only {candidate_stats.get('recall_at_100', 0):.1%} of true matches are in top 100 candidates" if candidate_stats.get('recall_at_100', 1) < 0.98 else f"Good candidate recall ({candidate_stats.get('recall_at_100', 1):.1%}) - focus on LLM decision quality"}
+{f"- 🎯 PERFECT MATCHES: {(true_matches.get('syntactic', {}).get('max', 0) > 0.95) + (true_matches.get('trigram', {}).get('max', 0) > 0.95) + (true_matches.get('semantic', {}).get('max', 0) > 0.95 if true_matches.get('semantic') else 0)} similarity types reach near-perfect scores - auto-accept these" if any([true_matches.get('syntactic', {}).get('max', 0) > 0.95, true_matches.get('trigram', {}).get('max', 0) > 0.95, true_matches.get('semantic', {}).get('max', 0) > 0.95 if true_matches.get('semantic') else False]) else ""}
+{"- 📈 CONCRETE EXAMPLES: " + f"{len(insights.get('concrete_examples', {}).get('true_matches', []))} true match examples and {len(insights.get('concrete_examples', {}).get('confusing_non_matches', []))} confusing non-match examples available for pattern analysis" if insights.get('concrete_examples') else ""}"""
+
+        prompt = f"""You are an expert at entity matching optimization. You can iteratively develop and test BOTH hyperparameters AND rules for optimal performance.
 
 **DATASET**: {sample_data.dataset}
 **TARGET**: F1 > {sample_data.target_f1:.1f} (leaderboard target)
 **CURRENT DEV PERFORMANCE**: F1={sample_data.dev_metrics.get("f1", 0):.4f}, P={sample_data.dev_metrics.get("precision", 0):.4f}, R={sample_data.dev_metrics.get("recall", 0):.4f}
+**DETAILS**: {json.dumps(sample_data, indent=2)}
 
 **YOUR TOOLS**:
 - `Read`: Read files (e.g., sample data, existing rules)
-- `Write`: Write rules to test files
-- `Bash`: Test rules by running matching with your generated rules
+- `Write`: Write configuration files with both hyperparameters and rules
+- `Bash`: Test configuration by running matching with your generated config
 
-**TASK**: Generate sophisticated entity matching rules that improve F1 score through:
-1. **Candidate generation** (ensure correct matches get into the candidate list)
-2. **Early decisions** (auto-accept/reject to reduce LLM costs)
-3. **Score adjustments** (boost likely matches, penalize unlikely ones)
-4. **Dynamic weights** (adjust semantic vs trigram weights based on context)
+**TASK**: Generate optimal entity matching configuration including:
+1. **HYPERPARAMETERS** (max_candidates, similarity weights, thresholds)
+2. **CANDIDATE GENERATION RULES** (ensure correct matches get into the candidate list)
+3. **DECISION RULES** (auto-accept/reject to reduce LLM costs)
+4. **SCORE ADJUSTMENT RULES** (boost likely matches, penalize unlikely ones)
+5. **DYNAMIC WEIGHT RULES** (adjust semantic vs trigram weights based on context)
 
 **RULE TYPES**:
 ```python
@@ -382,8 +427,8 @@ Model made {len(error_examples)} errors ({len([p for p in error_examples if p["c
 - Precision = {sample_data.dev_metrics.get("precision", 0):.4f}: {"Perfect! Model never wrong when it says match." if sample_data.dev_metrics.get("precision", 0) >= 0.99 else "Has false positives - model too aggressive"}
 - Recall = {sample_data.dev_metrics.get("recall", 0):.4f}: {"Low - model missing true matches (too conservative)" if sample_data.dev_metrics.get("recall", 0) < 0.9 else "Good recall"}
 
-**RECOMMENDED RULE STRATEGY**:
-{"🎯 **BOOST RECALL**: Generate rules to catch missed matches (score boosts, relaxed thresholds)" if sample_data.dev_metrics.get("precision", 0) >= 0.99 and sample_data.dev_metrics.get("recall", 0) < 0.9 else "🎯 **IMPROVE PRECISION**: Generate rejection rules to reduce false positives" if sample_data.dev_metrics.get("precision", 0) < 0.9 else "🎯 **BALANCED APPROACH**: Fine-tune both precision and recall"}
+**RECOMMENDED OPTIMIZATION STRATEGY**:
+{"🎯 **BOOST RECALL**: Increase max_candidates and semantic_weight. Generate rules to catch missed matches (score boosts, relaxed thresholds)" if sample_data.dev_metrics.get("precision", 0) >= 0.99 and sample_data.dev_metrics.get("recall", 0) < 0.9 else "🎯 **IMPROVE PRECISION**: Lower decision threshold, add rejection rules to reduce false positives" if sample_data.dev_metrics.get("precision", 0) < 0.9 else "🎯 **BALANCED APPROACH**: Fine-tune hyperparameters and rules for optimal F1"}
 
 ⚠️ **HIGH SIGNAL DATA**: The sample file contains ALL false positives and false negatives (not just a subset). This gives you comprehensive error patterns to analyze.
 
@@ -432,17 +477,43 @@ Right: {json.dumps(example["right_record"], indent=2)}
 {f"Since precision is perfect ({sample_data.dev_metrics.get('precision', 0):.4f}) but recall is low ({sample_data.dev_metrics.get('recall', 0):.4f}), focus on FALSE NEGATIVES. Generate rules to BOOST scores for missed matches. Avoid rejection rules since precision is already perfect." if sample_data.dev_metrics.get("precision", 0) >= 0.99 and sample_data.dev_metrics.get("recall", 0) < 0.9 else "Focus on both precision and recall optimization."}
 
 **ITERATIVE WORKFLOW**:
-1. **Write initial rules** to `results/temp/test_rules.json` based on the error patterns above
-2. **Test them** with: `python run_enhanced_matching.py --dataset {sample_data.dataset} --heuristic-file results/temp/test_rules.json --limit 20`
-3. **Analyze results** - did F1 improve? Which rules helped/hurt?
-4. **Iterate** - refine rules and test again
-5. **Final rules** - when satisfied, write final rules to `results/temp/generated_rules.json`
+1. **Write initial config** to `results/temp/test_config.json` with both hyperparameters and rules
+2. **Test them** with: `python run_enhanced_matching.py --dataset {sample_data.dataset} --heuristic-file results/temp/test_config.json --limit 20`
+3. **Analyze results** - did F1 improve? Which hyperparameters/rules helped/hurt?
+4. **Iterate** - refine both hyperparameters and rules, test again
+5. **Final config** - when satisfied, write final configuration to `results/temp/generated_rules.json`
+
+**COMPLEX CANDIDATE GENERATION HEURISTICS**:
+You can write sophisticated candidate generation rules that:
+- Boost similarity calculations during candidate search to surface missed matches
+- Use field-specific logic (e.g., prioritize name matches, handle abbreviations)
+- Apply domain knowledge (e.g., year ranges, category mappings)
+- Handle data quality issues (missing fields, typos, formatting differences)
+
+**EXAMPLE COMPLEX CANDIDATE RULES**:
+Examples of sophisticated candidate generation rules:
+
+1. **Partial Name Matching**: Boost similarity for partial name matches
+2. **Abbreviation Handling**: Detect and boost acronym matches
+3. **Year Range Matching**: Handle temporal data with year ranges
+4. **Field-Specific Logic**: Custom logic for different data types
+
+These rules execute during candidate generation to surface missed matches.
 
 **IMPORTANT**: All rule files MUST be saved in the `results/temp/` directory. Do NOT save files in the root directory.
 
-**RULE FORMAT** ({"Focus on CANDIDATE GENERATION and SCORE BOOSTS since precision is perfect" if sample_data.dev_metrics.get("precision", 0) >= 0.99 and sample_data.dev_metrics.get("recall", 0) < 0.9 else "Mix of candidate, decision and score rules"}):
+**CONFIGURATION FORMAT** ({"Focus on CANDIDATE GENERATION and SCORE BOOSTS since precision is perfect. INCREASE max_candidates and semantic_weight to improve recall." if sample_data.dev_metrics.get("precision", 0) >= 0.99 and sample_data.dev_metrics.get("recall", 0) < 0.9 else "Balance hyperparameters and rules for optimal F1"}):
 ```json
 {{
+  "hyperparameters": {{
+    "max_candidates": 150,
+    "semantic_weight": 0.7,
+    "syntactic_weight": 0.2,
+    "trigram_weight": 0.1,
+    "decision_threshold": 0.5,
+    "auto_accept_threshold": 0.95,
+    "auto_reject_threshold": 0.1
+  }},
   "candidate_rules": [
     {{
       "rule_name": "boost_partial_name_candidates",
@@ -483,7 +554,7 @@ Right: {json.dumps(example["right_record"], indent=2)}
 }}
 ```
 
-**START HERE**: Analyze the error patterns above, then write your first set of rules to `test_rules.json` and test them!
+**START HERE**: Analyze the error patterns and similarity statistics above, then write your first configuration with optimal hyperparameters and rules to `results/temp/test_config.json` and test them!
 """
 
         return prompt
@@ -564,10 +635,18 @@ Right: {json.dumps(example["right_record"], indent=2)}
 **SAMPLE DATA FILE**: `{sample_file}` contains detailed error analysis and examples.
 You can read this file to see all the false positive/negative examples.
 
-**TESTING COMMAND**:
+**TESTING COMMANDS**:
 ```bash
-python run_enhanced_matching.py --dataset {self.dataset} --heuristic-file results/temp/test_rules.json --limit 20 --max-candidates 50
+# Quick test (20 pairs for fast feedback)
+python run_enhanced_matching.py --dataset {self.dataset} --heuristic-file results/temp/test_rules.json --limit 20 --max-candidates 150 --semantic-weight 0.75 --concurrency 10
+
+# FULL DEV EVALUATION (use this regularly to track progress - FAST with concurrency!)
+python run_enhanced_matching.py --dataset {self.dataset} --heuristic-file results/temp/test_rules.json --max-candidates 150 --semantic-weight 0.75 --concurrency 20
 ```
+
+**CRITICAL**: After each rule iteration, run the FULL dev evaluation! It should take < 30 seconds with proper concurrency.
+Your target is F1 > 82.0. Always show: "Current F1: X.XXX, Target: 82.0" after testing.
+Use `run_enhanced_matching.py` - this is the SAME function used in the main pipeline!
 
 **CRITICAL FILE PATHS**:
 - Save initial rules to: `results/temp/test_rules.json`
@@ -591,33 +670,61 @@ Start by reading the sample data file to understand the patterns, then iterative
 
             print("🎭 Claude is working on rule generation...")
 
-            async for message in query(prompt=enhanced_prompt, options=options):
-                if isinstance(message, AssistantMessage):
-                    turn_count += 1
-                    print(f"   💭 Turn {turn_count}: Claude is thinking and taking actions...")
+            # Log the prompt to a file for debugging
+            os.makedirs("results/temp", exist_ok=True)
+            prompt_log_file = f"results/temp/{self.dataset}_claude_prompt.txt"
+            with open(prompt_log_file, "w") as f:
+                f.write(enhanced_prompt)
+            print(f"📝 Claude prompt logged to: {prompt_log_file}")
 
-                    for block in message.content:
-                        if isinstance(block, TextBlock):
-                            response_parts.append(block.text)
-                            # Show a preview of what Claude is doing
-                            if len(block.text) > 100:
-                                preview = block.text[:100].replace("\n", " ").strip()
-                                print(f"      🔤 {preview}...")
+            try:
+                async for message in query(prompt=enhanced_prompt, options=options):
+                    if isinstance(message, AssistantMessage):
+                        turn_count += 1
+                        print(f"   💭 Turn {turn_count}: Claude is thinking and taking actions...")
 
-                elif isinstance(message, ResultMessage):
-                    # Capture cost and session info
-                    total_cost_usd = message.total_cost_usd or 0.0
-                    session_id = message.session_id
-                    duration_ms = message.duration_ms or 0
+                        for block in message.content:
+                            if isinstance(block, TextBlock):
+                                response_parts.append(block.text)
+                                # Show much more of what Claude is thinking for better visibility
+                                if len(block.text.strip()) > 50:
+                                    lines = block.text.strip().split('\n')
+                                    # Show first few lines or up to 1000+ characters
+                                    preview_lines = []
+                                    char_count = 0
+                                    for line in lines:
+                                        if char_count + len(line) > 1500:  # Show up to 1500 chars
+                                            break
+                                        preview_lines.append(line)
+                                        char_count += len(line)
 
-                    print("✅ Claude session completed!")
-                    print(f"   📊 {turn_count} turns, {duration_ms / 1000:.1f}s, ${total_cost_usd:.4f}")
+                                    preview = '\n'.join(preview_lines).strip()  # Keep line breaks for readability
+                                    if len(preview) > 1500:
+                                        preview = preview[:1500] + "..."
+                                    print(f"      🔤 {preview}")
 
-                    if message.is_error:
-                        print(f"   ⚠️ Session ended with error: {message.result}")
+                    elif isinstance(message, ResultMessage):
+                        # Capture cost and session info
+                        total_cost_usd = message.total_cost_usd or 0.0
+                        session_id = message.session_id
+                        duration_ms = message.duration_ms or 0
 
-                    # end of run
-                    break
+                        print("✅ Claude session completed!")
+                        print(f"   📊 {turn_count} turns, {duration_ms / 1000:.1f}s, ${total_cost_usd:.4f}")
+
+                        if message.is_error:
+                            print(f"   ⚠️ Session ended with error: {message.result}")
+
+                        # end of run
+                        break
+
+            except Exception as claude_error:
+                print(f"❌ Claude Code SDK error: {claude_error}")
+                print("   This might be due to async conflicts or Claude SDK issues")
+                print("   Trying to continue with best effort...")
+
+                # Return empty response but don't crash the whole pipeline
+                return "", {"total_cost_usd": 0.0, "method": "failed", "error": str(claude_error)}
 
             full_response = "".join(response_parts)
 
@@ -635,14 +742,14 @@ Start by reading the sample data file to understand the patterns, then iterative
             raise RuntimeError(f"Claude SDK agentic call failed: {e}")
 
     async def generate_agentic_rules(
-        self, dev_results: Dict[str, Any], output_file: Optional[str] = None
+        self, dev_results: Dict[str, Any], output_file: Optional[str] = None, analysis_data: Optional[Dict] = None
     ) -> Tuple[str, Dict[str, Any]]:
         """Generate rules using agentic Claude approach"""
         print(f"🚀 AGENTIC HEURISTIC GENERATION FOR {self.dataset}")
         print("=" * 60)
 
-        # Prepare clean sample data
-        sample_data = self._create_sample_data(dev_results)
+        # Prepare clean sample data with rich analysis insights
+        sample_data = self._create_sample_data(dev_results, analysis_data)
         sample_file = self._write_sample_data_file(sample_data)
 
         # Create agentic prompt
@@ -723,7 +830,7 @@ Start by reading the sample data file to understand the patterns, then iterative
 
 
 async def generate_agentic_heuristics(
-    dataset: str, dev_results: Dict[str, Any], output_file: Optional[str] = None
+    dataset: str, dev_results: Dict[str, Any], output_file: Optional[str] = None, analysis_data: Optional[Dict] = None
 ) -> Tuple[str, Dict[str, Any]]:
     """
     Clean interface for agentic heuristic generation.
@@ -737,7 +844,7 @@ async def generate_agentic_heuristics(
         Tuple of (path to generated heuristics file, cost information)
     """
     generator = AgenticHeuristicGenerator(dataset)
-    return await generator.generate_agentic_rules(dev_results, output_file)
+    return await generator.generate_agentic_rules(dev_results, output_file, analysis_data)
 
 
 if __name__ == "__main__":

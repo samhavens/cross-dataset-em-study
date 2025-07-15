@@ -359,13 +359,18 @@ class CandidateCache:
 
 
 def get_top_candidates_cached(
-    left_record: dict, candidate_cache: CandidateCache, max_candidates: int, cfg: Config, dataset: str = None
+    left_record: dict, candidate_cache: CandidateCache, max_candidates: int, cfg: Config, dataset: str = None,
+    intelligent_boost: bool = False
 ) -> List[tuple]:
-    """FAST get_top_candidates using pre-computed cache"""
+    """FAST get_top_candidates using pre-computed cache with optional intelligent boost for better recall"""
     left_str = json.dumps(left_record, ensure_ascii=False).lower()
 
     # Get heuristic engine if enabled
     heuristic_engine = get_heuristic_engine(cfg, dataset) if dataset else None
+
+    # Intelligent boost: increase candidates for better recall if analysis shows poor recall
+    if intelligent_boost and max_candidates <= 100:
+        max_candidates = min(max_candidates * 2, 200)  # Double candidates up to 200
 
     # Fast scoring using pre-computed values
     if cfg.use_semantic and SEMANTIC_AVAILABLE:

@@ -8,14 +8,15 @@ decisions about hyperparameters and rules.
 
 import json
 import pathlib
+
 from typing import Any, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
 
 from .hybrid_matcher import (
-    Config,
     CandidateCache,
+    Config,
     compute_dataset_embeddings,
     get_top_candidates_cached,
     semantic_similarity,
@@ -110,10 +111,10 @@ def generate_concrete_examples(
     # Batch candidate generation - get unique left records from both positive and negative pairs
     all_left_ids = set(positive_pairs['ltable_id'].tolist() + negative_pairs['ltable_id'].tolist())
     valid_left_ids = [left_id for left_id in all_left_ids if left_id in A_records]
-    
+
     if verbose:
         print(f"📦 Pre-computing candidates for {len(valid_left_ids)} unique left records...")
-    
+
     # Pre-compute candidates for all unique left records
     candidates_cache = {}
     for i, left_id in enumerate(valid_left_ids):
@@ -121,21 +122,21 @@ def generate_concrete_examples(
             print(f"   Pre-computed candidates for {i}/{len(valid_left_ids)} records")
         try:
             left_record = A_records[left_id]
-            candidates = get_top_candidates_cached(left_record, candidate_cache, max_candidates, cfg, dataset)
+            candidates = get_top_candidates_cached(left_record, candidate_cache, max_candidates, cfg, dataset, intelligent_boost=True)
             candidate_ids = [c[0] for c in candidates]
             candidates_cache[left_id] = candidate_ids
         except Exception as e:
             if verbose:
                 print(f"Warning: Error getting candidates for {left_id}: {e}")
             candidates_cache[left_id] = []
-    
+
     if verbose:
         print(f"✅ Pre-computed candidates for all {len(valid_left_ids)} unique records")
 
     # Generate true match examples
     processed_positive = 0
     errors_positive = 0
-    
+
     for _, row in positive_pairs.iterrows():
         left_id = row.ltable_id
         right_id = row.rtable_id
@@ -144,7 +145,7 @@ def generate_concrete_examples(
             if verbose:
                 print(f"⚠️ Skipping positive pair {left_id}-{right_id}: missing records")
             continue
-        
+
         processed_positive += 1
         if verbose and processed_positive % 10 == 0:
             print(f"   Processing positive pair {processed_positive}/{len(positive_pairs)}")
@@ -196,14 +197,14 @@ def generate_concrete_examples(
     # Generate false positive examples (confusing non-matches)
     processed_negative = 0
     errors_negative = 0
-    
+
     for _, row in negative_pairs.iterrows():
         left_id = row.ltable_id
         right_id = row.rtable_id
 
         if left_id not in A_records or right_id not in B_records:
             continue
-        
+
         processed_negative += 1
         if verbose and processed_negative % 20 == 0:
             print(f"   Processing negative pair {processed_negative}/{len(negative_pairs)}")
@@ -254,7 +255,7 @@ def generate_concrete_examples(
 
     if verbose:
         print(f"✅ Generated {len(false_positive_examples)} confusing non-match examples ({errors_negative} errors)")
-    
+
     return {"true_matches": true_match_examples, "confusing_non_matches": false_positive_examples}
 
 
@@ -282,10 +283,10 @@ def analyze_candidate_recall(
     if max_candidates not in thresholds:
         thresholds.append(max_candidates)
     thresholds = sorted(thresholds)
-    
+
     # Use the highest threshold for actual candidate generation
     max_threshold = max(thresholds)
-    
+
     positive_pairs = pairs[pairs.label == 1]
     total_matches = len(positive_pairs)
 
@@ -307,9 +308,9 @@ def analyze_candidate_recall(
 
         try:
             left_record = A_records[left_id]
-            candidates = get_top_candidates_cached(left_record, candidate_cache, max_threshold, cfg, dataset)
+            candidates = get_top_candidates_cached(left_record, candidate_cache, max_threshold, cfg, dataset, intelligent_boost=True)
             candidate_ids = [c[0] for c in candidates]
-            
+
             if right_id in candidate_ids:
                 candidate_ranks[left_id] = candidate_ids.index(right_id) + 1  # 1-indexed rank
             else:
@@ -327,7 +328,7 @@ def analyze_candidate_recall(
     recall_results = {}
     for threshold in thresholds:
         found_matches = sum(
-            1 for rank in candidate_ranks.values() 
+            1 for rank in candidate_ranks.values()
             if rank is not None and rank <= threshold
         )
         recall = found_matches / total_matches if total_matches > 0 else 0.0
@@ -351,14 +352,14 @@ def analyze_dataset_for_claude(
 ) -> Dict[str, Any]:
     """
     Generate comprehensive analysis for Claude optimization.
-    
+
     Args:
         dataset: Dataset name (e.g., 'itunes_amazon', 'beer')
         max_pairs: Maximum pairs to analyze
         max_candidates: Candidates threshold for analysis
         output_file: Optional output JSON file path
         verbose: Whether to print progress messages
-    
+
     Returns:
         Dictionary containing analysis results
     """
@@ -384,7 +385,7 @@ def analyze_dataset_for_claude(
     # Convert to records
     A_records = {row.id: row.to_dict() for _, row in A_df.iterrows()}
     B_records = {row.id: row.to_dict() for _, row in B_df.iterrows()}
-    
+
     # Build candidate cache ONCE for fast candidate generation
     if verbose:
         print("📦 Building candidate cache for fast processing...")
@@ -532,7 +533,7 @@ def analyze_dataset_for_claude(
             print(f"\n💾 Analysis saved to: {output_path}")
 
     if verbose:
-        print(f"\n🎯 KEY INSIGHTS:")
+        print("\n🎯 KEY INSIGHTS:")
         print(f"   True matches - Syntactic: {result['similarity_analysis']['true_matches']['syntactic']['mean']:.3f} ± {result['similarity_analysis']['true_matches']['syntactic']['std']:.3f}")
         print(f"   True matches - Trigram: {result['similarity_analysis']['true_matches']['trigram']['mean']:.3f} ± {result['similarity_analysis']['true_matches']['trigram']['std']:.3f}")
         if semantic_available:
@@ -542,6 +543,6 @@ def analyze_dataset_for_claude(
         if semantic_available:
             print(f"   False positives - Semantic: {result['similarity_analysis']['false_positives']['semantic']['mean']:.3f} ± {result['similarity_analysis']['false_positives']['semantic']['std']:.3f}")
 
-        print(f"\n🏁 Ready for Claude optimization! Use this file with claude_config_generator.py")
+        print("\n🏁 Ready for Claude optimization! Use this file with claude_config_generator.py")
 
     return result

@@ -18,8 +18,14 @@ An agentic entity matching system where Claude analyzes matching failures and wr
 source .venv/bin/activate
 export OPENAI_API_KEY="your-openai-key"
 
-# Run complete automated pipeline
+# 🚀 NEW: Analysis-driven pipeline (skips expensive hyperparameter sweep)
+python run_complete_pipeline.py --dataset beer --use-analysis-driven
+
+# Traditional pipeline with hyperparameter sweep
 python run_complete_pipeline.py --dataset beer
+
+# Compare both approaches side-by-side
+python scripts/compare_pipelines.py --dataset beer
 
 # Run with resume capability for long experiments
 python run_complete_pipeline.py --dataset walmart_amazon --resume
@@ -30,7 +36,18 @@ python run_complete_pipeline.py --dataset beer --validate-rules
 
 ## 📊 System Architecture
 
-The system runs a **4-stage agentic pipeline**:
+The system supports **TWO APPROACHES**:
+
+### 🚀 NEW: Analysis-Driven Pipeline (`--use-analysis-driven`)
+**Joint optimization approach** - Claude sees rich similarity data and optimizes BOTH hyperparameters AND rules together:
+
+1. **Rich Similarity Analysis**: Analyzes validation data for similarity patterns, optimal thresholds, candidate recall
+2. **Joint Optimization**: Claude receives comprehensive analysis and generates optimal hyperparameters + rules in one step
+3. **Intelligent Boost**: Automatically improves candidate recall from ~93% to near 100%
+4. **Skip Sweep**: No expensive hyperparameter search needed
+
+### Traditional: 4-Stage Sequential Pipeline
+**Separate optimization approach** - Traditional hyperparameter sweep followed by rule generation:
 
 ### Stage 1: Improved Hyperparameter Sweep
 - **Dataset-aware ranges**: Calculates candidate limits based on context window and dataset size

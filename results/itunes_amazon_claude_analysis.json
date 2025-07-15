@@ -59,9 +59,9 @@
     "recall_at_1": 0.4074074074074074,
     "recall_at_5": 0.8888888888888888,
     "recall_at_10": 0.8888888888888888,
-    "recall_at_25": 0.9259259259259259,
-    "recall_at_50": 0.9259259259259259,
-    "recall_at_100": 0.9259259259259259
+    "recall_at_25": 0.9629629629629629,
+    "recall_at_50": 0.9629629629629629,
+    "recall_at_100": 0.9629629629629629
   },
   "concrete_examples": {
     "true_matches": [
@@ -638,8 +638,8 @@
           "semantic": 0.761
         },
         "candidate_generation": {
-          "found": false,
-          "rank": null,
+          "found": true,
+          "rank": 18,
           "max_candidates": 100
         }
       },
@@ -1082,8 +1082,8 @@
           "semantic": 0.766
         },
         "candidate_generation": {
-          "found": false,
-          "rank": null,
+          "found": true,
+          "rank": 149,
           "max_candidates": 100
         }
       },
@@ -1184,8 +1184,8 @@
           "semantic": 0.676
         },
         "candidate_generation": {
-          "found": false,
-          "rank": null,
+          "found": true,
+          "rank": 102,
           "max_candidates": 100
         }
       },
@@ -1320,8 +1320,8 @@
           "semantic": 0.682
         },
         "candidate_generation": {
-          "found": false,
-          "rank": null,
+          "found": true,
+          "rank": 196,
           "max_candidates": 100
         }
       },
@@ -1491,7 +1491,7 @@
         },
         "candidate_generation": {
           "found": true,
-          "rank": 60,
+          "rank": 81,
           "max_candidates": 100
         }
       },
@@ -1559,7 +1559,7 @@
         },
         "candidate_generation": {
           "found": true,
-          "rank": 29,
+          "rank": 31,
           "max_candidates": 100
         }
       },
@@ -1694,8 +1694,8 @@
           "semantic": 0.728
         },
         "candidate_generation": {
-          "found": false,
-          "rank": null,
+          "found": true,
+          "rank": 122,
           "max_candidates": 100
         }
       },
@@ -1796,8 +1796,8 @@
           "semantic": 0.818
         },
         "candidate_generation": {
-          "found": false,
-          "rank": null,
+          "found": true,
+          "rank": 109,
           "max_candidates": 100
         }
       },

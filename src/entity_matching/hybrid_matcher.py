@@ -128,21 +128,27 @@ MAX = 1_000_000  # token limit for the matching prompt
 
 
 async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> str:
-    """Make async call to OpenAI API"""
+    """Make async call to OpenAI API with timeout"""
     try:
         # o3/o4 models use max_completion_tokens instead of max_tokens and don't support temperature=0
         if cfg.model.startswith(("o3", "o4")):
-            response = await client.chat.completions.create(
-                model=cfg.model,
-                messages=[{"role": "user", "content": prompt}],
-                max_completion_tokens=max(cfg.max_tokens, 1000),  # Give o4 models more tokens
+            response = await asyncio.wait_for(
+                client.chat.completions.create(
+                    model=cfg.model,
+                    messages=[{"role": "user", "content": prompt}],
+                    max_completion_tokens=max(cfg.max_tokens, 1000),  # Give o4 models more tokens
+                ),
+                timeout=60  # 60 second timeout
             )
         else:
-            response = await client.chat.completions.create(
-                model=cfg.model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=cfg.temperature,
-                max_tokens=cfg.max_tokens,
+            response = await asyncio.wait_for(
+                client.chat.completions.create(
+                    model=cfg.model,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=cfg.temperature,
+                    max_tokens=cfg.max_tokens,
+                ),
+                timeout=60  # 60 second timeout
             )
 
         # Track usage
@@ -162,6 +168,9 @@ async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> st
 
         return result
 
+    except asyncio.TimeoutError:
+        print(f"OpenAI API timeout after 60 seconds for model {cfg.model}")
+        return ""
     except Exception as e:
         print(f"OpenAI API error: {e}")
         return ""
@@ -1111,10 +1120,15 @@ async def run_matching(
 
     # Use tqdm with gather for proper progress tracking
     with tqdm(total=len(batches), desc="Processing batches", unit="batch") as pbar:
-        for task in asyncio.as_completed(tasks):
-            batch_results = await task
-            all_predictions.update(batch_results)
-            pbar.update(1)
+        try:
+            for task in asyncio.as_completed(tasks):
+                # Add timeout to prevent individual batch hangs
+                batch_results = await asyncio.wait_for(task, timeout=300)  # 5 minutes per batch
+                all_predictions.update(batch_results)
+                pbar.update(1)
+        except asyncio.TimeoutError:
+            print(f"⚠️ Batch processing timeout after 5 minutes - some batches may be incomplete")
+            # Continue with whatever results we have
 
     elapsed_time = time.time() - start_time
     matches_found = len(all_predictions)

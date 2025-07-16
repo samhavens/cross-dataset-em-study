@@ -94,6 +94,7 @@ def generate_concrete_examples(
     cfg: Config,
     dataset: str,
     max_candidates: int,
+    max_examples: int = 50,
     verbose: bool = True,
 ) -> Dict[str, List[Dict]]:
     """Generate concrete examples like dump_matches.py for Claude to see"""
@@ -108,21 +109,35 @@ def generate_concrete_examples(
     original_use_heuristics = cfg.use_heuristics
     cfg.use_heuristics = False
 
-    # Batch candidate generation - get unique left records from both positive and negative pairs
-    all_left_ids = set(positive_pairs['ltable_id'].tolist() + negative_pairs['ltable_id'].tolist())
+    # Smart sampling strategy for maximum information gain
+    if verbose:
+        print(f"🎯 Smart sampling for concrete examples (max {max_examples} examples)...")
+
+    # Separate positive and negative pairs for balanced sampling
+    positive_sample = positive_pairs.sample(min(max_examples//2, len(positive_pairs)), random_state=42)
+    negative_sample = negative_pairs.sample(min(max_examples//2, len(negative_pairs)), random_state=42)
+
+    # Get unique left records from sampled pairs only
+    all_left_ids = set(positive_sample['ltable_id'].tolist() + negative_sample['ltable_id'].tolist())
     valid_left_ids = [left_id for left_id in all_left_ids if left_id in A_records]
 
     if verbose:
-        print(f"📦 Pre-computing candidates for {len(valid_left_ids)} unique left records...")
+        print(f"📦 Pre-computing candidates for {len(valid_left_ids)} unique left records (sampled)...")
 
     # Pre-compute candidates for all unique left records
     candidates_cache = {}
-    for i, left_id in enumerate(valid_left_ids):
-        if verbose and i % 20 == 0 and i > 0:
-            print(f"   Pre-computed candidates for {i}/{len(valid_left_ids)} records")
+
+    # Add progress bar for pre-computing candidates
+    if verbose:
+        from tqdm import tqdm
+        left_id_iterator = tqdm(valid_left_ids, desc="Pre-computing candidates", unit="record")
+    else:
+        left_id_iterator = valid_left_ids
+
+    for left_id in left_id_iterator:
         try:
             left_record = A_records[left_id]
-            candidates = get_top_candidates_cached(left_record, candidate_cache, max_candidates, cfg, dataset, intelligent_boost=True)
+            candidates = get_top_candidates_cached(left_record, candidate_cache, max_candidates, cfg, dataset, intelligent_boost=False, fast_analysis=True)
             candidate_ids = [c[0] for c in candidates]
             candidates_cache[left_id] = candidate_ids
         except Exception as e:
@@ -133,11 +148,11 @@ def generate_concrete_examples(
     if verbose:
         print(f"✅ Pre-computed candidates for all {len(valid_left_ids)} unique records")
 
-    # Generate true match examples
+    # Generate true match examples from sampled data
     processed_positive = 0
     errors_positive = 0
 
-    for _, row in positive_pairs.iterrows():
+    for _, row in positive_sample.iterrows():
         left_id = row.ltable_id
         right_id = row.rtable_id
 
@@ -148,7 +163,7 @@ def generate_concrete_examples(
 
         processed_positive += 1
         if verbose and processed_positive % 10 == 0:
-            print(f"   Processing positive pair {processed_positive}/{len(positive_pairs)}")
+            print(f"   Processing positive pair {processed_positive}/{len(positive_sample)}")
 
         try:
             left_record = clean_record_for_json(A_records[left_id])
@@ -194,11 +209,11 @@ def generate_concrete_examples(
     if verbose:
         print(f"✅ Generated {len(true_match_examples)} true match examples ({errors_positive} errors)")
 
-    # Generate false positive examples (confusing non-matches)
+    # Generate false positive examples (confusing non-matches) from sampled data
     processed_negative = 0
     errors_negative = 0
 
-    for _, row in negative_pairs.iterrows():
+    for _, row in negative_sample.iterrows():
         left_id = row.ltable_id
         right_id = row.rtable_id
 
@@ -207,7 +222,7 @@ def generate_concrete_examples(
 
         processed_negative += 1
         if verbose and processed_negative % 20 == 0:
-            print(f"   Processing negative pair {processed_negative}/{len(negative_pairs)}")
+            print(f"   Processing negative pair {processed_negative}/{len(negative_sample)}")
 
         try:
             left_record = clean_record_for_json(A_records[left_id])
@@ -267,6 +282,8 @@ def analyze_candidate_recall(
     cfg: Config,
     dataset: str,
     max_candidates: int = 100,
+    max_analysis_pairs: int = None,
+    test_higher_candidates: bool = True,
     verbose: bool = True,
 ) -> Dict[str, float]:
     """Analyze recall at different candidate thresholds"""
@@ -277,17 +294,36 @@ def analyze_candidate_recall(
     original_use_heuristics = cfg.use_heuristics
     cfg.use_heuristics = False
 
-    # Define thresholds up to max_candidates only
-    base_thresholds = [1, 5, 10, 25, 50, 100, 150, 200]
-    thresholds = [t for t in base_thresholds if t <= max_candidates]
-    if max_candidates not in thresholds:
-        thresholds.append(max_candidates)
+    # Define thresholds to test
+    base_thresholds = [1, 5, 10, 25, 50, 100, 150, 200, 300, 500]
+
+    if test_higher_candidates:
+        # Test beyond current max_candidates to see potential improvement
+        analysis_max_candidates = max(max_candidates, 500)  # Test up to 500 to see potential
+        if verbose:
+            print(f"   Testing up to {analysis_max_candidates} candidates (current setting: {max_candidates})")
+    else:
+        # Only test up to current max_candidates setting
+        analysis_max_candidates = max_candidates
+        if verbose:
+            print(f"   Testing up to {analysis_max_candidates} candidates (current setting)")
+
+    thresholds = [t for t in base_thresholds if t <= analysis_max_candidates]
+    if analysis_max_candidates not in thresholds:
+        thresholds.append(analysis_max_candidates)
     thresholds = sorted(thresholds)
 
     # Use the highest threshold for actual candidate generation
     max_threshold = max(thresholds)
 
     positive_pairs = pairs[pairs.label == 1]
+
+    # Limit analysis pairs for speed if requested
+    if max_analysis_pairs and len(positive_pairs) > max_analysis_pairs:
+        positive_pairs = positive_pairs.head(max_analysis_pairs)
+        if verbose:
+            print(f"ℹ️ Limiting analysis to first {max_analysis_pairs} positive pairs for speed")
+
     total_matches = len(positive_pairs)
 
     if total_matches == 0:
@@ -295,9 +331,35 @@ def analyze_candidate_recall(
         cfg.use_heuristics = original_use_heuristics
         return {f"recall_at_{t}": 0.0 for t in thresholds}
 
-    # Get candidate ranks for all positive pairs once at max threshold
-    candidate_ranks = {}  # left_id -> rank of right_id (or None if not found)
+    # Pre-compute candidates for unique left records to avoid redundant work
+    unique_left_ids = set(positive_pairs['ltable_id'])
+    candidates_cache = {}
     errors = 0
+
+    # Add progress bar for candidate computation
+    if verbose:
+        from tqdm import tqdm
+        unique_iterator = tqdm(unique_left_ids, desc="Computing candidates", unit="record")
+    else:
+        unique_iterator = unique_left_ids
+
+    for left_id in unique_iterator:
+        if left_id not in A_records:
+            continue
+
+        try:
+            left_record = A_records[left_id]
+            candidates = get_top_candidates_cached(left_record, candidate_cache, max_threshold, cfg, dataset, intelligent_boost=False, fast_analysis=True)
+            candidate_ids = [c[0] for c in candidates]
+            candidates_cache[left_id] = candidate_ids
+        except Exception as e:
+            errors += 1
+            candidates_cache[left_id] = []
+            if verbose:
+                print(f"Warning: Error getting candidates for {left_id}: {e}")
+
+    # Now process all pairs using pre-computed candidates
+    candidate_ranks = {}  # left_id -> rank of right_id (or None if not found)
 
     for _, row in positive_pairs.iterrows():
         left_id = row.ltable_id
@@ -306,20 +368,11 @@ def analyze_candidate_recall(
         if left_id not in A_records or right_id not in B_records:
             continue
 
-        try:
-            left_record = A_records[left_id]
-            candidates = get_top_candidates_cached(left_record, candidate_cache, max_threshold, cfg, dataset, intelligent_boost=True)
-            candidate_ids = [c[0] for c in candidates]
-
-            if right_id in candidate_ids:
-                candidate_ranks[left_id] = candidate_ids.index(right_id) + 1  # 1-indexed rank
-            else:
-                candidate_ranks[left_id] = None  # Not found
-        except Exception as e:
-            errors += 1
-            candidate_ranks[left_id] = None
-            if verbose:
-                print(f"Warning: Error getting candidates for {left_id}: {e}")
+        candidate_ids = candidates_cache.get(left_id, [])
+        if right_id in candidate_ids:
+            candidate_ranks[left_id] = candidate_ids.index(right_id) + 1  # 1-indexed rank
+        else:
+            candidate_ranks[left_id] = None  # Not found
 
     # Restore original heuristics setting
     cfg.use_heuristics = original_use_heuristics
@@ -346,7 +399,8 @@ def analyze_candidate_recall(
 def analyze_dataset_for_claude(
     dataset: str,
     max_pairs: int = 200,
-    max_candidates: int = 100,
+    max_candidates: int = 200,
+    max_analysis_pairs: int = 500,
     output_file: str = None,
     verbose: bool = True,
 ) -> Dict[str, Any]:
@@ -376,14 +430,13 @@ def analyze_dataset_for_claude(
                 cached_result = json.load(f)
             # Verify cache is complete and has at least the requested pairs
             cached_pairs = cached_result.get("metadata", {}).get("total_pairs_analyzed", 0)
-            if (cached_pairs >= max_pairs and 
+            if (cached_pairs >= max_pairs and
                 cached_result.get("candidate_analysis", {}).get("recall_at_100") is not None):
                 if verbose:
                     print("✅ Using cached analysis (complete)")
                 return cached_result
-            else:
-                if verbose:
-                    print("⚠️ Cached analysis incomplete or parameters changed, regenerating...")
+            if verbose:
+                print("⚠️ Cached analysis incomplete or parameters changed, regenerating...")
         except (json.JSONDecodeError, KeyError) as e:
             if verbose:
                 print(f"⚠️ Cached analysis invalid: {e}, regenerating...")
@@ -420,7 +473,7 @@ def analyze_dataset_for_claude(
 
     # Initialize config
     cfg = Config()
-    cfg.use_semantic = True
+    cfg.use_semantic = True  # Keep semantic similarity for analysis results
     cfg.use_heuristics = False  # Disable heuristics during analysis for speed
 
     # Try to load embeddings for semantic similarity
@@ -497,12 +550,12 @@ def analyze_dataset_for_claude(
 
     # Analyze candidate recall
     candidate_analysis = analyze_candidate_recall(
-        pairs, A_records, B_records, candidate_cache, cfg, dataset, max_candidates, verbose
+        pairs, A_records, B_records, candidate_cache, cfg, dataset, max_candidates, max_analysis_pairs, True, verbose
     )
 
     # Generate concrete examples
     concrete_examples = generate_concrete_examples(
-        positive_pairs, negative_sample, A_records, B_records, candidate_cache, cfg, dataset, max_candidates, verbose
+        positive_pairs, negative_sample, A_records, B_records, candidate_cache, cfg, dataset, max_candidates, 100, verbose
     )
 
     # Sample records for dataset characteristics

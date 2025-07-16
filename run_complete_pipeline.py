@@ -21,14 +21,13 @@ import subprocess
 import time
 
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import pandas as pd
 
 from run_enhanced_matching import run_enhanced_matching
 from src.entity_matching.hybrid_matcher import run_matching
 from src.experiments.agentic_heuristic_generator import generate_agentic_heuristics, get_leaderboard_target_f1
-from src.experiments.claude_sdk_heuristic_generator import ClaudeSDKHeuristicGenerator
 from src.experiments.claude_sdk_optimizer import ClaudeSDKOptimizer
 from src.utils.json_serializer import json_serialize
 
@@ -203,72 +202,6 @@ async def run_train_for_rule_data(
             shutil.rmtree(temp_dataset_dir)
 
 
-async def generate_actual_rules(
-    dataset: str,
-    dev_results: Dict[str, Any],
-    model: str = "gpt-4.1-nano",
-    use_agentic: bool = True,
-    use_train_for_rules: bool = False,
-    optimal_params: Optional[Dict[str, Any]] = None,
-    concurrency: int = 3,
-) -> Tuple[str, Dict[str, Any]]:
-    """Generate actual executable rules using Claude SDK heuristic generator"""
-    print("🧠 STEP 2: Generating ACTUAL EXECUTABLE RULES using Claude SDK")
-
-    os.makedirs("results/generated_rules", exist_ok=True)
-    heuristics_file = f"results/generated_rules/{dataset}_generated_heuristics.json"
-
-    try:
-        # Decide which data to use for rule generation
-        rule_data = dev_results
-        if use_train_for_rules and optimal_params:
-            print("🎯 Using TRAIN SET for better error signal in rule generation")
-            try:
-                train_results = await run_train_for_rule_data(dataset, optimal_params, model, concurrency)
-                if train_results:
-                    rule_data = train_results
-                    print(f"🔄 Using train results (F1={train_results['metrics']['f1']:.4f}) for rule generation")
-                else:
-                    print("⚠️ Train analysis failed, falling back to dev results")
-                    print(f"🔄 Using dev results (F1={dev_results['metrics']['f1']:.4f}) for rule generation")
-            except Exception as e:
-                print(f"⚠️ Train analysis failed with error: {e}")
-                print(f"🔄 Falling back to dev results (F1={dev_results['metrics']['f1']:.4f}) for rule generation")
-        else:
-            print(f"🔄 Using dev results (F1={dev_results['metrics']['f1']:.4f}) for rule generation")
-
-        rule_cost_info = {"total_cost_usd": 0.0, "method": "unknown"}
-
-        if use_agentic:
-            print("🤖 Using AGENTIC rule generation (Claude can test and iterate)")
-            heuristics_file, rule_cost_info = await generate_agentic_heuristics(dataset, rule_data, heuristics_file, model=model)
-            print(f"💰 Agentic rule generation cost: ${rule_cost_info.get('total_cost_usd', 0):.4f}")
-            rule_cost_info["method"] = "agentic"
-        else:
-            print("📋 Using LEGACY rule generation (simple prompt-response)")
-            generator = ClaudeSDKHeuristicGenerator(dataset)
-
-            # Generate failure patterns from rule_data (could be dev or train)
-            patterns = generator.analyze_comprehensive_failure_patterns(rule_data)
-
-            # Generate heuristics from the patterns
-            rules = await generator.generate_heuristics(patterns)
-
-            # Save the generated rules
-            if rules:
-                generator.save_heuristics(rules, heuristics_file)
-
-            rule_cost_info = {"total_cost_usd": 0.0, "method": "legacy"}  # Legacy doesn't track costs yet
-
-        print(f"✅ Generated executable rules saved to: {heuristics_file}")
-        return heuristics_file, rule_cost_info
-
-    except Exception as e:
-        print(f"❌ CRITICAL ERROR: Rule generation failed: {e}")
-        print("❌ Claude SDK is required for this pipeline to work properly")
-        print("❌ Install Claude SDK or fix the error above")
-        raise RuntimeError(f"Rule generation failed and is required for pipeline: {e}")
-
 
 async def validate_and_optimize_rules(
     dataset: str, heuristic_file: str, optimal_params: Dict[str, Any], concurrency: int
@@ -329,6 +262,8 @@ async def validate_and_optimize_rules(
                 max_candidates=optimal_params["max_candidates"],
                 model=optimal_params["model"],
                 semantic_weight=optimal_params["semantic_weight"],
+                trigram_weight=optimal_params.get("trigram_weight"),
+                syntactic_weight=optimal_params.get("syntactic_weight"),
                 heuristic_file=heuristic_file,
                 concurrency=concurrency,
             )
@@ -449,6 +384,9 @@ async def run_complete_pipeline(
     known_best_params: Optional[Dict[str, Any]] = None,
     use_train_for_rules: bool = False,  # noqa: ARG001
     use_analysis_driven: bool = True,  # noqa: ARG001 - kept for backward compatibility
+    no_cache: bool = False,
+    max_analysis_pairs: int = 500,
+    max_analysis_candidates: int = 200,
 ) -> Dict[str, Any]:
     """Complete pipeline: dev analysis -> ACTUAL rule generation -> test with enhanced matching"""
 
@@ -485,6 +423,8 @@ async def run_complete_pipeline(
         optimal_params = {
             "max_candidates": known_best_params.get("max_candidates", 150),
             "semantic_weight": known_best_params.get("semantic_weight", 0.5),
+            "trigram_weight": known_best_params.get("trigram_weight", None),
+            "syntactic_weight": known_best_params.get("syntactic_weight", None),
             "model": known_best_params.get("model", model),  # Use dev model if not specified
             "use_semantic": known_best_params.get("use_semantic", True),
         }
@@ -501,7 +441,8 @@ async def run_complete_pipeline(
         analysis_data = analyze_dataset_for_claude(
             dataset=dataset,
             max_pairs=200,
-            max_candidates=100,
+            max_candidates=max_analysis_candidates,
+            max_analysis_pairs=max_analysis_pairs or None,
             output_file=analysis_file,
             verbose=True
         )
@@ -510,7 +451,8 @@ async def run_complete_pipeline(
             dataset, dev_results,
             f"results/generated_rules/{dataset}_known_params_config.json",
             analysis_data,
-            model
+            model,
+            no_cache
         )
 
         if heuristics_file and os.path.exists(heuristics_file):
@@ -544,7 +486,8 @@ async def run_complete_pipeline(
         analysis_data = analyze_dataset_for_claude(
             dataset=dataset,
             max_pairs=200,
-            max_candidates=100,
+            max_candidates=max_analysis_candidates,
+            max_analysis_pairs=max_analysis_pairs or None,
             output_file=analysis_file,
             verbose=True
         )
@@ -553,6 +496,8 @@ async def run_complete_pipeline(
         default_params = {
             "max_candidates": 100,
             "semantic_weight": 0.5,
+            "trigram_weight": None,  # Use legacy 2-weight system for initial dev run
+            "syntactic_weight": None,
             "model": model,
             "use_semantic": True,
         }
@@ -586,7 +531,8 @@ async def run_complete_pipeline(
             dataset, dev_results,
             f"results/generated_rules/{dataset}_analysis_driven_config.json",
             analysis_data,
-            model
+            model,
+            no_cache
         )
 
         analysis_time = time.time() - start_time
@@ -709,12 +655,29 @@ async def run_complete_pipeline(
         except Exception:
             pass  # Use default if can't load
 
+    # Extract baseline weights from heuristics file
+    baseline_trigram_weight = None
+    baseline_syntactic_weight = None
+
+    if heuristics_file and os.path.exists(heuristics_file):
+        try:
+            with open(heuristics_file) as f:
+                heuristics_config = json.load(f)
+                if "hyperparameters" in heuristics_config:
+                    hyperparams = heuristics_config["hyperparameters"]
+                    baseline_trigram_weight = hyperparams.get("trigram_weight")
+                    baseline_syntactic_weight = hyperparams.get("syntactic_weight")
+        except Exception:
+            pass  # Use default if can't load
+
     baseline_results = await run_matching(
         dataset=dataset,
         limit=None,
         max_candidates=optimal_params["max_candidates"],  # Use optimized candidates
         model="gpt-4.1-nano",  # Use cheaper model for test
         semantic_weight=baseline_semantic_weight,  # Use learned semantic weight from Claude
+        trigram_weight=baseline_trigram_weight,  # Use learned trigram weight from Claude
+        syntactic_weight=baseline_syntactic_weight,  # Use learned syntactic weight from Claude
         use_semantic=optimal_params["use_semantic"],
         concurrency=concurrency,
     )
@@ -752,8 +715,11 @@ async def run_complete_pipeline(
 
         start_time = time.time()
 
-        # Extract learned semantic weight from the heuristics file
+        # Extract learned weights from the heuristics file
         learned_semantic_weight = optimal_params["semantic_weight"]  # default
+        learned_trigram_weight = optimal_params.get("trigram_weight")  # default
+        learned_syntactic_weight = optimal_params.get("syntactic_weight")  # default
+
         if heuristics_file and os.path.exists(heuristics_file):
             try:
                 with open(heuristics_file) as f:
@@ -761,7 +727,13 @@ async def run_complete_pipeline(
                     if "hyperparameters" in heuristics_config:
                         hyperparams = heuristics_config["hyperparameters"]
                         learned_semantic_weight = hyperparams.get("semantic_weight", learned_semantic_weight)
-                        print(f"✅ Using learned semantic weight: {learned_semantic_weight:.3f} (trigram weight: {1-learned_semantic_weight:.3f})")
+                        learned_trigram_weight = hyperparams.get("trigram_weight", learned_trigram_weight)
+                        learned_syntactic_weight = hyperparams.get("syntactic_weight", learned_syntactic_weight)
+
+                        if learned_trigram_weight is not None and learned_syntactic_weight is not None:
+                            print(f"✅ Using learned 3-weight system: trigram={learned_trigram_weight:.3f}, syntactic={learned_syntactic_weight:.3f}, semantic={learned_semantic_weight:.3f}")
+                        else:
+                            print(f"✅ Using learned 2-weight system: semantic={learned_semantic_weight:.3f} (trigram={1-learned_semantic_weight:.3f})")
             except Exception as e:
                 print(f"⚠️ Could not load weights from {heuristics_file}: {e}")
 
@@ -771,6 +743,8 @@ async def run_complete_pipeline(
             max_candidates=optimal_params["max_candidates"],  # Use optimized candidates
             model="gpt-4.1-nano",  # Use cheaper model for test
             semantic_weight=learned_semantic_weight,  # Use learned semantic weight from Claude
+            trigram_weight=learned_trigram_weight,  # Use learned trigram weight from Claude
+            syntactic_weight=learned_syntactic_weight,  # Use learned syntactic weight from Claude
             heuristic_file=heuristics_file,
         )
         enhanced_time = time.time() - start_time
@@ -1021,6 +995,23 @@ async def main():
         action="store_false",
         help="Deprecated: sweep mode no longer available",
     )
+    parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="Disable caching and force regeneration of all analysis files",
+    )
+    parser.add_argument(
+        "--max-analysis-pairs",
+        type=int,
+        default=500,
+        help="Maximum number of positive pairs to analyze for candidate recall (default: 500, use 0 for no limit)"
+    )
+    parser.add_argument(
+        "--max-analysis-candidates",
+        type=int,
+        default=500,
+        help="Maximum candidates to test in analysis (tests recall@1 through recall@N, default: 500)"
+    )
 
     args = parser.parse_args()
 
@@ -1071,6 +1062,9 @@ async def main():
                 known_best_params,
                 args.use_train_for_rules,
                 True,  # Always use analysis-driven (ignore args.use_analysis_driven)
+                args.no_cache,
+                args.max_analysis_pairs,
+                args.max_analysis_candidates,
             )
             all_results[dataset] = result
             print(f"✅ {dataset}: F1={result.get('final_f1', 0):.4f}")

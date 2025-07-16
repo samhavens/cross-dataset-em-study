@@ -85,8 +85,8 @@ def get_leaderboard_target_f1(dataset: str) -> float:
                 if len(parts) >= 3:  # model | F1 at minimum
                     f1_text = parts[-1]  # Last column is F1
 
-                    # Skip italicized scores (jellyfish)
-                    if f1_text.startswith("*") and f1_text.endswith("*"):
+                    # Skip italicized scores (jellyfish) - single asterisks, not bold (double asterisks)
+                    if f1_text.startswith("*") and f1_text.endswith("*") and not f1_text.startswith("**"):
                         continue
 
                     # Extract number from **92.4** or 92.4
@@ -123,8 +123,9 @@ class SampleData:
 class AgenticHeuristicGenerator:
     """Clean agentic heuristic generator using only claude_code_sdk"""
 
-    def __init__(self, dataset: str):
+    def __init__(self, dataset: str, model: str = "gpt-4.1-nano"):
         self.dataset = dataset
+        self.model = model
         self.data_root = pathlib.Path("data") / "raw" / dataset
         self.target_f1 = get_leaderboard_target_f1(dataset)
 
@@ -178,63 +179,77 @@ class AgenticHeuristicGenerator:
         candidate_analysis = {}
 
         print("🔍 Analyzing candidate generation for false negatives...")
+        print(f"📊 Dev pairs to analyze: {len(dev_pairs)}")
+        print(f"📊 Predictions available: {len(predictions)}")
+        print(f"📊 Dev pairs ID range: {dev_pairs.ltable_id.min()}-{dev_pairs.ltable_id.max()}")
+        if len(predictions) > 0:
+            pred_keys = list(predictions.keys())
+            print(f"📊 Predictions ID range: {min(pred_keys)}-{max(pred_keys)}")
+            print(f"📊 Sample prediction keys: {pred_keys[:5]}")
 
         # Focus on pairs where we have predictions (the model actually evaluated these)
+        from tqdm import tqdm
+
         analyzed_pairs = 0
-        for _, row in dev_pairs.iterrows():
-            left_id = row.ltable_id
-            right_id = row.rtable_id
-            true_label = row.label
+        with tqdm(total=len(dev_pairs), desc="Analyzing candidate generation", unit="pair") as pbar:
+            for _, row in dev_pairs.iterrows():
+                left_id = row.ltable_id
+                right_id = row.rtable_id
+                true_label = row.label
 
-            # Only analyze pairs the model actually processed
-            if left_id not in predictions:
-                continue
+                # Only analyze pairs the model actually processed
+                # Convert to string in case of type mismatch
+                left_id_str = str(left_id)
+                if left_id not in predictions and left_id_str not in predictions:
+                    pbar.update(1)
+                    continue
 
-            left_record = A[left_id]
+                left_record = A[left_id]
 
-            # Get the same candidates the model would have seen
-            # Use a reasonable candidate count (similar to what was used in dev)
-            max_candidates = 150  # Default from hybrid_matcher
-            candidates = get_top_candidates(left_record, B, max_candidates, cfg, self.dataset)
+                # Get the same candidates the model would have seen
+                # Use a reasonable candidate count (similar to what was used in dev)
+                max_candidates = 150  # Default from hybrid_matcher
+                candidates = get_top_candidates(left_record, B, max_candidates, cfg, self.dataset)
 
-            # Check if the ground truth made it into the candidates
-            ground_truth_in_candidates = False
-            ground_truth_rank = None
-            candidate_ids = [candidate_id for candidate_id, _ in candidates]
+                # Check if the ground truth made it into the candidates
+                ground_truth_in_candidates = False
+                ground_truth_rank = None
+                candidate_ids = [candidate_id for candidate_id, _ in candidates]
 
-            if true_label == 1:  # Only check for positive pairs
-                if right_id in candidate_ids:
-                    ground_truth_in_candidates = True
-                    ground_truth_rank = candidate_ids.index(right_id) + 1  # 1-based rank
+                if true_label == 1:  # Only check for positive pairs
+                    if right_id in candidate_ids:
+                        ground_truth_in_candidates = True
+                        ground_truth_rank = candidate_ids.index(right_id) + 1  # 1-based rank
 
-            predicted_right_id = predictions[left_id]
-            predicted_match = predicted_right_id == right_id
+                # Use the correct key format
+                predicted_right_id = predictions.get(left_id, predictions.get(left_id_str, -1))
+                predicted_match = predicted_right_id == right_id
 
-            # Categorize the result
-            if true_label == 1 and not predicted_match:
-                category = "false_negative"
-            elif true_label == 0 and predicted_match:
-                category = "false_positive"
-            elif true_label == 1 and predicted_match:
-                category = "true_positive"
-            else:
-                category = "true_negative"
+                # Categorize the result
+                if true_label == 1 and not predicted_match:
+                    category = "false_negative"
+                elif true_label == 0 and predicted_match:
+                    category = "false_positive"
+                elif true_label == 1 and predicted_match:
+                    category = "true_positive"
+                else:
+                    category = "true_negative"
 
-            candidate_analysis[left_id] = {
-                "left_record": left_record,
-                "true_right_id": right_id if true_label == 1 else None,
-                "predicted_right_id": predicted_right_id,
-                "category": category,
-                "ground_truth_in_candidates": ground_truth_in_candidates,
-                "ground_truth_rank": ground_truth_rank,
-                "total_candidates": len(candidates),
-                "candidate_ids": candidate_ids[:10],  # Top 10 for analysis
-                "all_candidates": candidates,  # Full list for detailed analysis
-            }
+                candidate_analysis[left_id] = {
+                    "left_record": left_record,
+                    "true_right_id": right_id if true_label == 1 else None,
+                    "predicted_right_id": predicted_right_id,
+                    "category": category,
+                    "ground_truth_in_candidates": ground_truth_in_candidates,
+                    "ground_truth_rank": ground_truth_rank,
+                    "total_candidates": len(candidates),
+                    "candidate_ids": candidate_ids[:10],  # Top 10 for analysis
+                    "all_candidates": candidates,  # Full list for detailed analysis
+                }
 
-            analyzed_pairs += 1
-            if analyzed_pairs % 20 == 0:
-                print(f"   Analyzed {analyzed_pairs} pairs...")
+                analyzed_pairs += 1
+                pbar.update(1)
+                pbar.set_postfix(analyzed=analyzed_pairs)
 
         return candidate_analysis
 
@@ -374,29 +389,9 @@ class AgenticHeuristicGenerator:
 {"- 📈 CONCRETE EXAMPLES: " + f"{len(insights.get('concrete_examples', {}).get('true_matches', []))} true match examples and {len(insights.get('concrete_examples', {}).get('confusing_non_matches', []))} confusing non-match examples available for pattern analysis" if insights.get('concrete_examples') else ""}"""
 
         # Convert SampleData to dictionary for JSON serialization
-        from ..entity_matching.analysis import clean_record_for_json
+        from ..utils.json_serializer import json_serialize
 
-        def clean_dict_for_json(obj):
-            """Recursively clean dictionary for JSON serialization"""
-            import numpy as np
-            
-            if isinstance(obj, dict):
-                return {k: clean_dict_for_json(v) for k, v in obj.items()}
-            elif isinstance(obj, list):
-                return [clean_dict_for_json(item) for item in obj]
-            elif isinstance(obj, np.integer):
-                return int(obj)
-            elif isinstance(obj, np.floating):
-                return float(obj)
-            elif isinstance(obj, np.ndarray):
-                return obj.tolist()
-            elif obj is None or isinstance(obj, (str, int, float, bool)):
-                return obj
-            else:
-                # Use clean_record_for_json for complex objects
-                return clean_record_for_json({"value": obj})["value"]
-
-        sample_data_dict = clean_dict_for_json({
+        sample_data_dict = json_serialize({
             "dataset": sample_data.dataset,
             "dev_pairs": sample_data.dev_pairs,
             "dev_predictions": sample_data.dev_predictions,
@@ -421,6 +416,9 @@ class AgenticHeuristicGenerator:
 
 **TASK**: Generate optimal entity matching configuration including:
 1. **HYPERPARAMETERS** (max_candidates, similarity weights, thresholds)
+   - max_candidates: Try 50, 100, 150, 200+ - more candidates = better recall but slower
+   - semantic_weight: Try 0.3, 0.5, 0.7, 0.9 - higher = more semantic matching
+   - Experiment with different combinations and test each one!
 2. **CANDIDATE GENERATION RULES** (ensure correct matches get into the candidate list)
 3. **DECISION RULES** (auto-accept/reject to reduce LLM costs)
 4. **SCORE ADJUSTMENT RULES** (boost likely matches, penalize unlikely ones)
@@ -542,10 +540,10 @@ These rules execute during candidate generation to surface missed matches.
 ```json
 {{
   "hyperparameters": {{
-    "max_candidates": 150,
-    "semantic_weight": 0.7,
-    "syntactic_weight": 0.2,
-    "trigram_weight": 0.1,
+    "max_candidates": 100,  // Try different values: 50, 100, 150, 200
+    "semantic_weight": 0.5,  // Try different values: 0.3, 0.5, 0.7, 0.9
+    "syntactic_weight": 0.3,  // Adjust based on semantic_weight
+    "trigram_weight": 0.2,   // Adjust based on other weights
     "decision_threshold": 0.5,
     "auto_accept_threshold": 0.95,
     "auto_reject_threshold": 0.1
@@ -665,24 +663,33 @@ These rules execute during candidate generation to surface missed matches.
             print(f"📊 Sample data: {sample_file}")
             print("🔄 Claude will now read data, generate rules, test them, and iterate...")
 
-            # Add sample file info to prompt
-            enhanced_prompt = f"""{prompt}
+            # Write the large prompt to a file to avoid "Argument list too long" error
+            os.makedirs("results/temp", exist_ok=True)
+            prompt_file = f"results/temp/{self.dataset}_claude_prompt.txt"
+
+            # Create enhanced prompt content
+            enhanced_prompt_content = f"""{prompt}
 
 **SAMPLE DATA FILE**: `{sample_file}` contains detailed error analysis and examples.
 You can read this file to see all the false positive/negative examples.
 
 **TESTING COMMANDS**:
 ```bash
-# Quick test (20 pairs for fast feedback)
-python run_enhanced_matching.py --dataset {self.dataset} --heuristic-file results/temp/test_rules.json --limit 20 --max-candidates 150 --semantic-weight 0.75 --concurrency 10
+# Quick test (20 pairs for fast feedback) - adjust max_candidates and semantic_weight as needed
+python run_enhanced_matching.py --dataset {self.dataset} --heuristic-file results/temp/test_rules.json --limit 20 --concurrency 10 --model {self.model}
 
 # FULL DEV EVALUATION (use this regularly to track progress - FAST with concurrency!)
-python run_enhanced_matching.py --dataset {self.dataset} --heuristic-file results/temp/test_rules.json --max-candidates 150 --semantic-weight 0.75 --concurrency 20
+python run_enhanced_matching.py --dataset {self.dataset} --heuristic-file results/temp/test_rules.json --concurrency 20 --model {self.model}
 ```
 
 **CRITICAL**: After each rule iteration, run the FULL dev evaluation! It should take < 30 seconds with proper concurrency.
-Your target is F1 > 82.0. Always show: "Current F1: X.XXX, Target: 82.0" after testing.
+Your target is F1 > {self.target_f1}. Always show: "Current F1: X.XXX, Target: {self.target_f1}" after testing.
 Use `run_enhanced_matching.py` - this is the SAME function used in the main pipeline!
+
+**IMPORTANT**: The GOAL is F1 score, not rule trigger rates!
+- If F1 is already excellent (>95%), you can create minimal rules or even return success with empty rules
+- Don't over-engineer - simpler is better if F1 is good
+- Focus on F1 improvement, not rule complexity or trigger rates
 
 **CRITICAL FILE PATHS**:
 - Save initial rules to: `results/temp/test_rules.json`
@@ -690,6 +697,29 @@ Use `run_enhanced_matching.py` - this is the SAME function used in the main pipe
 - Do NOT create files in root directory!
 
 Start by reading the sample data file to understand the patterns, then iteratively develop and test rules!
+"""
+
+            # Write prompt to file
+            with open(prompt_file, 'w') as f:
+                f.write(enhanced_prompt_content)
+
+            print(f"📝 Large prompt written to: {prompt_file}")
+
+            # Use a much shorter prompt that references the file
+            file_based_prompt = f"""You are an expert at entity matching optimization for the {self.dataset} dataset.
+
+Your task is to:
+1. Read the detailed instructions from: `{prompt_file}`
+2. Read the sample data from: `{sample_file}`
+3. Generate and test entity matching rules iteratively
+4. Achieve F1 > {self.target_f1} on the dataset
+
+**IMPORTANT**:
+- The GOAL is F1 score, not rule trigger rates! If F1 is already excellent, you can return success without complex rules.
+- If current performance already exceeds target, consider creating minimal rules or no rules at all.
+- Focus on F1 improvement, not rule complexity.
+
+Please start by reading the instruction file to understand your full task, then read the sample data to understand the patterns.
 """
 
             options = ClaudeCodeOptions(
@@ -705,16 +735,12 @@ Start by reading the sample data file to understand the patterns, then iterative
             duration_ms = 0
 
             print("🎭 Claude is working on rule generation...")
-
-            # Log the prompt to a file for debugging
-            os.makedirs("results/temp", exist_ok=True)
-            prompt_log_file = f"results/temp/{self.dataset}_claude_prompt.txt"
-            with open(prompt_log_file, "w") as f:
-                f.write(enhanced_prompt)
-            print(f"📝 Claude prompt logged to: {prompt_log_file}")
+            print("💡 You can provide input by typing and pressing Enter during the session")
+            print("   Example inputs: 'focus on precision', 'the rules look good', 'try simpler approach'")
+            print("   Type 'done' to end the session early")
 
             try:
-                async for message in query(prompt=enhanced_prompt, options=options):
+                async for message in query(prompt=file_based_prompt, options=options):
                     if isinstance(message, AssistantMessage):
                         turn_count += 1
                         print(f"   💭 Turn {turn_count}: Claude is thinking and taking actions...")
@@ -723,21 +749,33 @@ Start by reading the sample data file to understand the patterns, then iterative
                             if isinstance(block, TextBlock):
                                 response_parts.append(block.text)
                                 # Show much more of what Claude is thinking for better visibility
-                                if len(block.text.strip()) > 50:
+                                if len(block.text.strip()) > 20:  # Lower threshold to show more
                                     lines = block.text.strip().split('\n')
-                                    # Show first few lines or up to 1000+ characters
+                                    # Show more content - up to 2500 characters
                                     preview_lines = []
                                     char_count = 0
                                     for line in lines:
-                                        if char_count + len(line) > 1500:  # Show up to 1500 chars
+                                        if char_count + len(line) > 2500:  # Show up to 2500 chars
                                             break
                                         preview_lines.append(line)
                                         char_count += len(line)
 
                                     preview = '\n'.join(preview_lines).strip()  # Keep line breaks for readability
-                                    if len(preview) > 1500:
-                                        preview = preview[:1500] + "..."
+                                    if len(preview) > 2500:
+                                        preview = preview[:2500] + "..."
                                     print(f"      🔤 {preview}")
+
+                                    # Check for user input (non-blocking)
+                                    import select
+                                    import sys
+                                    if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
+                                        user_input = sys.stdin.readline().strip()
+                                        if user_input:
+                                            print(f"👤 User input: {user_input}")
+                                            if user_input.lower() == 'done':
+                                                print("🛑 User requested early termination")
+                                                break
+                                            # Could add user input to the conversation here in future
 
                     elif isinstance(message, ResultMessage):
                         # Capture cost and session info
@@ -783,6 +821,52 @@ Start by reading the sample data file to understand the patterns, then iterative
         """Generate rules using agentic Claude approach"""
         print(f"🚀 AGENTIC HEURISTIC GENERATION FOR {self.dataset}")
         print("=" * 60)
+
+        # Check if baseline performance already meets target
+        current_f1 = dev_results.get("metrics", {}).get("f1", 0.0)
+        target_f1 = get_leaderboard_target_f1(self.dataset)
+
+        print(f"📊 Current F1: {current_f1:.4f}, Target: {target_f1:.1f}")
+
+        if current_f1 >= target_f1:
+            print("🎉 BASELINE ALREADY EXCEEDS TARGET! No rules needed.")
+            print(f"   Current F1 ({current_f1:.4f}) >= Target ({target_f1:.1f})")
+            print("   Skipping rule generation and returning empty rules.")
+
+            # Create empty rules file
+            empty_rules_file = output_file or f"results/temp/{self.dataset}_empty_rules.json"
+            os.makedirs(os.path.dirname(empty_rules_file), exist_ok=True)
+
+            empty_rules = {
+                "hyperparameters": {
+                    "max_candidates": 100,
+                    "semantic_weight": 0.5,
+                    "syntactic_weight": 0.3,
+                    "trigram_weight": 0.2
+                },
+                "rules": [],
+                "metadata": {
+                    "dataset": self.dataset,
+                    "reason": "baseline_exceeds_target",
+                    "baseline_f1": current_f1,
+                    "target_f1": target_f1,
+                    "generated_at": datetime.now().isoformat()
+                }
+            }
+
+            with open(empty_rules_file, 'w') as f:
+                import json
+                json.dump(empty_rules, f, indent=2)
+
+            cost_info = {
+                "total_cost_usd": 0.0,
+                "method": "baseline_skip",
+                "baseline_f1": current_f1,
+                "target_f1": target_f1,
+                "rules_generated": 0
+            }
+
+            return empty_rules_file, cost_info
 
         # Prepare clean sample data with rich analysis insights
         sample_data = self._create_sample_data(dev_results, analysis_data)
@@ -831,6 +915,7 @@ Start by reading the sample data file to understand the patterns, then iterative
 
             # Copy to final output location if specified
             if output_file and generated_file != output_file:
+                import json
                 with open(generated_file) as src:
                     rules_data = json.load(src)
 
@@ -866,7 +951,7 @@ Start by reading the sample data file to understand the patterns, then iterative
 
 
 async def generate_agentic_heuristics(
-    dataset: str, dev_results: Dict[str, Any], output_file: Optional[str] = None, analysis_data: Optional[Dict] = None
+    dataset: str, dev_results: Dict[str, Any], output_file: Optional[str] = None, analysis_data: Optional[Dict] = None, model: str = "gpt-4.1-nano"
 ) -> Tuple[str, Dict[str, Any]]:
     """
     Clean interface for agentic heuristic generation.
@@ -875,11 +960,13 @@ async def generate_agentic_heuristics(
         dataset: Dataset name
         dev_results: Development set results with predictions and metrics
         output_file: Optional output file path
+        analysis_data: Optional analysis data for enhanced prompts
+        model: Model to use for entity matching tests (not for Claude)
 
     Returns:
         Tuple of (path to generated heuristics file, cost information)
     """
-    generator = AgenticHeuristicGenerator(dataset)
+    generator = AgenticHeuristicGenerator(dataset, model)
     return await generator.generate_agentic_rules(dev_results, output_file, analysis_data)
 
 

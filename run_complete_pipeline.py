@@ -27,10 +27,27 @@ import pandas as pd
 
 from run_enhanced_matching import run_enhanced_matching
 from src.entity_matching.hybrid_matcher import run_matching
-from src.experiments.agentic_heuristic_generator import generate_agentic_heuristics
+from src.experiments.agentic_heuristic_generator import generate_agentic_heuristics, get_leaderboard_target_f1
 from src.experiments.claude_sdk_heuristic_generator import ClaudeSDKHeuristicGenerator
 from src.experiments.claude_sdk_optimizer import ClaudeSDKOptimizer
-from src.experiments.improved_sweep import run_improved_sweep
+from src.utils.json_serializer import json_serialize
+
+
+def get_available_datasets() -> list[str]:
+    """Get list of all available datasets from data/raw directory"""
+    data_dir = pathlib.Path("data/raw")
+    if not data_dir.exists():
+        return []
+
+    datasets = []
+    for dataset_dir in data_dir.iterdir():
+        if dataset_dir.is_dir():
+            # Check if it has the required files
+            required_files = ["tableA.csv", "tableB.csv", "test.csv"]
+            if all((dataset_dir / file).exists() for file in required_files):
+                datasets.append(dataset_dir.name)
+
+    return sorted(datasets)
 
 
 async def run_dev_only_analysis_with_params(
@@ -224,7 +241,7 @@ async def generate_actual_rules(
 
         if use_agentic:
             print("🤖 Using AGENTIC rule generation (Claude can test and iterate)")
-            heuristics_file, rule_cost_info = await generate_agentic_heuristics(dataset, rule_data, heuristics_file)
+            heuristics_file, rule_cost_info = await generate_agentic_heuristics(dataset, rule_data, heuristics_file, model=model)
             print(f"💰 Agentic rule generation cost: ${rule_cost_info.get('total_cost_usd', 0):.4f}")
             rule_cost_info["method"] = "agentic"
         else:
@@ -339,8 +356,6 @@ async def validate_and_optimize_rules(
         heuristics = json.load(f)
 
     # Get leaderboard target
-    from src.experiments.claude_sdk_heuristic_generator import get_leaderboard_target_f1
-
     target_f1 = get_leaderboard_target_f1(dataset)
 
     # Create optimization prompt
@@ -413,7 +428,7 @@ Only disable rules if F1 < target. If F1 >= target, return empty rules_to_disabl
 
         optimized_file = heuristic_file.replace(".json", "_optimized.json")
         with open(optimized_file, "w") as f:
-            json.dump(optimized_heuristics, f, indent=2)
+            json.dump(json_serialize(optimized_heuristics), f, indent=2)
 
         print(f"✅ Optimized heuristics saved to: {optimized_file}")
         return optimized_file
@@ -425,15 +440,15 @@ Only disable rules if F1 < target. If F1 >= target, return empty rules_to_disabl
 
 async def run_complete_pipeline(
     dataset: str,
-    early_exit: bool = False,
+    early_exit: bool = False,  # noqa: ARG001
     resume: bool = False,
     concurrency: int = 3,
     validate_rules: bool = False,
     model: str = "gpt-4.1-nano",
-    use_agentic_rules: bool = True,
+    use_agentic_rules: bool = True,  # noqa: ARG001
     known_best_params: Optional[Dict[str, Any]] = None,
-    use_train_for_rules: bool = False,
-    use_analysis_driven: bool = False,
+    use_train_for_rules: bool = False,  # noqa: ARG001
+    use_analysis_driven: bool = True,  # noqa: ARG001 - kept for backward compatibility
 ) -> Dict[str, Any]:
     """Complete pipeline: dev analysis -> ACTUAL rule generation -> test with enhanced matching"""
 
@@ -457,9 +472,67 @@ async def run_complete_pipeline(
         "pipeline_version": "complete_v3_working_rules",
     }
 
-    # STEP 1: Analysis-driven optimization OR basic hyperparameter optimization
-    if use_analysis_driven:
-        print("🔬 STEP 1: ANALYSIS-DRIVEN OPTIMIZATION (Skipping hyperparameter sweep)")
+    # STEP 1: Analysis-driven optimization (default) OR known params
+    if known_best_params:
+        print(f"✅ STEP 1: Using provided hyperparameters: {known_best_params}")
+        print("⏳ Running single dev evaluation to get predictions for rule generation...")
+
+        start_time = time.time()
+        dev_results = await run_dev_only_analysis_with_params(dataset, known_best_params, model, concurrency)
+        dev_time = time.time() - start_time
+
+        # Ensure optimal_params has all required fields
+        optimal_params = {
+            "max_candidates": known_best_params.get("max_candidates", 150),
+            "semantic_weight": known_best_params.get("semantic_weight", 0.5),
+            "model": known_best_params.get("model", model),  # Use dev model if not specified
+            "use_semantic": known_best_params.get("use_semantic", True),
+        }
+
+        print(
+            f"✅ Dev Results with known params: F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}"
+        )
+
+        # Generate rules based on the dev results
+        print("🤖 Generating rules based on known hyperparameters...")
+        from src.entity_matching.analysis import analyze_dataset_for_claude
+
+        analysis_file = f"results/{dataset}_claude_analysis.json"
+        analysis_data = analyze_dataset_for_claude(
+            dataset=dataset,
+            max_pairs=200,
+            max_candidates=100,
+            output_file=analysis_file,
+            verbose=True
+        )
+
+        heuristics_file, rule_cost_info = await generate_agentic_heuristics(
+            dataset, dev_results,
+            f"results/generated_rules/{dataset}_known_params_config.json",
+            analysis_data,
+            model
+        )
+
+        if heuristics_file and os.path.exists(heuristics_file):
+            checkpoint["heuristics_file"] = heuristics_file
+            checkpoint["rule_generation_cost"] = rule_cost_info
+            print(f"✅ Rules generated: {heuristics_file}")
+        else:
+            raise RuntimeError("Rule generation failed for known parameters")
+    elif "dev_results" in checkpoint and "optimal_params" in checkpoint:
+        print("✅ STEP 1: Using cached dev results from checkpoint")
+        dev_results = checkpoint["dev_results"]
+        optimal_params = checkpoint["optimal_params"]
+        dev_time = checkpoint.get("dev_time", 0)
+
+        print(f"📊 Loaded: F1={dev_results['metrics']['f1']:.4f}, Config={optimal_params}")
+
+        # Ensure heuristics file exists in checkpoint
+        if "heuristics_file" not in checkpoint:
+            raise RuntimeError("Checkpoint missing heuristics file - may need to regenerate")
+    else:
+        # Default: Analysis-driven optimization
+        print("🔬 STEP 1: ANALYSIS-DRIVEN OPTIMIZATION (Default approach)")
         print("⏳ Running rich analysis and joint hyperparameter + rule optimization...")
 
         from src.entity_matching.analysis import analyze_dataset_for_claude
@@ -477,6 +550,16 @@ async def run_complete_pipeline(
         )
 
         # Run a quick evaluation with default parameters to get real predictions for rule generation
+        default_params = {
+            "max_candidates": 100,
+            "semantic_weight": 0.5,
+            "model": model,
+            "use_semantic": True,
+        }
+
+        # Use the requested concurrency level
+        analysis_concurrency = concurrency
+
         dev_cache_file = f"results/temp/{dataset}_dev_predictions.json"
         if os.path.exists(dev_cache_file):
             print("📁 Loading cached dev predictions...")
@@ -485,42 +568,15 @@ async def run_complete_pipeline(
             print(f"✅ Using cached dev predictions: F1={dev_results['metrics']['f1']:.4f}, {len(dev_results.get('predictions', {}))} predictions")
         else:
             print("🔄 Running quick evaluation to get predictions for rule generation...")
-            default_params = {
-                "max_candidates": 100,
-                "semantic_weight": 0.5,
-                "model": model,
-                "use_semantic": True,
-            }
-
-            # Use lower concurrency for analysis-driven mode to avoid Claude SDK conflicts
-            analysis_concurrency = min(2, concurrency)
             dev_results = await run_dev_only_analysis_with_params(dataset, default_params, model, analysis_concurrency)
             print(f"✅ Quick evaluation: F1={dev_results['metrics']['f1']:.4f}, {len(dev_results.get('predictions', {}))} predictions")
-            
+
             # Cache dev predictions
             os.makedirs(os.path.dirname(dev_cache_file), exist_ok=True)
-            
+
             # Clean dev_results for JSON serialization
-            from src.entity_matching.analysis import clean_record_for_json
-            import numpy as np
-            
-            def clean_for_json(obj):
-                """Clean object for JSON serialization"""
-                if isinstance(obj, dict):
-                    return {str(k): clean_for_json(v) for k, v in obj.items()}
-                elif isinstance(obj, list):
-                    return [clean_for_json(item) for item in obj]
-                elif isinstance(obj, np.integer):
-                    return int(obj)
-                elif isinstance(obj, np.floating):
-                    return float(obj)
-                elif isinstance(obj, np.ndarray):
-                    return obj.tolist()
-                else:
-                    return obj
-            
-            cleaned_dev_results = clean_for_json(dev_results)
-            
+            cleaned_dev_results = json_serialize(dev_results)
+
             with open(dev_cache_file, 'w') as f:
                 json.dump(cleaned_dev_results, f, indent=2)
             print(f"💾 Cached dev predictions to {dev_cache_file}")
@@ -529,7 +585,8 @@ async def run_complete_pipeline(
         heuristics_file, rule_cost_info = await generate_agentic_heuristics(
             dataset, dev_results,
             f"results/generated_rules/{dataset}_analysis_driven_config.json",
-            analysis_data
+            analysis_data,
+            model
         )
 
         analysis_time = time.time() - start_time
@@ -577,92 +634,9 @@ async def run_complete_pipeline(
             checkpoint["rule_generation_cost"] = rule_cost_info
 
         else:
-            print("❌ Analysis-driven optimization failed, falling back to sweep")
-            use_analysis_driven = False  # Fall back to regular sweep
+            raise RuntimeError("Analysis-driven optimization failed - no fallback available")
 
-    elif known_best_params:
-        print(f"✅ STEP 1: Using provided hyperparameters: {known_best_params}")
-        print("⏳ Running single dev evaluation to get predictions for rule generation...")
 
-        start_time = time.time()
-        dev_results = await run_dev_only_analysis_with_params(dataset, known_best_params, model, concurrency)
-        dev_time = time.time() - start_time
-
-        # Ensure optimal_params has all required fields
-        optimal_params = {
-            "max_candidates": known_best_params.get("max_candidates", 150),
-            "semantic_weight": known_best_params.get("semantic_weight", 0.5),
-            "model": known_best_params.get("model", model),  # Use dev model if not specified
-            "use_semantic": known_best_params.get("use_semantic", True),
-        }
-
-        print(
-            f"✅ Dev Results with known params: F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}"
-        )
-
-    elif "dev_results" in checkpoint and "optimal_params" in checkpoint:
-        print("✅ STEP 1: Using cached dev results from checkpoint")
-        dev_results = checkpoint["dev_results"]
-        optimal_params = checkpoint["optimal_params"]
-        dev_time = checkpoint.get("dev_time", 0)
-
-        # Validate consistency if we have unified results
-        if "unified_sweep_result" in dev_results:
-            unified = dev_results["unified_sweep_result"]
-            expected_f1 = unified["best_f1"]
-            actual_f1 = dev_results["metrics"]["f1"]
-            expected_config = unified["config_that_achieved_best_f1"]
-
-            if abs(expected_f1 - actual_f1) > 0.001:
-                print(f"⚠️ WARNING: F1 mismatch in checkpoint! Expected {expected_f1:.4f}, got {actual_f1:.4f}")
-            if expected_config != optimal_params:
-                print("⚠️ WARNING: Config mismatch in checkpoint!")
-                print(f"   Expected: {expected_config}")
-                print(f"   Got: {optimal_params}")
-
-        print(f"📊 Loaded: F1={dev_results['metrics']['f1']:.4f}, Config={optimal_params}")
-    else:
-        print("🎯 STEP 1: Hyperparameter optimization on dev set")
-        print("⏳ This will run a basic sweep to find good parameters quickly...")
-
-        start_time = time.time()
-        print("🔧 Using improved sweep implementation (no file swapping)")
-        dev_results, optimal_params = await run_improved_sweep(dataset, early_exit, model, concurrency)
-        dev_time = time.time() - start_time
-
-        # Save checkpoint with robust JSON handling - convert numpy types
-        def clean_for_json(obj):
-            """Convert numpy/pandas types to JSON-serializable types"""
-            if hasattr(obj, "item"):  # numpy/pandas scalar
-                return obj.item()
-            if isinstance(obj, dict):
-                return {k: clean_for_json(v) for k, v in obj.items()}
-            if isinstance(obj, list):
-                return [clean_for_json(item) for item in obj]
-            return obj
-
-        checkpoint.update(
-            {
-                "dev_results": clean_for_json(dev_results),
-                "optimal_params": clean_for_json(optimal_params),
-                "dev_time": dev_time,
-            }
-        )
-        os.makedirs("results", exist_ok=True)
-
-        # Write checkpoint atomically to avoid corruption
-        temp_checkpoint_file = checkpoint_file + ".tmp"
-        try:
-            with open(temp_checkpoint_file, "w") as f:
-                json.dump(checkpoint, f, indent=2)
-            # Only replace the real file if write succeeded
-            import shutil
-
-            shutil.move(temp_checkpoint_file, checkpoint_file)
-        except Exception as e:
-            print(f"⚠️ Warning: Could not save checkpoint: {e}")
-            if os.path.exists(temp_checkpoint_file):
-                os.unlink(temp_checkpoint_file)
 
     print(f"✅ Best Dev Results: F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}")
     print(
@@ -678,53 +652,19 @@ async def run_complete_pipeline(
     }
     results["optimal_params"] = optimal_params
 
-    # STEP 2: Generate ACTUAL EXECUTABLE RULES using Claude SDK heuristic generator
-    # (Skip if already done in analysis-driven approach)
-    if use_analysis_driven and "heuristics_file" in checkpoint:
+    # STEP 2: Rules are already generated in analysis-driven approach or use cached
+    if "heuristics_file" in checkpoint:
         print("✅ STEP 2: Using rules from analysis-driven optimization (already generated)")
         heuristics_file = checkpoint["heuristics_file"]
         rule_generation_cost = checkpoint.get("rule_generation_cost", {"total_cost_usd": 0.0, "method": "analysis_driven"})
-    elif "heuristics_file" in checkpoint and os.path.exists(checkpoint["heuristics_file"]):
-        print("✅ STEP 2: Using cached heuristics from checkpoint")
-        heuristics_file = checkpoint["heuristics_file"]
-        # Check if cached cost info exists
-        if "rule_generation_cost" in checkpoint:
-            rule_generation_cost = checkpoint["rule_generation_cost"]
-        else:
-            rule_generation_cost = {"total_cost_usd": 0.0, "method": "cached"}
     else:
-        heuristics_file = f"results/generated_rules/{dataset}_generated_heuristics.json"
-        rule_generation_cost = {"total_cost_usd": 0.0, "method": "cached"}
-        print("\n🧠 STEP 2: Rule generation (analyzing dev results...)")
-        heuristics_file, rule_generation_cost = await generate_actual_rules(
-            dataset,
-            dev_results,
-            model,
-            use_agentic=use_agentic_rules,
-            use_train_for_rules=use_train_for_rules,
-            optimal_params=optimal_params,
-            concurrency=concurrency,
-        )
-
-        # Save checkpoint with robust JSON handling
-        checkpoint["heuristics_file"] = heuristics_file
-        checkpoint["rule_generation_cost"] = rule_generation_cost
-        temp_checkpoint_file = checkpoint_file + ".tmp"
-        try:
-            with open(temp_checkpoint_file, "w") as f:
-                json.dump(checkpoint, f, indent=2)
-            import shutil
-
-            shutil.move(temp_checkpoint_file, checkpoint_file)
-        except Exception as e:
-            print(f"⚠️ Warning: Could not save checkpoint: {e}")
-            if os.path.exists(temp_checkpoint_file):
-                os.unlink(temp_checkpoint_file)
+        # This shouldn't happen with the new simplified flow, but handle gracefully
+        raise RuntimeError("No heuristics file found - analysis-driven optimization should have generated rules")
 
     if heuristics_file:
         results["heuristics_file"] = heuristics_file
         results["rule_generation"] = "claude_sdk_success"
-        print(f"✅ Rules generated: {heuristics_file}")
+        print(f"✅ Rules available: {heuristics_file}")
     else:
         results["rule_generation"] = "failed"
         print("❌ Rule generation failed")
@@ -746,7 +686,7 @@ async def run_complete_pipeline(
                 # Save checkpoint
                 checkpoint["optimized_heuristics_file"] = heuristics_file
                 with open(checkpoint_file, "w") as f:
-                    json.dump(checkpoint, f, indent=2)
+                    json.dump(json_serialize(checkpoint), f, indent=2)
             else:
                 results["rule_optimization"] = "no_changes_needed"
 
@@ -773,7 +713,7 @@ async def run_complete_pipeline(
         dataset=dataset,
         limit=None,
         max_candidates=optimal_params["max_candidates"],  # Use optimized candidates
-        model="gpt-4.1-mini",  # Use better model for test (upgrade from dev model)
+        model="gpt-4.1-nano",  # Use cheaper model for test
         semantic_weight=baseline_semantic_weight,  # Use learned semantic weight from Claude
         use_semantic=optimal_params["use_semantic"],
         concurrency=concurrency,
@@ -786,34 +726,56 @@ async def run_complete_pipeline(
 
     # STEP 3B: Test set evaluation WITH generated rules
     print("\n🎯 STEP 3B: FINAL TEST EVALUATION WITH rules (enhanced approach)")
-    print("⏳ Running enhanced matching with rules on FULL TEST SET (this is the real evaluation)...")
 
-    start_time = time.time()
+    # Check if baseline already exceeds target - if so, skip expensive rules test
+    baseline_f1 = baseline_results['metrics']['f1']
+    target_f1 = get_leaderboard_target_f1(dataset)
 
-    # Extract learned semantic weight from the heuristics file
-    learned_semantic_weight = optimal_params["semantic_weight"]  # default
-    if heuristics_file and os.path.exists(heuristics_file):
-        try:
-            with open(heuristics_file) as f:
-                heuristics_config = json.load(f)
-                if "hyperparameters" in heuristics_config:
-                    hyperparams = heuristics_config["hyperparameters"]
-                    learned_semantic_weight = hyperparams.get("semantic_weight", learned_semantic_weight)
-                    print(f"✅ Using learned semantic weight: {learned_semantic_weight:.3f} (trigram weight: {1-learned_semantic_weight:.3f})")
-        except Exception as e:
-            print(f"⚠️ Could not load weights from {heuristics_file}: {e}")
+    if baseline_f1 >= target_f1:
+        print(f"🎉 BASELINE ALREADY EXCEEDS TARGET! ({baseline_f1:.4f} >= {target_f1:.1f})")
+        print("   Skipping expensive rules test since baseline is already excellent.")
+        print("   Using baseline results as final results.")
 
-    enhanced_results = await run_enhanced_matching(
-        dataset=dataset,
-        limit=None,
-        max_candidates=optimal_params["max_candidates"],  # Use optimized candidates
-        model="gpt-4.1-mini",  # Use better model for test (upgrade from dev model)
-        semantic_weight=learned_semantic_weight,  # Use learned semantic weight from Claude
-        heuristic_file=heuristics_file,
-    )
-    enhanced_time = time.time() - start_time
+        # Use baseline results as enhanced results
+        enhanced_results = {
+            'f1': baseline_results['metrics']['f1'],
+            'precision': baseline_results['metrics']['precision'],
+            'recall': baseline_results['metrics']['recall'],
+            'cost': baseline_results['cost_usd'],
+            'method': 'baseline_skip_rules'
+        }
+        enhanced_time = 0  # No additional time needed
 
-    print(f"✅ Enhanced Results (with rules): F1={enhanced_results['f1']:.4f}, Cost=${enhanced_results['cost']:.3f}")
+        print(f"✅ Final Results (baseline used): F1={enhanced_results['f1']:.4f}, Cost=${enhanced_results['cost']:.3f}")
+    else:
+        print("⏳ Running enhanced matching with rules on FULL TEST SET (this is the real evaluation)...")
+
+        start_time = time.time()
+
+        # Extract learned semantic weight from the heuristics file
+        learned_semantic_weight = optimal_params["semantic_weight"]  # default
+        if heuristics_file and os.path.exists(heuristics_file):
+            try:
+                with open(heuristics_file) as f:
+                    heuristics_config = json.load(f)
+                    if "hyperparameters" in heuristics_config:
+                        hyperparams = heuristics_config["hyperparameters"]
+                        learned_semantic_weight = hyperparams.get("semantic_weight", learned_semantic_weight)
+                        print(f"✅ Using learned semantic weight: {learned_semantic_weight:.3f} (trigram weight: {1-learned_semantic_weight:.3f})")
+            except Exception as e:
+                print(f"⚠️ Could not load weights from {heuristics_file}: {e}")
+
+        enhanced_results = await run_enhanced_matching(
+            dataset=dataset,
+            limit=None,
+            max_candidates=optimal_params["max_candidates"],  # Use optimized candidates
+            model="gpt-4.1-nano",  # Use cheaper model for test
+            semantic_weight=learned_semantic_weight,  # Use learned semantic weight from Claude
+            heuristic_file=heuristics_file,
+        )
+        enhanced_time = time.time() - start_time
+
+        print(f"✅ Enhanced Results (with rules): F1={enhanced_results['f1']:.4f}, Cost=${enhanced_results['cost']:.3f}")
 
     # Calculate improvement
     f1_improvement = enhanced_results["f1"] - baseline_results["metrics"]["f1"]
@@ -873,8 +835,6 @@ async def run_complete_pipeline(
     print(f"LLM Call Reduction: {enhanced_results.get('llm_call_reduction', 0):.1f}%")
 
     # Check if we beat the leaderboard (check both baseline and enhanced)
-    from src.experiments.claude_sdk_heuristic_generator import get_leaderboard_target_f1
-
     target_f1 = get_leaderboard_target_f1(dataset)
     baseline_beats_leaderboard = (
         baseline_results["metrics"]["f1"] > target_f1 / 100
@@ -921,31 +881,11 @@ async def run_complete_pipeline(
         "leaderboard_target": target_f1,
     }
 
-    # Save results with JSON serialization fix
-    def clean_for_json(obj):
-        """Clean object for JSON serialization"""
-        import numpy as np
-        import pandas as pd
-        if isinstance(obj, (np.int64, np.int32, np.int16, np.int8)):
-            return int(obj)
-        if isinstance(obj, (np.float64, np.float32, np.float16)):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if pd.isna(obj):
-            return None
-        if hasattr(obj, 'item'):
-            return obj.item()
-        if isinstance(obj, dict):
-            return {str(k): clean_for_json(v) for k, v in obj.items()}  # Convert all keys to strings
-        if isinstance(obj, list):
-            return [clean_for_json(item) for item in obj]
-        return obj
-
+    # Save results with comprehensive JSON serialization
     os.makedirs("results", exist_ok=True)
     results_file = f"results/{dataset}_complete_pipeline.json"
     with open(results_file, "w") as f:
-        json.dump(clean_for_json(results), f, indent=2)
+        json.dump(json_serialize(results), f, indent=2)
 
     print(f"📋 Results saved to: {results_file}")
 
@@ -961,7 +901,7 @@ async def run_complete_pipeline(
 
     # Re-save results with failure analysis
     with open(results_file, "w") as f:
-        json.dump(results, f, indent=2)
+        json.dump(json_serialize(results), f, indent=2)
 
     # Generate updated internal leaderboard
     print("📊 Generating updated internal leaderboard...")
@@ -1041,14 +981,15 @@ def extract_failure_records(dataset: str, results: Dict[str, Any]) -> Dict[str, 
 
 async def main():
     parser = argparse.ArgumentParser(description="Complete entity matching pipeline")
-    parser.add_argument("--dataset", required=True, help="Dataset name (e.g. beer, walmart_amazon)")
-    parser.add_argument("--early-exit", action="store_true", help="Stop sweep early if F1 beats leaderboard target")
+    parser.add_argument("--dataset", help="Dataset name (e.g. beer, walmart_amazon)")
+    parser.add_argument("--datasets", choices=["all"], help="Run on all available datasets")
+    parser.add_argument("--early-exit", action="store_true", help="Early exit parameter (ignored, kept for backward compatibility)")
     parser.add_argument("--resume", action="store_true", help="Resume from checkpoint if available")
-    parser.add_argument("--concurrency", type=int, default=5, help="Number of concurrent API requests")
+    parser.add_argument("--concurrency", type=int, default=20, help="Number of concurrent API requests (default: 20)")
     parser.add_argument(
         "--validate-rules", action="store_true", help="Validate and optimize rules on dev set before test"
     )
-    parser.add_argument("--model", default="gpt-4.1-nano", help="Model to use for dev sweep (default: gpt-4.1-nano)")
+    parser.add_argument("--model", default="gpt-4.1-nano", help="Model to use for analysis-driven optimization (default: gpt-4.1-nano)")
 
     parser.add_argument(
         "--use-agentic-rules", action="store_true", default=True, help="Use agentic rule generation (default: True)"
@@ -1071,10 +1012,33 @@ async def main():
     parser.add_argument(
         "--use-analysis-driven",
         action="store_true",
-        help="Skip hyperparameter sweep and use analysis-driven joint optimization",
+        default=True,
+        help="Use analysis-driven optimization (default: True, kept for backward compatibility)",
+    )
+    parser.add_argument(
+        "--use-sweep",
+        dest="use_analysis_driven",
+        action="store_false",
+        help="Deprecated: sweep mode no longer available",
     )
 
     args = parser.parse_args()
+
+    # Validate dataset arguments
+    if not args.dataset and not args.datasets:
+        parser.error("Either --dataset or --datasets must be specified")
+    if args.dataset and args.datasets:
+        parser.error("Cannot specify both --dataset and --datasets")
+
+    # Get list of datasets to process
+    if args.datasets == "all":
+        datasets = get_available_datasets()
+        if not datasets:
+            print("❌ No datasets found in data/raw directory")
+            return None
+        print(f"🗂️ Found {len(datasets)} datasets: {', '.join(datasets)}")
+    else:
+        datasets = [args.dataset]
 
     # Parse known best params if provided
     known_best_params = None
@@ -1086,19 +1050,61 @@ async def main():
             print(f"❌ Invalid JSON for known-best-params: {e}")
             return None
 
+    # Run pipeline on all datasets
+    all_results = {}
+    failed_datasets = []
 
-    return await run_complete_pipeline(
-        args.dataset,
-        args.early_exit,
-        args.resume,
-        args.concurrency,
-        args.validate_rules,
-        args.model,
-        args.use_agentic_rules,
-        known_best_params,
-        args.use_train_for_rules,
-        args.use_analysis_driven,
-    )
+    for i, dataset in enumerate(datasets):
+        print(f"\n{'='*80}")
+        print(f"📊 PROCESSING DATASET {i+1}/{len(datasets)}: {dataset.upper()}")
+        print(f"{'='*80}")
+
+        try:
+            result = await run_complete_pipeline(
+                dataset,
+                args.early_exit,
+                args.resume,
+                args.concurrency,
+                args.validate_rules,
+                args.model,
+                args.use_agentic_rules,
+                known_best_params,
+                args.use_train_for_rules,
+                True,  # Always use analysis-driven (ignore args.use_analysis_driven)
+            )
+            all_results[dataset] = result
+            print(f"✅ {dataset}: F1={result.get('final_f1', 0):.4f}")
+
+        except Exception as e:
+            print(f"❌ {dataset}: FAILED - {e!s}")
+            failed_datasets.append(dataset)
+            all_results[dataset] = {"error": str(e)}
+
+    # Print summary if multiple datasets
+    if len(datasets) > 1:
+        print(f"\n{'='*80}")
+        print(f"📊 SUMMARY: {len(datasets)} DATASETS PROCESSED")
+        print(f"{'='*80}")
+
+        successful_datasets = [d for d in datasets if d not in failed_datasets]
+        print(f"✅ Successful: {len(successful_datasets)}")
+        print(f"❌ Failed: {len(failed_datasets)}")
+
+        if successful_datasets:
+            print("\n📈 RESULTS:")
+            for dataset in successful_datasets:
+                result = all_results[dataset]
+                f1 = result.get('final_f1', 0)
+                target = result.get('leaderboard_target', 0)
+                beat_target = "🎯" if f1 >= target else "  "
+                print(f"  {beat_target} {dataset:15} F1={f1:.4f} (target: {target:.1f})")
+
+        if failed_datasets:
+            print("\n❌ FAILED DATASETS:")
+            for dataset in failed_datasets:
+                print(f"  - {dataset}: {all_results[dataset].get('error', 'Unknown error')}")
+
+    return all_results
 
 
 if __name__ == "__main__":

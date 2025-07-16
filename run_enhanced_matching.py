@@ -27,8 +27,10 @@ from src.entity_matching.enhanced_heuristic_engine import (
     load_enhanced_heuristics_for_dataset,
 )
 from src.entity_matching.hybrid_matcher import (
+    CandidateCache,
     Config,
     call_openai_async,
+    get_top_candidates_cached,
     semantic_similarity,
     token_count,
     trigram_similarity,
@@ -88,21 +90,21 @@ async def enhanced_match_single_record(
 
     # Summarize weight adjustments to reduce noise
     if weight_adjustments > 0:
-        print(f"    Applied {weight_adjustments} weight adjustments to candidates")
+        pass  # Applied weight adjustments (removed verbose logging)
 
     # Apply decision rules before LLM call
     decision = heuristic_engine.apply_decision_rules(left_record, best_record, best_score, PipelineStage.PRE_LLM)
 
     if decision and decision.terminate_early:
         if decision.skip_llm:
-            print(f"    Early decision: {decision.reason} -> {decision.final_result} (skipped LLM)")
+            pass  # Early decision made (removed verbose logging)
         else:
-            print(f"    Early decision: {decision.reason} -> {decision.final_result}")
+            pass  # Early decision made (removed verbose logging)
         # If rule says accept (1), return the best candidate index; if reject (0), return -1
         return (best_idx if decision.final_result == 1 else -1), True
 
     # Fall back to LLM if no early decision
-    print(f"    Proceeding to LLM with score {best_score:.3f}")
+    # Proceeding to LLM (removed verbose logging)
 
     # Build prompt with the best candidate
     candidates_text = f"{best_idx}) {json.dumps(best_record, ensure_ascii=False)}"
@@ -219,6 +221,11 @@ async def run_enhanced_matching(
 
     print(f"Processing {len(pairs)} pairs with enhanced control logic...")
 
+    # Create candidate cache for massive speed improvement
+    print("🔄 Creating candidate cache...")
+    candidate_cache = CandidateCache(B)
+    print(f"✅ Candidate cache created for {len(B)} records")
+
     start_time = time.time()
     all_predictions = {}
     early_decisions = 0
@@ -235,28 +242,10 @@ async def run_enhanced_matching(
         left_id = row.ltable_id
         left_record = A[left_id]
 
-        # Get top candidates using trigram similarity
-        candidates = []
-
-        # Handle both list and dict access patterns
-        if isinstance(B, dict):
-            # Dict access (ID-based)
-            for record_id, right_record in B.items():
-                right_str = json.dumps(right_record, ensure_ascii=False).lower()
-                left_str = json.dumps(left_record, ensure_ascii=False).lower()
-                score = trigram_similarity(left_str, right_str)
-                candidates.append((score, record_id, right_record))
-        else:
-            # List access (index-based)
-            for j, right_record in enumerate(B):
-                right_str = json.dumps(right_record, ensure_ascii=False).lower()
-                left_str = json.dumps(left_record, ensure_ascii=False).lower()
-                score = trigram_similarity(left_str, right_str)
-                candidates.append((score, j, right_record))
-
-        # Sort and take top candidates
-        candidates.sort(key=lambda x: x[0], reverse=True)
-        top_candidates = [(idx, record) for _, idx, record in candidates[:max_candidates]]
+        # Use cached candidate generation for massive speed improvement
+        top_candidates = get_top_candidates_cached(
+            left_record, candidate_cache, max_candidates, cfg, dataset
+        )
 
         # Enhanced matching with control logic
         match_idx, was_early_decision = await enhanced_match_single_record(
@@ -266,18 +255,31 @@ async def run_enhanced_matching(
         # Return results for thread-safe aggregation
         return left_id, match_idx, was_early_decision
 
-    # Create batches for concurrent processing
-    batch_size = concurrency
+    # Create batches for concurrent processing using dynamic batching like baseline
+    batch_size = max(1, len(pairs) // 20)  # Dynamic batch size for ~20 progress updates
     pair_rows = list(pairs.iterrows())
-
-    # Process in batches with progress tracking
-    with tqdm(total=len(pairs), desc="Processing pairs", unit="pair") as pbar:
-        for i in range(0, len(pair_rows), batch_size):
-            batch = pair_rows[i : i + batch_size]
-
-            # Process batch concurrently
+    
+    # Create batches
+    batches = []
+    for i in range(0, len(pair_rows), batch_size):
+        batches.append(pair_rows[i : i + batch_size])
+    
+    # Use semaphore for concurrency control like baseline
+    semaphore = asyncio.Semaphore(concurrency)
+    
+    async def process_batch_with_semaphore(batch):
+        """Process a batch of pairs with semaphore control"""
+        async with semaphore:
             tasks = [process_single_pair(row) for _, row in batch]
-            batch_results = await asyncio.gather(*tasks)
+            return await asyncio.gather(*tasks)
+
+    # Process batches with progress tracking
+    with tqdm(total=len(batches), desc="Processing batches", unit="batch") as pbar:
+        # Process all batches concurrently (limited by semaphore)
+        batch_tasks = [process_batch_with_semaphore(batch) for batch in batches]
+        
+        for task in asyncio.as_completed(batch_tasks):
+            batch_results = await task
 
             # Aggregate results thread-safely
             for left_id, match_idx, was_early_decision in batch_results:
@@ -290,7 +292,7 @@ async def run_enhanced_matching(
                 else:
                     llm_calls += 1
 
-            pbar.update(len(batch))
+            pbar.update(1)  # Update by 1 batch completed
 
     elapsed_time = time.time() - start_time
     matches_found = len(all_predictions)

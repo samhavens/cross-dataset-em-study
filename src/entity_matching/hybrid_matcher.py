@@ -955,12 +955,19 @@ async def process_batch_cached(
             task = match_single_record(left_record, candidates, cfg, client)
             tasks.append((left_id, task))
 
-        # Execute all tasks in this batch
+        # Execute all tasks in this batch concurrently
         batch_results = {}
-        for left_id, task in tasks:
-            match_idx = await task
-            if match_idx != -1:
-                batch_results[left_id] = match_idx
+        
+        # Run all API calls in this batch concurrently
+        results = await asyncio.gather(*[task for _, task in tasks], return_exceptions=True)
+        
+        # Process results
+        for (left_id, _), result in zip(tasks, results):
+            if isinstance(result, Exception):
+                print(f"Warning: Task for {left_id} failed: {result}")
+                continue
+            if result != -1:
+                batch_results[left_id] = result
 
         return batch_results
 
@@ -989,12 +996,19 @@ async def process_batch(
             task = match_single_record(left_record, candidates, cfg, client)
             tasks.append((left_id, task))
 
-        # Execute all tasks in this batch
+        # Execute all tasks in this batch concurrently
         batch_results = {}
-        for left_id, task in tasks:
-            match_idx = await task
-            if match_idx != -1:
-                batch_results[left_id] = match_idx
+        
+        # Run all API calls in this batch concurrently
+        results = await asyncio.gather(*[task for _, task in tasks], return_exceptions=True)
+        
+        # Process results
+        for (left_id, _), result in zip(tasks, results):
+            if isinstance(result, Exception):
+                print(f"Warning: Task for {left_id} failed: {result}")
+                continue
+            if result != -1:
+                batch_results[left_id] = result
 
         return batch_results
 
@@ -1106,11 +1120,25 @@ async def run_matching(
     semaphore = asyncio.Semaphore(concurrency)
 
     # Split pairs into batches for progress tracking
-    batch_size = max(1, len(pairs) // 20)  # 20 progress updates
+    # Use smaller batch sizes for better performance and progress tracking
+    # Aim for 10-20 pairs per batch for optimal performance
+    target_batch_size = 15  # Sweet spot for performance
+
+    # Ensure we don't have excessively large batches
+    if len(pairs) <= 50:
+        # For small datasets, use smaller batches
+        batch_size = min(10, len(pairs))
+    else:
+        # For larger datasets, use our calculated batch size but cap it
+        batch_size = min(target_batch_size, max(1, len(pairs) // 50))
+
     batches = []
     for i in range(0, len(pairs), batch_size):
         batch = list(pairs.iloc[i : i + batch_size].iterrows())
         batches.append(batch)
+
+    print(f"📊 Batch configuration: {len(batches)} batches of ~{batch_size} pairs each")
+    print(f"📊 Total pairs: {len(pairs)}, Batch size: {batch_size}, Number of batches: {len(batches)}")
 
     # Process batches with progress bar
     all_predictions = {}
@@ -1127,7 +1155,7 @@ async def run_matching(
                 all_predictions.update(batch_results)
                 pbar.update(1)
         except asyncio.TimeoutError:
-            print(f"⚠️ Batch processing timeout after 5 minutes - some batches may be incomplete")
+            print("⚠️ Batch processing timeout after 5 minutes - some batches may be incomplete")
             # Continue with whatever results we have
 
     elapsed_time = time.time() - start_time

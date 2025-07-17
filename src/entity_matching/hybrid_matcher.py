@@ -138,7 +138,7 @@ async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> st
                     messages=[{"role": "user", "content": prompt}],
                     max_completion_tokens=max(cfg.max_tokens, 1000),  # Give o4 models more tokens
                 ),
-                timeout=60  # 60 second timeout
+                timeout=120  # 2 minute timeout for nano models
             )
         else:
             response = await asyncio.wait_for(
@@ -148,7 +148,7 @@ async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> st
                     temperature=cfg.temperature,
                     max_tokens=cfg.max_tokens,
                 ),
-                timeout=60  # 60 second timeout
+                timeout=120  # 2 minute timeout for nano models
             )
 
         # Track usage
@@ -169,7 +169,7 @@ async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> st
         return result
 
     except asyncio.TimeoutError:
-        print(f"OpenAI API timeout after 60 seconds for model {cfg.model}")
+        print(f"OpenAI API timeout after 2 minutes for model {cfg.model}")
         return ""
     except Exception as e:
         print(f"OpenAI API error: {e}")

@@ -9,6 +9,9 @@ import pickle
 import textwrap
 import time
 
+# Fix tokenizer fork warnings in async processing
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 from typing import Dict, List, Optional, Union
 
 import numpy as np

@@ -20,6 +20,9 @@ import pathlib
 import subprocess
 import time
 
+# Fix tokenizer fork warnings in async processing
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 from datetime import datetime
 from typing import Any, Dict, Optional
 

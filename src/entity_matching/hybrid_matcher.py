@@ -958,19 +958,16 @@ async def process_batch_cached(
             task = match_single_record(left_record, candidates, cfg, client)
             tasks.append((left_id, task))
 
-        # Execute all tasks in this batch concurrently
+        # Execute all tasks in this batch sequentially (safer for SDK compatibility)
         batch_results = {}
-        
-        # Run all API calls in this batch concurrently
-        results = await asyncio.gather(*[task for _, task in tasks], return_exceptions=True)
-        
-        # Process results
-        for (left_id, _), result in zip(tasks, results):
-            if isinstance(result, Exception):
-                print(f"Warning: Task for {left_id} failed: {result}")
+        for left_id, task in tasks:
+            try:
+                match_idx = await task
+                if match_idx != -1:
+                    batch_results[left_id] = match_idx
+            except Exception as e:
+                print(f"Warning: Task for {left_id} failed: {e}")
                 continue
-            if result != -1:
-                batch_results[left_id] = result
 
         return batch_results
 
@@ -999,19 +996,16 @@ async def process_batch(
             task = match_single_record(left_record, candidates, cfg, client)
             tasks.append((left_id, task))
 
-        # Execute all tasks in this batch concurrently
+        # Execute all tasks in this batch sequentially (safer for SDK compatibility)
         batch_results = {}
-        
-        # Run all API calls in this batch concurrently
-        results = await asyncio.gather(*[task for _, task in tasks], return_exceptions=True)
-        
-        # Process results
-        for (left_id, _), result in zip(tasks, results):
-            if isinstance(result, Exception):
-                print(f"Warning: Task for {left_id} failed: {result}")
+        for left_id, task in tasks:
+            try:
+                match_idx = await task
+                if match_idx != -1:
+                    batch_results[left_id] = match_idx
+            except Exception as e:
+                print(f"Warning: Task for {left_id} failed: {e}")
                 continue
-            if result != -1:
-                batch_results[left_id] = result
 
         return batch_results
 
@@ -1151,15 +1145,11 @@ async def run_matching(
 
     # Use tqdm with gather for proper progress tracking
     with tqdm(total=len(batches), desc="Processing batches", unit="batch") as pbar:
-        try:
-            for task in asyncio.as_completed(tasks):
-                # Add timeout to prevent individual batch hangs
-                batch_results = await asyncio.wait_for(task, timeout=300)  # 5 minutes per batch
-                all_predictions.update(batch_results)
-                pbar.update(1)
-        except asyncio.TimeoutError:
-            print("⚠️ Batch processing timeout after 5 minutes - some batches may be incomplete")
-            # Continue with whatever results we have
+        for task in asyncio.as_completed(tasks):
+            # Remove timeout wrapper to avoid SDK scope conflicts
+            batch_results = await task
+            all_predictions.update(batch_results)
+            pbar.update(1)
 
     elapsed_time = time.time() - start_time
     matches_found = len(all_predictions)

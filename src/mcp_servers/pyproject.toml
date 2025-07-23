@@ -1,0 +1,14 @@
+[project]
+name = "entity-matching-mcp-server"
+version = "1.0.0"
+description = "MCP server for entity matching rule generation"
+dependencies = [
+    "mcp>=1.0.0",
+]
+
+[project.scripts]
+entity-matching-server = "entity_matching_server:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"

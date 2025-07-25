@@ -9,6 +9,9 @@ import pickle
 import textwrap
 import time
 
+# Fix tokenizer fork warnings in async processing
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 from typing import Dict, List, Optional, Union
 
 import numpy as np
@@ -42,12 +45,60 @@ class Config:
         self.total_input_tokens = 0
         self.total_output_tokens = 0
         self.use_semantic = True  # Enable semantic similarity by default
-        self.semantic_weight = 0.5  # Weight for combining semantic + trigram scores
+        # 3-weight system for combining trigram, syntactic, and semantic scores
+        self.trigram_weight = 0.4  # Weight for trigram similarity
+        self.syntactic_weight = 0.3  # Weight for syntactic similarity
+        self.semantic_weight = 0.3  # Weight for semantic similarity
+        # Legacy support for 2-weight system (deprecated)
+        self._legacy_semantic_weight = None
         self.semantic_model = None  # Will be initialized lazily
         self.use_heuristics = False  # Enable heuristic rules
         self.heuristic_engine = None  # Will be initialized if enabled
         self.heuristic_file = None  # Path to heuristics file
         self.embeddings = None  # Cached embeddings for the dataset
+
+    def set_weights(self, trigram_weight: float, syntactic_weight: float, semantic_weight: float):
+        """Set the 3-weight system with automatic normalization"""
+        # Validate weights are non-negative
+        if trigram_weight < 0 or syntactic_weight < 0 or semantic_weight < 0:
+            raise ValueError(f"Weights must be non-negative, got trigram={trigram_weight}, syntactic={syntactic_weight}, semantic={semantic_weight}")
+
+        # Calculate total for normalization
+        total = trigram_weight + syntactic_weight + semantic_weight
+
+        # Handle zero total case
+        if total == 0:
+            raise ValueError("At least one weight must be positive")
+
+        # Normalize weights to sum to 1.0
+        self.trigram_weight = trigram_weight / total
+        self.syntactic_weight = syntactic_weight / total
+        self.semantic_weight = semantic_weight / total
+        self._legacy_semantic_weight = None  # Clear legacy mode
+
+        # Inform user if normalization was applied
+        if abs(total - 1.0) > 1e-6:
+            print(f"ℹ️ Weights normalized from ({trigram_weight:.3f}, {syntactic_weight:.3f}, {semantic_weight:.3f}) to ({self.trigram_weight:.3f}, {self.syntactic_weight:.3f}, {self.semantic_weight:.3f})")
+
+    def set_legacy_semantic_weight(self, semantic_weight: float):
+        """Set legacy 2-weight system (semantic vs trigram)"""
+        if semantic_weight < 0:
+            raise ValueError(f"Semantic weight must be non-negative, got {semantic_weight}")
+
+        # Normalize semantic weight to [0, 1] range if needed
+        if semantic_weight > 1.0:
+            print(f"ℹ️ Semantic weight normalized from {semantic_weight:.3f} to 1.0")
+            semantic_weight = 1.0
+
+        self._legacy_semantic_weight = semantic_weight
+        # Convert to 3-weight system
+        self.trigram_weight = 1.0 - semantic_weight
+        self.syntactic_weight = 0.0  # Disable syntactic in legacy mode
+        self.semantic_weight = semantic_weight
+
+    def is_legacy_mode(self) -> bool:
+        """Check if we're in legacy 2-weight mode"""
+        return self._legacy_semantic_weight is not None
 
 
 # Token counting
@@ -66,8 +117,8 @@ def report_cost(cfg: Config):
     try:
         input_cost_per_1k, output_cost_per_1k = MODEL_COSTS[cfg.model]
     except KeyError:
-        print(f"WARNING: Model {cfg.model} not found in MODEL_COSTS. Using gpt-4.1-mini instead.")
-        input_cost_per_1k, output_cost_per_1k = MODEL_COSTS["gpt-4.1-mini"]
+        print(f"WARNING: Model {cfg.model} not found in MODEL_COSTS. Using gpt-4.1-nano instead.")
+        input_cost_per_1k, output_cost_per_1k = MODEL_COSTS["gpt-4.1-nano"]
 
     input_cost = (cfg.total_input_tokens / 1_000_000) * input_cost_per_1k
     output_cost = (cfg.total_output_tokens / 1_000_000) * output_cost_per_1k
@@ -80,21 +131,27 @@ MAX = 1_000_000  # token limit for the matching prompt
 
 
 async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> str:
-    """Make async call to OpenAI API"""
+    """Make async call to OpenAI API with timeout"""
     try:
         # o3/o4 models use max_completion_tokens instead of max_tokens and don't support temperature=0
         if cfg.model.startswith(("o3", "o4")):
-            response = await client.chat.completions.create(
-                model=cfg.model,
-                messages=[{"role": "user", "content": prompt}],
-                max_completion_tokens=max(cfg.max_tokens, 1000),  # Give o4 models more tokens
+            response = await asyncio.wait_for(
+                client.chat.completions.create(
+                    model=cfg.model,
+                    messages=[{"role": "user", "content": prompt}],
+                    max_completion_tokens=max(cfg.max_tokens, 1000),  # Give o4 models more tokens
+                ),
+                timeout=120  # 2 minute timeout for nano models
             )
         else:
-            response = await client.chat.completions.create(
-                model=cfg.model,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=cfg.temperature,
-                max_tokens=cfg.max_tokens,
+            response = await asyncio.wait_for(
+                client.chat.completions.create(
+                    model=cfg.model,
+                    messages=[{"role": "user", "content": prompt}],
+                    temperature=cfg.temperature,
+                    max_tokens=cfg.max_tokens,
+                ),
+                timeout=120  # 2 minute timeout for nano models
             )
 
         # Track usage
@@ -114,6 +171,9 @@ async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> st
 
         return result
 
+    except asyncio.TimeoutError:
+        print(f"OpenAI API timeout after 2 minutes for model {cfg.model}")
+        return ""
     except Exception as e:
         print(f"OpenAI API error: {e}")
         return ""
@@ -281,45 +341,126 @@ def semantic_similarity(s1: str, s2: str, cfg: Config) -> float:
 
 
 def combined_similarity(s1: str, s2: str, cfg: Config) -> float:
-    """Calculate combined trigram + semantic similarity"""
+    """Calculate combined trigram + syntactic + semantic similarity using 3-weight system"""
+    # Calculate all three similarity scores
     trigram_score = trigram_similarity(s1, s2)
+    syntactic_score = syntactic_similarity(s1, s2)
 
-    if not cfg.use_semantic or not SEMANTIC_AVAILABLE:
-        return trigram_score
+    # Handle semantic similarity availability
+    if cfg.use_semantic and SEMANTIC_AVAILABLE:
+        semantic_score = semantic_similarity(s1, s2, cfg)
+    else:
+        semantic_score = 0.0
+        # If semantic unavailable, redistribute its weight to trigram and syntactic
+        if cfg.semantic_weight > 0.0:
+            total_non_semantic = cfg.trigram_weight + cfg.syntactic_weight
+            if total_non_semantic > 0.0:
+                trigram_weight_adj = cfg.trigram_weight + (cfg.semantic_weight * cfg.trigram_weight / total_non_semantic)
+                syntactic_weight_adj = cfg.syntactic_weight + (cfg.semantic_weight * cfg.syntactic_weight / total_non_semantic)
+                return trigram_weight_adj * trigram_score + syntactic_weight_adj * syntactic_score
 
-    semantic_score = semantic_similarity(s1, s2, cfg)
-
-    # Weighted combination
-    return (1 - cfg.semantic_weight) * trigram_score + cfg.semantic_weight * semantic_score
+    # 3-weight combination
+    return (cfg.trigram_weight * trigram_score +
+            cfg.syntactic_weight * syntactic_score +
+            cfg.semantic_weight * semantic_score)
 
 
 class CandidateCache:
     """Pre-computed cache for expensive candidate operations"""
 
-    def __init__(self, right_records: Union[List[dict], Dict[int, dict]]):
+    def __init__(self, right_records: Union[List[dict], Dict[int, dict]], cache_file: str = None):
         """Pre-compute all expensive operations on right records"""
-        print("🔄 Building candidate cache...")
-
         self.right_records = right_records
         self.json_strings = {}  # id -> json string
         self.trigram_sets = {}  # id -> trigram set
         self.is_dict_access = isinstance(right_records, dict)
+        self.cache_file = cache_file
+
+        # Try to load from cache file if provided
+        if cache_file and self._load_from_cache(cache_file):
+            print(f"📁 Loaded candidate cache from {cache_file}")
+            return
+
+        # Build cache from scratch
+        print("🔄 Building candidate cache...")
+        self._build_cache()
+
+        # Save to cache file if provided
+        if cache_file:
+            self._save_to_cache(cache_file)
+            print(f"💾 Saved candidate cache to {cache_file}")
+
+    def _build_cache(self):
+        """Build the cache from scratch"""
 
         # Pre-compute JSON strings and trigram sets
         if self.is_dict_access:
             # Dict access (ID-based)
-            for record_id, record in tqdm(right_records.items(), desc="Caching records"):
+            for record_id, record in tqdm(self.right_records.items(), desc="Caching records"):
                 json_str = json.dumps(record, ensure_ascii=False).lower()
                 self.json_strings[record_id] = json_str
                 self.trigram_sets[record_id] = self._get_trigrams(json_str)
         else:
             # List access (index-based)
-            for i, record in tqdm(enumerate(right_records), desc="Caching records"):
+            for i, record in tqdm(enumerate(self.right_records), desc="Caching records"):
                 json_str = json.dumps(record, ensure_ascii=False).lower()
                 self.json_strings[i] = json_str
                 self.trigram_sets[i] = self._get_trigrams(json_str)
 
+    def _save_to_cache(self, cache_file: str):
+        """Save the cache to a file"""
+        cache_data = {
+            'json_strings': {str(k): v for k, v in self.json_strings.items()},  # Convert keys to strings for JSON
+            'trigram_sets': {str(k): list(v) for k, v in self.trigram_sets.items()},  # Convert sets to lists and keys to strings for JSON
+            'is_dict_access': self.is_dict_access
+        }
+
+        cache_path = pathlib.Path(cache_file)
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(cache_file, 'w') as f:
+            json.dump(cache_data, f)
+
+    def _load_from_cache(self, cache_file: str) -> bool:
+        """Load the cache from a file. Returns True if successful."""
+        cache_path = pathlib.Path(cache_file)
+        if not cache_path.exists():
+            return False
+
+        # Check if cache is recent (less than 1 hour old)
+        try:
+            file_age = time.time() - cache_path.stat().st_mtime
+            if file_age > 3600:  # 1 hour in seconds
+                print(f"⚠️ Cache file {cache_file} is {file_age/3600:.1f} hours old, rebuilding...")
+                return False
+        except Exception:
+            return False
+
+        try:
+            with open(cache_file) as f:
+                cache_data = json.load(f)
+
+            self.json_strings = cache_data['json_strings']
+            self.trigram_sets = {k: set(v) for k, v in cache_data['trigram_sets'].items()}  # Convert lists back to sets
+            self.is_dict_access = cache_data['is_dict_access']
+
+            # Convert string keys back to int for list access
+            if not self.is_dict_access:
+                self.json_strings = {int(k): v for k, v in self.json_strings.items()}
+                self.trigram_sets = {int(k): v for k, v in self.trigram_sets.items()}
+            # For dict access, keys might be strings or ints, ensure consistency
+            # Convert all keys to the same type as the original records
+            elif self.right_records and isinstance(next(iter(self.right_records.keys())), int):
+                self.json_strings = {int(k) if isinstance(k, str) else k: v for k, v in self.json_strings.items()}
+                self.trigram_sets = {int(k) if isinstance(k, str) else k: v for k, v in self.trigram_sets.items()}
+
+            return True
+        except Exception as e:
+            print(f"⚠️ Failed to load cache from {cache_file}: {e}")
+            return False
+
         print(f"✅ Cached {len(self.json_strings)} records")
+        return None
 
     def _get_trigrams(self, s: str) -> set:
         """Get trigram set for a string"""
@@ -360,7 +501,7 @@ class CandidateCache:
 
 def get_top_candidates_cached(
     left_record: dict, candidate_cache: CandidateCache, max_candidates: int, cfg: Config, dataset: str = None,
-    intelligent_boost: bool = False
+    intelligent_boost: bool = False, fast_analysis: bool = False
 ) -> List[tuple]:
     """FAST get_top_candidates using pre-computed cache with optional intelligent boost for better recall"""
     left_str = json.dumps(left_record, ensure_ascii=False).lower()
@@ -374,8 +515,11 @@ def get_top_candidates_cached(
 
     # Fast scoring using pre-computed values
     if cfg.use_semantic and SEMANTIC_AVAILABLE:
-        # First pass: Fast trigram scoring with 3x candidates for semantic reranking
-        trigram_candidates = max_candidates * 3
+        # First pass: Fast trigram scoring with multiplier for semantic reranking
+        if fast_analysis:
+            trigram_candidates = int(max_candidates * 1.5)  # Reduce multiplier for analysis speed
+        else:
+            trigram_candidates = int(max_candidates * 3)  # Full multiplier for actual matching
         trigram_scores = []
 
         for record_id in candidate_cache.get_all_ids():
@@ -409,8 +553,14 @@ def get_top_candidates_cached(
                     record = candidate_cache.get_record(record_id)
                     semantic_score = semantic_similarity_cached(left_record, record, cfg.embeddings)
 
-                    # Weighted combination
-                    combined_score = (1 - cfg.semantic_weight) * trigram_score + cfg.semantic_weight * semantic_score
+                    # Calculate syntactic similarity
+                    record_str = json.dumps(record, ensure_ascii=False).lower()
+                    syntactic_score = syntactic_similarity(left_str, record_str)
+
+                    # 3-weight combination
+                    combined_score = (cfg.trigram_weight * trigram_score +
+                                    cfg.syntactic_weight * syntactic_score +
+                                    cfg.semantic_weight * semantic_score)
 
                     # Apply heuristics if enabled
                     if heuristic_engine:
@@ -499,7 +649,7 @@ def get_top_candidates(
     # Fast trigram filtering first to reduce candidates for semantic similarity
     if cfg.use_semantic and SEMANTIC_AVAILABLE:
         # First pass: Get top candidates using trigram similarity (more candidates than final)
-        trigram_candidates = max_candidates * 3  # 3x candidates for semantic reranking
+        trigram_candidates = int(max_candidates * 3)  # 3x candidates for semantic reranking
         trigram_scores = []
 
         # Handle both list and dict access patterns
@@ -557,8 +707,14 @@ def get_top_candidates(
                     # Use cached semantic similarity
                     semantic_score = semantic_similarity_cached(left_record, record, cfg.embeddings)
 
-                    # Weighted combination
-                    combined_score = (1 - cfg.semantic_weight) * trigram_score + cfg.semantic_weight * semantic_score
+                    # Calculate syntactic similarity
+                    record_str = json.dumps(record, ensure_ascii=False).lower()
+                    syntactic_score = syntactic_similarity(left_str, record_str)
+
+                    # 3-weight combination
+                    combined_score = (cfg.trigram_weight * trigram_score +
+                                    cfg.syntactic_weight * syntactic_score +
+                                    cfg.semantic_weight * semantic_score)
 
                     # Apply heuristic adjustments if available
                     if heuristic_engine:
@@ -673,7 +829,9 @@ async def match_single_record(left_record: dict, candidates: List[tuple], cfg: C
     candidates_lines = []
     for position, (actual_id, record) in enumerate(candidates, 1):
         id_mapping[position] = actual_id
-        candidates_lines.append(f"{position}) {json.dumps(record, ensure_ascii=False)}")
+        # Remove the 'id' field from the record to prevent LLM confusion
+        cleaned_record = {k: v for k, v in record.items() if k != 'id'}
+        candidates_lines.append(f"{position}) {json.dumps(cleaned_record, ensure_ascii=False)}")
 
     candidates_text = "\n".join(candidates_lines)
 
@@ -800,12 +958,16 @@ async def process_batch_cached(
             task = match_single_record(left_record, candidates, cfg, client)
             tasks.append((left_id, task))
 
-        # Execute all tasks in this batch
+        # Execute all tasks in this batch sequentially (safer for SDK compatibility)
         batch_results = {}
         for left_id, task in tasks:
-            match_idx = await task
-            if match_idx != -1:
-                batch_results[left_id] = match_idx
+            try:
+                match_idx = await task
+                if match_idx != -1:
+                    batch_results[left_id] = match_idx
+            except Exception as e:
+                print(f"Warning: Task for {left_id} failed: {e}")
+                continue
 
         return batch_results
 
@@ -834,12 +996,16 @@ async def process_batch(
             task = match_single_record(left_record, candidates, cfg, client)
             tasks.append((left_id, task))
 
-        # Execute all tasks in this batch
+        # Execute all tasks in this batch sequentially (safer for SDK compatibility)
         batch_results = {}
         for left_id, task in tasks:
-            match_idx = await task
-            if match_idx != -1:
-                batch_results[left_id] = match_idx
+            try:
+                match_idx = await task
+                if match_idx != -1:
+                    batch_results[left_id] = match_idx
+            except Exception as e:
+                print(f"Warning: Task for {left_id} failed: {e}")
+                continue
 
         return batch_results
 
@@ -855,6 +1021,8 @@ async def run_matching(
     output_csv: Optional[str] = None,
     use_semantic: bool = True,
     semantic_weight: float = 0.5,
+    trigram_weight: float = None,
+    syntactic_weight: float = None,
     use_heuristics: bool = False,
     heuristic_file: Optional[str] = None,
     embeddings_cache_dataset: Optional[str] = None,
@@ -870,9 +1038,16 @@ async def run_matching(
     cfg = Config()
     cfg.model = model
     cfg.use_semantic = use_semantic
-    cfg.semantic_weight = semantic_weight
     cfg.use_heuristics = use_heuristics
     cfg.heuristic_file = heuristic_file
+
+    # Set weights based on system type
+    if trigram_weight is not None and syntactic_weight is not None:
+        # 3-weight system
+        cfg.set_weights(trigram_weight, syntactic_weight, semantic_weight)
+    else:
+        # Convert legacy semantic weight to 3-weight system
+        cfg.set_weights(1.0 - semantic_weight, 0.0, semantic_weight)
 
     # Check for API key
     if not os.getenv("OPENAI_API_KEY"):
@@ -932,25 +1107,46 @@ async def run_matching(
         cache_dataset = embeddings_cache_dataset or dataset
         cfg.embeddings = compute_dataset_embeddings(cache_dataset, cfg)
 
+    # Create candidate cache for massive speed improvement with persistent caching
+    print("🔄 Creating candidate cache...")
+    cache_file = f".candidate_cache/{dataset}_candidates_{max_candidates}.json"
+    candidate_cache = CandidateCache(B, cache_file=cache_file)
+    print(f"✅ Candidate cache created for {len(B)} records")
+
     # Create semaphore for concurrency control
     semaphore = asyncio.Semaphore(concurrency)
 
     # Split pairs into batches for progress tracking
-    batch_size = max(1, len(pairs) // 20)  # 20 progress updates
+    # Use smaller batch sizes for better performance and progress tracking
+    # Aim for 10-20 pairs per batch for optimal performance
+    target_batch_size = 15  # Sweet spot for performance
+
+    # Ensure we don't have excessively large batches
+    if len(pairs) <= 50:
+        # For small datasets, use smaller batches
+        batch_size = min(10, len(pairs))
+    else:
+        # For larger datasets, use our calculated batch size but cap it
+        batch_size = min(target_batch_size, max(1, len(pairs) // 50))
+
     batches = []
     for i in range(0, len(pairs), batch_size):
         batch = list(pairs.iloc[i : i + batch_size].iterrows())
         batches.append(batch)
 
+    print(f"📊 Batch configuration: {len(batches)} batches of ~{batch_size} pairs each")
+    print(f"📊 Total pairs: {len(pairs)}, Batch size: {batch_size}, Number of batches: {len(batches)}")
+
     # Process batches with progress bar
     all_predictions = {}
 
-    # Process batches with progress tracking
-    tasks = [process_batch(batch, semaphore, A, B, max_candidates, cfg, client, dataset) for batch in batches]
+    # Process batches with progress tracking (using candidate cache)
+    tasks = [process_batch_cached(batch, semaphore, A, candidate_cache, B, max_candidates, cfg, client, dataset, True) for batch in batches]
 
     # Use tqdm with gather for proper progress tracking
     with tqdm(total=len(batches), desc="Processing batches", unit="batch") as pbar:
         for task in asyncio.as_completed(tasks):
+            # Remove timeout wrapper to avoid SDK scope conflicts
             batch_results = await task
             all_predictions.update(batch_results)
             pbar.update(1)

@@ -199,7 +199,7 @@ Please respond in this exact JSON format:
             OptimizationSuggestion(
                 max_candidates=10,
                 semantic_weight=0.8,
-                model="gpt-4.1-mini",
+                model="gpt-4.1-nano",
                 use_semantic=True,
                 reasoning="High semantic weight with better model",
                 priority=2,
@@ -215,7 +215,7 @@ Please respond in this exact JSON format:
             OptimizationSuggestion(
                 max_candidates=5,
                 semantic_weight=0.9,
-                model="gpt-4.1-mini",
+                model="gpt-4.1-nano",
                 use_semantic=True,
                 reasoning="Extreme semantic focus with premium model",
                 priority=3,

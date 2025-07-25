@@ -487,10 +487,11 @@ SAMPLE DATA EXAMPLES:
                     else:
                         match_status = "NON-MATCH"
 
+                from ..utils.json_serializer import json_dumps
                 prompt += f"""
 Example {i + 1} ({match_status}):
-Left Record: {json.dumps(example["left_record"], indent=2)}
-Right Record: {json.dumps(example["right_record"], indent=2)}
+Left Record: {json_dumps(example["left_record"], indent=2)}
+Right Record: {json_dumps(example["right_record"], indent=2)}
 Record Type: {example.get("record_type", "unknown")}
 ---
 """
@@ -807,7 +808,7 @@ async def main():
 
     parser = argparse.ArgumentParser(description="Generate domain-specific heuristics using Claude Code SDK")
     parser.add_argument("--dataset", required=True, help="Dataset name")
-    parser.add_argument("--model", default="gpt-4.1-mini", help="Model to use for analysis")
+    parser.add_argument("--model", default="gpt-4.1-nano", help="Model to use for analysis")
     parser.add_argument("--max-candidates", type=int, default=100, help="Max candidates for analysis")
     parser.add_argument("--semantic-weight", type=float, default=0.8, help="Semantic weight for analysis")
     parser.add_argument("--limit", type=int, default=100, help="Limit pairs for analysis")

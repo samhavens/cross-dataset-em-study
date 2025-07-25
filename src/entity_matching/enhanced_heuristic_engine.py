@@ -101,7 +101,24 @@ class EnhancedHeuristicEngine:
         self.pipeline_rules: List[EnhancedRule] = []
         self.decision_rules: List[EnhancedRule] = []
         self.weight_rules: List[EnhancedRule] = []
+        self.prompt_rules: List[Dict[str, str]] = []  # Prompt rules don't need compilation
         self.compiled_rules: Dict[str, Callable] = {}
+
+    @staticmethod
+    def get_valid_stage_names() -> List[str]:
+        """Get list of valid stage names for Claude to use in rule generation"""
+        return [stage.value for stage in PipelineStage]
+
+    @staticmethod
+    def get_stage_descriptions() -> Dict[str, str]:
+        """Get descriptions of each pipeline stage for Claude's reference"""
+        return {
+            "candidate_selection": "During candidate generation - boost/filter potential matches",
+            "pre_semantic": "Before semantic similarity calculation - modify inputs",
+            "post_semantic": "After semantic similarity - adjust similarity scores",
+            "pre_llm": "Before LLM call - make early accept/reject decisions",
+            "post_llm": "After LLM call - post-process LLM predictions"
+        }
 
     def load_enhanced_heuristics(self, heuristic_file: str) -> int:
         """Load enhanced heuristic rules from JSON file"""
@@ -114,6 +131,7 @@ class EnhancedHeuristicEngine:
                 data = json.load(f)
 
             total_loaded = 0
+            failed_rules = []
 
             # Load different rule types
             for rule_type_name, rules_list in [
@@ -125,42 +143,83 @@ class EnhancedHeuristicEngine:
                 rule_type = RuleType(rule_type_name.replace("_rules", ""))
 
                 for rule_data in rules_list:
-                    rule = EnhancedRule(
-                        rule_name=rule_data["rule_name"],
-                        rule_type=rule_type,
-                        description=rule_data["description"],
-                        implementation=rule_data["implementation"],
-                        confidence=rule_data["confidence"],
-                        stage=PipelineStage(rule_data.get("stage", "candidate_selection")),
-                        test_cases=rule_data.get("test_cases", []),
-                    )
+                    try:
+                        # Validate stage name - only accept valid PipelineStage values
+                        stage_name = rule_data.get("stage", "candidate_selection")
 
-                    # Compile the rule function
-                    if self._compile_enhanced_rule(rule):
-                        if rule_type == RuleType.SCORE:
-                            self.score_rules.append(rule)
-                        elif rule_type == RuleType.PIPELINE:
-                            self.pipeline_rules.append(rule)
-                        elif rule_type == RuleType.DECISION:
-                            self.decision_rules.append(rule)
-                        elif rule_type == RuleType.WEIGHT:
-                            self.weight_rules.append(rule)
+                        rule = EnhancedRule(
+                            rule_name=rule_data["rule_name"],
+                            rule_type=rule_type,
+                            description=rule_data["description"],
+                            implementation=rule_data["implementation"],
+                            confidence=rule_data["confidence"],
+                            stage=PipelineStage(stage_name),
+                            test_cases=rule_data.get("test_cases", []),
+                        )
 
+                        # Compile the rule function
+                        if self._compile_enhanced_rule(rule):
+                            if rule_type == RuleType.SCORE:
+                                self.score_rules.append(rule)
+                            elif rule_type == RuleType.PIPELINE:
+                                self.pipeline_rules.append(rule)
+                            elif rule_type == RuleType.DECISION:
+                                self.decision_rules.append(rule)
+                            elif rule_type == RuleType.WEIGHT:
+                                self.weight_rules.append(rule)
+
+                            total_loaded += 1
+                            print(f"  ✅ {rule.rule_name} ({rule_type.value}, {rule.stage.value})")
+                        else:
+                            failed_rules.append(f"{rule.rule_name} (compilation failed)")
+                            print(f"  ❌ Failed to compile {rule.rule_name}")
+
+                    except Exception as e:
+                        stage_name = rule_data.get("stage", "unknown")
+                        rule_name = rule_data.get('rule_name', 'unknown')
+                        failed_rules.append(f"{rule_name} (invalid stage: '{stage_name}')")
+                        print(f"  ❌ Failed to load rule {rule_name}: {e}")
+                        if "is not a valid PipelineStage" in str(e):
+                            valid_stages = self.get_valid_stage_names()
+                            print(f"     Valid stage names: {valid_stages}")
+
+            # Load prompt rules (simpler - no compilation needed)
+            prompt_rules_data = data.get("prompt_rules", [])
+            for rule_data in prompt_rules_data:
+                try:
+                    required_fields = ["rule_name", "condition", "prompt_addition"]
+                    if all(field in rule_data for field in required_fields):
+                        self.prompt_rules.append(rule_data)
                         total_loaded += 1
-                        print(f"  ✅ {rule.rule_name} ({rule_type.value}, {rule.stage.value})")
+                        print(f"  ✅ Loaded prompt rule: {rule_data['rule_name']}")
                     else:
-                        print(f"  ❌ Failed to compile {rule.rule_name}")
+                        missing = [f for f in required_fields if f not in rule_data]
+                        failed_rules.append(f"{rule_data.get('rule_name', 'unknown')} (missing: {missing})")
+                except Exception as e:
+                    failed_rules.append(f"{rule_data.get('rule_name', 'unknown')} (error: {e})")
 
             print(
-                f"📋 Loaded {total_loaded} enhanced rules: "
+                f"📋 Enhanced Rules Summary: "
                 f"{len(self.score_rules)} score, {len(self.pipeline_rules)} pipeline, "
-                f"{len(self.decision_rules)} decision, {len(self.weight_rules)} weight"
+                f"{len(self.decision_rules)} decision, {len(self.weight_rules)} weight, "
+                f"{len(self.prompt_rules)} prompt"
             )
+            print(f"✅ Successfully loaded {total_loaded} rules")
+
+            if failed_rules:
+                print(f"❌ Failed to load {len(failed_rules)} rules:")
+                for failed in failed_rules:
+                    print(f"   - {failed}")
+                print(f"\n💡 For Claude: Valid pipeline stages are: {self.get_valid_stage_names()}")
+                print("   Stage descriptions:")
+                for stage, desc in self.get_stage_descriptions().items():
+                    print(f"   - {stage}: {desc}")
 
             return total_loaded
 
         except Exception as e:
-            print(f"Error loading enhanced heuristics: {e}")
+            print(f"❌ Error loading enhanced heuristics: {e}")
+            print(f"💡 For Claude: Valid pipeline stages are: {self.get_valid_stage_names()}")
             return 0
 
     def _compile_enhanced_rule(self, rule: EnhancedRule) -> bool:

@@ -11,6 +11,7 @@ This script uses the enhanced heuristic engine with:
 import argparse
 import asyncio
 import json
+import logging
 import os
 import pathlib
 import time
@@ -27,12 +28,20 @@ from src.entity_matching.enhanced_heuristic_engine import (
     load_enhanced_heuristics_for_dataset,
 )
 from src.entity_matching.hybrid_matcher import (
+    DUPLICATE_AWARE_AVAILABLE,
+    CandidateCache,
     Config,
     call_openai_async,
+    ensure_duplicate_mapping,
+    get_top_candidates_cached,
     semantic_similarity,
     token_count,
     trigram_similarity,
 )
+
+# Import duplicate-aware evaluation functions
+if DUPLICATE_AWARE_AVAILABLE:
+    from src.evaluation import evaluate_with_duplicates, load_duplicate_mapping
 
 
 async def enhanced_match_single_record(
@@ -43,6 +52,7 @@ async def enhanced_match_single_record(
     heuristic_engine: EnhancedHeuristicEngine,
 ) -> tuple[int, bool]:
     """Enhanced matching with sophisticated control logic"""
+    logger = logging.getLogger(__name__)
 
     # Early decision check before LLM
     best_candidate = None
@@ -88,26 +98,44 @@ async def enhanced_match_single_record(
 
     # Summarize weight adjustments to reduce noise
     if weight_adjustments > 0:
-        print(f"    Applied {weight_adjustments} weight adjustments to candidates")
+        pass  # Applied weight adjustments (removed verbose logging)
 
     # Apply decision rules before LLM call
     decision = heuristic_engine.apply_decision_rules(left_record, best_record, best_score, PipelineStage.PRE_LLM)
 
     if decision and decision.terminate_early:
         if decision.skip_llm:
-            print(f"    Early decision: {decision.reason} -> {decision.final_result} (skipped LLM)")
+            pass  # Early decision made (removed verbose logging)
         else:
-            print(f"    Early decision: {decision.reason} -> {decision.final_result}")
+            pass  # Early decision made (removed verbose logging)
         # If rule says accept (1), return the best candidate index; if reject (0), return -1
         return (best_idx if decision.final_result == 1 else -1), True
 
     # Fall back to LLM if no early decision
-    print(f"    Proceeding to LLM with score {best_score:.3f}")
+    # Proceeding to LLM (removed verbose logging)
 
     # Build prompt with the best candidate
     candidates_text = f"{best_idx}) {json.dumps(best_record, ensure_ascii=False)}"
 
-    prompt = f"""You are an expert at entity matching. Your task is to find the candidate that refers to the same real-world entity as the left record.
+    # Apply prompt rules if available
+    prompt_additions = []
+    if heuristic_engine and hasattr(heuristic_engine, 'prompt_rules'):
+        for rule in heuristic_engine.prompt_rules:
+            try:
+                # Evaluate condition in safe context
+                condition_context = {
+                    'left_record': left_record,
+                    'right_record': best_record,
+                    'candidate_record': best_record,  # alias for compatibility
+                }
+                if eval(rule['condition'], {"__builtins__": {}}, condition_context):
+                    prompt_additions.append(rule['prompt_addition'])
+                    logger.info(f"Applied prompt rule: {rule['rule_name']}")
+            except Exception as e:
+                logger.warning(f"Failed to evaluate prompt rule {rule.get('rule_name', 'unknown')}: {e}")
+
+    # Build base prompt
+    base_prompt = f"""You are an expert at entity matching. Your task is to find the candidate that refers to the same real-world entity as the left record.
 
 Two records match if they refer to the same entity, even if:
 - They have different formatting or spellings
@@ -124,7 +152,17 @@ Compare the left record against the candidate. Look for:
 1. Same entity name (allowing for variations in spelling/format)
 2. Matching key identifiers (IDs, codes, etc.)
 3. Consistent attribute values where they overlap
-4. No contradictory information
+4. No contradictory information"""
+
+    # Add dynamic prompt modifications if any rules matched
+    if prompt_additions:
+        base_prompt += f"""
+
+ADDITIONAL GUIDANCE:
+{chr(10).join(f"- {addition}" for addition in prompt_additions)}"""
+
+    # Complete the prompt
+    prompt = base_prompt + f"""
 
 Think step by step and identify if the candidate represents the same entity.
 
@@ -161,12 +199,14 @@ ANSWER:
 
 async def run_enhanced_matching(
     dataset: str,
-    limit: Optional[int] = None,
     max_candidates: int = 50,
     model: str = "gpt-4.1-nano",
     concurrency: int = 10,
     semantic_weight: float = 0.5,
+    trigram_weight: float = None,
+    syntactic_weight: float = None,
     heuristic_file: str = None,
+    use_validation: bool = False,
 ) -> Dict:
     """Run enhanced entity matching with sophisticated control logic"""
 
@@ -174,18 +214,59 @@ async def run_enhanced_matching(
     print(f"Dataset: {dataset}")
     print(f"Model: {model}")
     print(f"Candidates: {max_candidates}")
-    print(f"Semantic weight: {semantic_weight}")
     print(f"Heuristics: {heuristic_file}")
     print("=" * 80)
 
     # Load enhanced heuristic engine
     heuristic_engine = load_enhanced_heuristics_for_dataset(dataset, heuristic_file)
 
+    # CRITICAL FIX: Extract weights from heuristic file if provided
+    if heuristic_file and os.path.exists(heuristic_file):
+        try:
+            import json
+            with open(heuristic_file, 'r') as f:
+                heuristic_config = json.load(f)
+            
+            if "hyperparameters" in heuristic_config:
+                hyperparams = heuristic_config["hyperparameters"]
+                
+                # Override weights from heuristic file
+                file_semantic = hyperparams.get("semantic_weight")
+                file_trigram = hyperparams.get("trigram_weight") 
+                file_syntactic = hyperparams.get("syntactic_weight")
+                
+                if file_semantic is not None:
+                    semantic_weight = file_semantic
+                if file_trigram is not None:
+                    trigram_weight = file_trigram
+                if file_syntactic is not None:
+                    syntactic_weight = file_syntactic
+                
+                print(f"✅ Loaded weights from heuristic file: semantic={semantic_weight}, trigram={trigram_weight}, syntactic={syntactic_weight}")
+            else:
+                print(f"⚠️ No hyperparameters found in heuristic file")
+        except Exception as e:
+            print(f"⚠️ Could not extract weights from heuristic file: {e}")
+
+    # Show final weights being used
+    if trigram_weight is not None and syntactic_weight is not None:
+        print(f"🎯 Using 3-weight system: semantic={semantic_weight}, trigram={trigram_weight}, syntactic={syntactic_weight}")
+    else:
+        print(f"🎯 Using legacy 2-weight system: semantic={semantic_weight}")
+    print("=" * 80)
+
     # Initialize configuration
     cfg = Config()
     cfg.model = model
     cfg.use_semantic = True
-    cfg.semantic_weight = semantic_weight
+
+    # Set weights based on system type
+    if trigram_weight is not None and syntactic_weight is not None:
+        # 3-weight system
+        cfg.set_weights(trigram_weight, syntactic_weight, semantic_weight)
+    else:
+        # Legacy 2-weight system
+        cfg.set_legacy_semantic_weight(semantic_weight)
 
     # Check for API key
     if not os.getenv("OPENAI_API_KEY"):
@@ -212,12 +293,46 @@ async def run_enhanced_matching(
         B = B_df.to_dict(orient="records")
         print(f"Dataset uses list indexing: A has {len(A)} records")
 
-    pairs = pd.read_csv(root / "test.csv")
+    # Load pairs data - use validation data if flag is set to prevent data leakage
+    if use_validation:
+        if (root / "valid.csv").exists():
+            all_pairs = pd.read_csv(root / "valid.csv")
+            # Use balanced sampling to keep evaluation manageable (~200 pairs)
+            from src.entity_matching.balanced_sampling import balanced_train_sample, get_sample_info
+            pairs = balanced_train_sample(all_pairs, target_size=200, random_state=42)
+            print(f"✅ Using validation set for evaluation (no test data leakage)")
+            print(get_sample_info(pairs, "validation sample"))
+        elif (root / "train.csv").exists():
+            train_pairs = pd.read_csv(root / "train.csv")
+            
+            # Ensure balanced sampling to avoid all-positive or all-negative slices
+            positive_pairs = train_pairs[train_pairs['label'] == 1]
+            negative_pairs = train_pairs[train_pairs['label'] == 0]
+            
+            # Take up to 50 of each class for balanced evaluation (100 total max)
+            max_per_class = 50
+            pos_sample = positive_pairs.head(min(max_per_class, len(positive_pairs)))
+            neg_sample = negative_pairs.head(min(max_per_class, len(negative_pairs)))
+            
+            # Combine and shuffle
+            pairs = pd.concat([pos_sample, neg_sample]).sample(frac=1, random_state=42).reset_index(drop=True)
+            
+            print(f"✅ Using balanced train sample: {len(pos_sample)} positive + {len(neg_sample)} negative = {len(pairs)} total pairs (no test data leakage)")
+        else:
+            raise ValueError("No validation or training data available - cannot evaluate without test data leakage")
+    else:
+        pairs = pd.read_csv(root / "test.csv")
+        print("⚠️ Using test set for evaluation")
 
-    if limit:
-        pairs = pairs.head(limit)
+    # Note: limit parameter removed - always use full evaluation set for reliable results
 
     print(f"Processing {len(pairs)} pairs with enhanced control logic...")
+
+    # Create candidate cache for massive speed improvement with persistent caching
+    print("🔄 Creating candidate cache...")
+    cache_file = f".candidate_cache/{dataset}_candidates_{max_candidates}.json"
+    candidate_cache = CandidateCache(B, cache_file=cache_file)
+    print(f"✅ Candidate cache created for {len(B)} records")
 
     start_time = time.time()
     all_predictions = {}
@@ -235,28 +350,10 @@ async def run_enhanced_matching(
         left_id = row.ltable_id
         left_record = A[left_id]
 
-        # Get top candidates using trigram similarity
-        candidates = []
-
-        # Handle both list and dict access patterns
-        if isinstance(B, dict):
-            # Dict access (ID-based)
-            for record_id, right_record in B.items():
-                right_str = json.dumps(right_record, ensure_ascii=False).lower()
-                left_str = json.dumps(left_record, ensure_ascii=False).lower()
-                score = trigram_similarity(left_str, right_str)
-                candidates.append((score, record_id, right_record))
-        else:
-            # List access (index-based)
-            for j, right_record in enumerate(B):
-                right_str = json.dumps(right_record, ensure_ascii=False).lower()
-                left_str = json.dumps(left_record, ensure_ascii=False).lower()
-                score = trigram_similarity(left_str, right_str)
-                candidates.append((score, j, right_record))
-
-        # Sort and take top candidates
-        candidates.sort(key=lambda x: x[0], reverse=True)
-        top_candidates = [(idx, record) for _, idx, record in candidates[:max_candidates]]
+        # Use cached candidate generation for massive speed improvement
+        top_candidates = get_top_candidates_cached(
+            left_record, candidate_cache, max_candidates, cfg, dataset
+        )
 
         # Enhanced matching with control logic
         match_idx, was_early_decision = await enhanced_match_single_record(
@@ -266,18 +363,31 @@ async def run_enhanced_matching(
         # Return results for thread-safe aggregation
         return left_id, match_idx, was_early_decision
 
-    # Create batches for concurrent processing
-    batch_size = concurrency
+    # Create batches for concurrent processing using dynamic batching like baseline
+    batch_size = max(1, len(pairs) // 20)  # Dynamic batch size for ~20 progress updates
     pair_rows = list(pairs.iterrows())
 
-    # Process in batches with progress tracking
-    with tqdm(total=len(pairs), desc="Processing pairs", unit="pair") as pbar:
-        for i in range(0, len(pair_rows), batch_size):
-            batch = pair_rows[i : i + batch_size]
+    # Create batches
+    batches = []
+    for i in range(0, len(pair_rows), batch_size):
+        batches.append(pair_rows[i : i + batch_size])
 
-            # Process batch concurrently
+    # Use semaphore for concurrency control like baseline
+    semaphore = asyncio.Semaphore(concurrency)
+
+    async def process_batch_with_semaphore(batch):
+        """Process a batch of pairs with semaphore control"""
+        async with semaphore:
             tasks = [process_single_pair(row) for _, row in batch]
-            batch_results = await asyncio.gather(*tasks)
+            return await asyncio.gather(*tasks)
+
+    # Process batches with progress tracking
+    with tqdm(total=len(batches), desc="Processing batches", unit="batch") as pbar:
+        # Process all batches concurrently (limited by semaphore)
+        batch_tasks = [process_batch_with_semaphore(batch) for batch in batches]
+
+        for task in asyncio.as_completed(batch_tasks):
+            batch_results = await task
 
             # Aggregate results thread-safely
             for left_id, match_idx, was_early_decision in batch_results:
@@ -290,7 +400,7 @@ async def run_enhanced_matching(
                 else:
                     llm_calls += 1
 
-            pbar.update(len(batch))
+            pbar.update(1)  # Update by 1 batch completed
 
     elapsed_time = time.time() - start_time
     matches_found = len(all_predictions)
@@ -321,16 +431,54 @@ async def run_enhanced_matching(
         preds.append(pred_label)
         labels.append(true_label)
 
-    # Calculate metrics
-    tp = sum(1 for p, l in zip(preds, labels) if p == 1 and l == 1)
-    fp = sum(1 for p, l in zip(preds, labels) if p == 1 and l == 0)
-    fn = sum(1 for p, l in zip(preds, labels) if p == 0 and l == 1)
-    tn = sum(1 for p, l in zip(preds, labels) if p == 0 and l == 0)
+    # Calculate metrics using duplicate-aware evaluation when available
+    if DUPLICATE_AWARE_AVAILABLE and ensure_duplicate_mapping(dataset):
+        try:
+            # Clean dataset name for duplicate mapping lookup
+            clean_dataset = dataset.replace("temp_", "").replace("_dev_temp", "").replace("_train_temp", "").replace("_validation_temp", "")
 
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
-    accuracy = (tp + tn) / len(preds)
+            # Load duplicate mapping
+            duplicate_mapping = load_duplicate_mapping(clean_dataset)
+
+            # Convert predictions to format expected by duplicate-aware eval
+            predictions_list = list(all_predictions.items())
+            ground_truth_list = [(int(row.ltable_id), int(row.rtable_id)) for _, row in pairs.iterrows() if row.label == 1]
+
+            # Calculate duplicate-aware metrics
+            dup_metrics = evaluate_with_duplicates(predictions_list, ground_truth_list, duplicate_mapping)
+
+            precision = dup_metrics["precision"]
+            recall = dup_metrics["recall"]
+            f1 = dup_metrics["f1"]
+            tp = dup_metrics["true_positives"]
+            fp = dup_metrics["false_positives"]
+            fn = dup_metrics["false_negatives"]
+            tn = len(preds) - tp - fp - fn  # Calculate TN from total
+            accuracy = (tp + tn) / len(preds)
+
+            print("✅ Using duplicate-aware evaluation")
+
+        except Exception as e:
+            print(f"⚠️ Duplicate-aware evaluation failed: {e}, falling back to standard evaluation")
+            # Fall back to standard evaluation
+            tp = sum(1 for p, l in zip(preds, labels) if p == 1 and l == 1)
+            fp = sum(1 for p, l in zip(preds, labels) if p == 1 and l == 0)
+            fn = sum(1 for p, l in zip(preds, labels) if p == 0 and l == 1)
+            tn = sum(1 for p, l in zip(preds, labels) if p == 0 and l == 0)
+            precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+            recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+            f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+            accuracy = (tp + tn) / len(preds)
+    else:
+        # Standard evaluation (fallback)
+        tp = sum(1 for p, l in zip(preds, labels) if p == 1 and l == 1)
+        fp = sum(1 for p, l in zip(preds, labels) if p == 1 and l == 0)
+        fn = sum(1 for p, l in zip(preds, labels) if p == 0 and l == 1)
+        tn = sum(1 for p, l in zip(preds, labels) if p == 0 and l == 0)
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+        accuracy = (tp + tn) / len(preds)
 
     # Calculate cost
     try:
@@ -367,23 +515,28 @@ async def main():
     """CLI entry point for enhanced matching"""
     parser = argparse.ArgumentParser(description="Enhanced entity matching with sophisticated control logic")
     parser.add_argument("--dataset", required=True, help="Dataset name")
-    parser.add_argument("--limit", type=int, help="Limit number of test pairs")
+    # Note: limit parameter removed - always use full evaluation set for reliable results
     parser.add_argument("--max-candidates", type=int, default=50, help="Max candidates per record")
     parser.add_argument("--model", default="gpt-4.1-nano", help="Model to use")
     parser.add_argument("--concurrency", type=int, default=10, help="Concurrency level")
-    parser.add_argument("--semantic-weight", type=float, default=0.5, help="Base semantic weight")
-    parser.add_argument("--heuristic-file", required=True, help="Enhanced heuristics JSON file")
+    parser.add_argument("--semantic-weight", type=float, default=0.5, help="Semantic weight (legacy 2-weight system)")
+    parser.add_argument("--trigram-weight", type=float, help="Trigram weight (3-weight system)")
+    parser.add_argument("--syntactic-weight", type=float, help="Syntactic weight (3-weight system)")
+    parser.add_argument("--heuristic-file", help="Enhanced heuristics JSON file (optional for baseline testing)")
+    parser.add_argument("--use-validation", action="store_true", help="Use validation data instead of test data (prevents data leakage)")
 
     args = parser.parse_args()
 
     return await run_enhanced_matching(
         dataset=args.dataset,
-        limit=args.limit,
         max_candidates=args.max_candidates,
         model=args.model,
         concurrency=args.concurrency,
         semantic_weight=args.semantic_weight,
+        trigram_weight=args.trigram_weight,
+        syntactic_weight=args.syntactic_weight,
         heuristic_file=args.heuristic_file,
+        use_validation=args.use_validation,
     )
 
 

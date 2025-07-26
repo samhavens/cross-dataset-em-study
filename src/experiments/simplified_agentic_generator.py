@@ -158,30 +158,10 @@ WORKFLOW:
 4. mcp__entity-matching__RunExperiment - Test on dev set and analyze detailed failure modes
 5. Repeat steps 3 (a or b1 & 2) and 4 to iterate on both weights and prompt modifications, but only do one or the other at a time to be a good scientist.
 
-🎯 OPTIMIZATION STRATEGY - When to Use Each Tool:
-
-USE WriteWeights WHEN:
-- High similarity pairs are being missed (False Negatives with high trigram/semantic scores)
-- Low similarity pairs are matching incorrectly (False Positives with low scores)
-- Need to adjust relative importance of semantic vs trigram vs syntactic similarity
-- RunExperiment shows similarity scores don't align with ground truth labels
-- Example: "FN with trigram=0.85, semantic=0.92 → increase semantic_weight"
-
-USE WritePrompt WHEN:
-- Weights are well-tuned but LLM is making systematic decision errors
-- Need domain-specific matching guidance (e.g., beer name variations, company suffixes)
-- False Negatives/Positives occur despite appropriate similarity scores
-- Want to add specific reasoning instructions for edge cases
-- Example: "Candidates have good similarity but LLM rejects abbreviations → add abbreviation guidance"
-
-DIAGNOSTIC APPROACH:
-1. First run RunExperiment to get detailed failure analysis
-2. Examine False Positive/Negative cases and their similarity scores
-3. If similarity scores misalign with labels → adjust weights (WriteWeights)
-4. If similarity scores align but LLM decides wrong → modify prompt (WritePrompt)
-5. Make ONE change at a time, then test with RunExperiment
-
-- Use WriteWeights for similarity calibration, WritePrompt for decision guidance - these are separate tools!"""
+FOCUS:
+- Find optimal semantic_weight, trigram_weight, syntactic_weight (must sum to 1.0) using WriteWeights
+- Modify the prompt structure using WritePrompt to give better LLM guidance for specific matching scenarios
+- Use WriteWeights for weight changes, WritePrompt for prompt modifications - these are separate tools!"""
 
         else:  # mode == "heuristics"
             allowed_tools.append("mcp__entity-matching__WriteRules")
@@ -266,6 +246,15 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
                                 if hasattr(block, 'input') and block.input:
                                     # Show ALL args for debugging the "shit"
                                     print(f"         Args: {json.dumps(block.input, indent=8)}")
+                                    
+                                    # Highlight weight changes for easy tracking
+                                    if block.name == "mcp__entity-matching__WriteWeights":
+                                        sem = block.input.get('semantic_weight')
+                                        tri = block.input.get('trigram_weight') 
+                                        syn = block.input.get('syntactic_weight')
+                                        candidates = block.input.get('max_candidates')
+                                        if sem and tri and syn:
+                                            print(f"         💫 WEIGHTS: sem={sem}, tri={tri}, syn={syn}, candidates={candidates}")
 
                             elif isinstance(block, ToolResultBlock):
                                 # Show tool results summary for debugging - CRITICAL for MCP debugging
@@ -273,6 +262,22 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
                                 if hasattr(block, 'content'):
                                     content_str = str(block.content)
                                     print(f"      📋 Result content ({len(content_str)} chars): {content_str[:500]}...")
+
+                                    # Extract and highlight F1 scores from RunExperiment results
+                                    if "F1 SCORE:" in content_str or "F1 Score:" in content_str:
+                                        import re
+                                        f1_matches = re.findall(r'F1 SCORE?:\s*([0-9.]+)', content_str, re.IGNORECASE)
+                                        if f1_matches:
+                                            f1_score = float(f1_matches[0])
+                                            print(f"      🎯 F1 SCORE: {f1_score:.4f}")
+                                        
+                                        # Also extract precision/recall if available
+                                        precision_matches = re.findall(r'PRECISION:\s*([0-9.]+)', content_str, re.IGNORECASE)
+                                        recall_matches = re.findall(r'RECALL:\s*([0-9.]+)', content_str, re.IGNORECASE)
+                                        if precision_matches and recall_matches:
+                                            precision = float(precision_matches[0])
+                                            recall = float(recall_matches[0])
+                                            print(f"      📊 P={precision:.4f}, R={recall:.4f}")
 
                                     # CRITICAL: Check for MCP errors
                                     if "error" in content_str.lower() or "failed" in content_str.lower():

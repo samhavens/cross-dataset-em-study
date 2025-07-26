@@ -130,8 +130,8 @@ Goal: Optimize {self.dataset} dataset weights for F1 > {self.target_f1}
 WORKFLOW:
 1. mcp__entity-matching__ReadInstructions (dataset: "{self.dataset}") - START HERE
 2. mcp__entity-matching__GetBaseline (dataset: "{self.dataset}") - Check current performance
-3. mcp__entity-matching__WriteRules with mode="weights-only" - ONLY change weights, NO rules
-4. mcp__entity-matching__TestRules - Test on full dev set
+3. mcp__entity-matching__WriteWeights - ONLY change weights, NO rules
+4. mcp__entity-matching__RunExperiment - Test on full dev set
 5. Iterate quickly on weight combinations
 
 FOCUS: Find optimal semantic_weight, trigram_weight, syntactic_weight (must sum to 1.0).
@@ -155,13 +155,33 @@ WORKFLOW:
 3a. mcp__entity-matching__WriteWeights - Optimize similarity weights (semantic_weight, trigram_weight, syntactic_weight must sum to 1.0)
 3b.1. mcp__entity-matching__ReadPrompt - Read current prompt structure
 3b.2. mcp__entity-matching__WritePrompt - Modify prompt structure for better LLM guidance
-4. mcp__entity-matching__TestRules - Test on full dev set
+4. mcp__entity-matching__RunExperiment - Test on dev set and analyze detailed failure modes
 5. Repeat steps 3 (a or b1 & 2) and 4 to iterate on both weights and prompt modifications, but only do one or the other at a time to be a good scientist.
 
-FOCUS:
-- Find optimal semantic_weight, trigram_weight, syntactic_weight (must sum to 1.0) using WriteWeights
-- Modify the prompt structure using WritePrompt to give better LLM guidance for specific matching scenarios
-- Use WriteWeights for weight changes, WritePrompt for prompt modifications - these are separate tools!"""
+🎯 OPTIMIZATION STRATEGY - When to Use Each Tool:
+
+USE WriteWeights WHEN:
+- High similarity pairs are being missed (False Negatives with high trigram/semantic scores)
+- Low similarity pairs are matching incorrectly (False Positives with low scores)
+- Need to adjust relative importance of semantic vs trigram vs syntactic similarity
+- RunExperiment shows similarity scores don't align with ground truth labels
+- Example: "FN with trigram=0.85, semantic=0.92 → increase semantic_weight"
+
+USE WritePrompt WHEN:
+- Weights are well-tuned but LLM is making systematic decision errors
+- Need domain-specific matching guidance (e.g., beer name variations, company suffixes)
+- False Negatives/Positives occur despite appropriate similarity scores
+- Want to add specific reasoning instructions for edge cases
+- Example: "Candidates have good similarity but LLM rejects abbreviations → add abbreviation guidance"
+
+DIAGNOSTIC APPROACH:
+1. First run RunExperiment to get detailed failure analysis
+2. Examine False Positive/Negative cases and their similarity scores
+3. If similarity scores misalign with labels → adjust weights (WriteWeights)
+4. If similarity scores align but LLM decides wrong → modify prompt (WritePrompt)
+5. Make ONE change at a time, then test with RunExperiment
+
+- Use WriteWeights for similarity calibration, WritePrompt for decision guidance - these are separate tools!"""
 
         else:  # mode == "heuristics"
             allowed_tools.append("mcp__entity-matching__WriteRules")
@@ -179,7 +199,7 @@ WORKFLOW:
 2. mcp__entity-matching__ReadSampleData (dataset: "{self.dataset}") - Analyze error patterns
 3. mcp__entity-matching__GetBaseline (dataset: "{self.dataset}") - Check current performance
 4. mcp__entity-matching__WriteRules - Generate optimized weights AND custom rules
-5. mcp__entity-matching__TestRules - Test on full dev set
+5. mcp__entity-matching__RunExperiment - Test on full dev set
 
 FOCUS: Optimize weights AND create custom rules based on data analysis."""
 

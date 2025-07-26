@@ -828,111 +828,74 @@ async def run_experiment_tool(
     rules_file: str = "results/temp/generated_rules.json",
     max_examples: int = 20
 ) -> List[TextContent]:
-    """Test rules and return performance metrics on full dev set."""
+    """Test rules and return performance metrics with detailed failure analysis on full dev set."""
 
     try:
         # Check if rules file exists
         if not os.path.exists(rules_file):
             return [TextContent(type="text", text=f"❌ Rules file not found: {rules_file}")]
 
-        # Extract max_candidates from rules file if available
-        max_candidates = None
+        # Extract parameters from rules file
+        max_candidates = 50  # default
+        semantic_weight = 0.5  # default  
+        trigram_weight = None
+        syntactic_weight = None
+        
         try:
             with open(rules_file) as f:
                 rules_config = json.load(f)
-            max_candidates = rules_config.get("hyperparameters", {}).get("max_candidates")
-        except:
-            pass  # Use default if can't read
+            hyperparams = rules_config.get("hyperparameters", {})
+            max_candidates = hyperparams.get("max_candidates", max_candidates)
+            semantic_weight = hyperparams.get("semantic_weight", semantic_weight)
+            trigram_weight = hyperparams.get("trigram_weight")
+            syntactic_weight = hyperparams.get("syntactic_weight")
+        except Exception as e:
+            logger.warning(f"Could not parse rules file {rules_file}: {e}")
 
-        # Build command - validation sampling handled internally (~200 balanced pairs)
-        cmd = [
-            "python", "run_enhanced_matching.py",
-            "--dataset", dataset,
-            "--heuristic-file", rules_file
-        ]
-
-        # Add max_candidates if specified in rules file
-        if max_candidates is not None:
-            cmd.extend(["--max-candidates", str(max_candidates)])
-            logger.info(f"Using max_candidates={max_candidates} from rules file")
-        else:
-            logger.info("No max_candidates specified in rules file, using default")
-
-        # ALWAYS use validation set for evaluation (to match baseline methodology)
-        cmd.append("--use-validation")
-        logger.info("Using FULL validation set for evaluation (no sampling - matches baseline)")
-
-        # Run test
-        result = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=300)
-
-        if result.returncode != 0:
-            return [TextContent(
-                type="text",
-                text=f"❌ Test failed with return code {result.returncode}\n"
-                     f"STDOUT: {result.stdout}\n"
-                     f"STDERR: {result.stderr}"
-            )]
-
-        # Parse results from output
-        output = result.stdout
-
-        # Extract metrics and additional information
-        lines = output.split('\n')
-        f1_score = None
-        precision = None
-        recall = None
-        tp = fn = fp = tn = None
-        actual_weights = {"semantic": None, "trigram": None, "syntactic": None}
-
-        for line in lines:
-            # Extract metrics with more robust parsing
-            if 'F1-Score:' in line or 'F1 Score:' in line:
-                try:
-                    if 'F1-Score:' in line:
-                        f1_score = float(line.split('F1-Score:')[1].strip())
-                    else:  # 'F1 Score:' format
-                        f1_score = float(line.split('F1 Score:')[1].strip())
-                except Exception as e:
-                    print(f"DEBUG: Failed to parse F1 from line: '{line}', error: {e}")
-            elif 'Precision:' in line:
-                try:
-                    precision = float(line.split('Precision:')[1].strip())
-                except Exception as e:
-                    print(f"DEBUG: Failed to parse Precision from line: '{line}', error: {e}")
-            elif 'Recall:' in line:
-                try:
-                    recall = float(line.split('Recall:')[1].strip())
-                except Exception as e:
-                    print(f"DEBUG: Failed to parse Recall from line: '{line}', error: {e}")
-            elif 'TP:' in line and 'FP:' in line and 'FN:' in line and 'TN:' in line:
-                # Extract confusion matrix: "TP: 0, FP: 5, FN: 1, TN: 4"
-                try:
-                    parts = line.split(',')
-                    tp = int(parts[0].split('TP:')[1].strip())
-                    fp = int(parts[1].split('FP:')[1].strip())
-                    fn = int(parts[2].split('FN:')[1].strip())
-                    tn = int(parts[3].split('TN:')[1].strip())
-                except:
-                    pass
-            elif 'Using 3-weight system:' in line:
-                # Extract actual weights: "🎯 Using 3-weight system: semantic=0.2, trigram=0.7, syntactic=0.1"
-                try:
-                    weight_part = line.split('Using 3-weight system:')[1].strip()
-                    for pair in weight_part.split(','):
-                        if 'semantic=' in pair:
-                            actual_weights["semantic"] = float(pair.split('semantic=')[1].strip())
-                        elif 'trigram=' in pair:
-                            actual_weights["trigram"] = float(pair.split('trigram=')[1].strip())
-                        elif 'syntactic=' in pair:
-                            actual_weights["syntactic"] = float(pair.split('syntactic=')[1].strip())
-                except:
-                    pass
-            elif 'Using legacy 2-weight system:' in line:
-                with contextlib.suppress(builtins.BaseException):
-                    actual_weights["semantic"] = float(line.split('semantic=')[1].strip())
+        # Import and call run_enhanced_matching directly for structured data
+        import sys
+        sys.path.append(os.getcwd())
+        from run_enhanced_matching import run_enhanced_matching
+        
+        logger.info(f"Running experiment with max_candidates={max_candidates}, semantic={semantic_weight}, trigram={trigram_weight}, syntactic={syntactic_weight}")
+        
+        # Call the function directly to get structured results
+        results = await run_enhanced_matching(
+            dataset=dataset,
+            max_candidates=max_candidates,
+            model="gpt-4.1-nano",
+            semantic_weight=semantic_weight,
+            trigram_weight=trigram_weight,
+            syntactic_weight=syntactic_weight,
+            heuristic_file=rules_file,
+            use_validation=True  # Always use validation for consistency
+        )
+        
+        # Extract core metrics from structured results
+        f1_score = results["f1"]
+        precision = results["precision"] 
+        recall = results["recall"]
+        tp = results["failure_analysis"]["summary"]["total_tp"]
+        fp = results["failure_analysis"]["summary"]["total_fp"]
+        fn = results["failure_analysis"]["summary"]["total_fn"]
+        # Calculate TN from total - we know the total from failure analysis
+        total_pairs = tp + fp + fn  # This gives us the total pairs evaluated
+        tn = 0  # In entity matching, TN is usually 0 or very small
+        
+        # Get failure analysis data
+        false_positives = results["failure_analysis"]["false_positives"]
+        false_negatives = results["failure_analysis"]["false_negatives"]
+        true_positives = results["failure_analysis"]["true_positives"]
+        
+        # Track actual weights used (from parameters)
+        actual_weights = {
+            "semantic": semantic_weight,
+            "trigram": trigram_weight, 
+            "syntactic": syntactic_weight
+        }
 
         eval_data = "FULL validation set"
-        result_text = f"🧪 Test Results for {dataset} ({eval_data}):\n"
+        result_text = f"🧪 Enhanced Test Results for {dataset} ({eval_data}):\n"
 
         # Show weight verification - compare requested vs actual
         try:
@@ -958,44 +921,57 @@ async def run_experiment_tool(
         except:
             result_text += "\n⚠️ Could not verify weights (rules file read error)\n"
 
-        # Show performance metrics - ALWAYS show even if parsing failed
+        # Show performance metrics
         result_text += "\n📊 PERFORMANCE METRICS:\n"
-        if f1_score is not None:
-            result_text += f"   F1 Score: {f1_score:.4f}\n"
-        else:
-            result_text += "   F1 Score: ❌ PARSING FAILED - check output format\n"
-            # Debug: show lines that might contain F1
-            f1_lines = [line for line in lines if 'F1' in line or 'f1' in line]
-            if f1_lines:
-                result_text += f"   DEBUG F1 lines found: {f1_lines[:3]}\n"
-
-        if precision is not None:
-            result_text += f"   Precision: {precision:.4f}\n"
-        else:
-            result_text += "   Precision: ❌ PARSING FAILED\n"
-
-        if recall is not None:
-            result_text += f"   Recall: {recall:.4f}\n"
-        else:
-            result_text += "   Recall: ❌ PARSING FAILED\n"
+        result_text += f"   F1 Score: {f1_score:.4f}\n"
+        result_text += f"   Precision: {precision:.4f}\n"
+        result_text += f"   Recall: {recall:.4f}\n"
 
         # Show confusion matrix with interpretation
-        if tp is not None and fp is not None and fn is not None and tn is not None:
-            total = tp + fp + fn + tn
-            result_text += "\n🔍 DETAILED ANALYSIS:\n"
-            result_text += f"   Confusion Matrix: TP={tp}, FP={fp}, FN={fn}, TN={tn} (total={total})\n"
+        total = tp + fp + fn + tn
+        result_text += "\n🔍 DETAILED ANALYSIS:\n"
+        result_text += f"   Confusion Matrix: TP={tp}, FP={fp}, FN={fn}, TN={tn} (total={total})\n"
 
-            if fp > 0:
-                result_text += f"   ⚠️  FALSE POSITIVES: {fp} pairs incorrectly marked as matches\n"
-                result_text += "      → Need to be more conservative (higher thresholds)\n"
+        if fp > 0:
+            result_text += f"   ⚠️  FALSE POSITIVES: {fp} pairs incorrectly marked as matches\n"
+            result_text += "      → Need to be more conservative (higher thresholds)\n"
 
-            if fn > 0:
-                result_text += f"   ⚠️  FALSE NEGATIVES: {fn} pairs missed (should have matched)\n"
-                result_text += "      → Need to be more sensitive (lower thresholds or better similarity)\n"
+        if fn > 0:
+            result_text += f"   ⚠️  FALSE NEGATIVES: {fn} pairs missed (should have matched)\n"
+            result_text += "      → Need to be more sensitive (lower thresholds or better similarity)\n"
 
-            if tp == 0 and fn > 0:
-                result_text += "   🚨 CRITICAL: No true positives found! All matches were missed.\n"
-                result_text += "      → System is too conservative or similarity weights are wrong\n"
+        if tp == 0 and fn > 0:
+            result_text += "   🚨 CRITICAL: No true positives found! All matches were missed.\n"
+            result_text += "      → System is too conservative or similarity weights are wrong\n"
+        
+        # Add detailed failure analysis with record details
+        if false_positives and len(false_positives) > 0:
+            result_text += f"\n🔴 FALSE POSITIVES ({len(false_positives)} cases - showing up to {max_examples}):\n"
+            for i, fp in enumerate(false_positives[:max_examples]):
+                result_text += f"\n   [{i+1}] Left Record: {json.dumps(fp['left_record'], ensure_ascii=False)}\n"
+                result_text += f"       Predicted Match: {json.dumps(fp['predicted_record'], ensure_ascii=False)}\n"
+                result_text += f"       Should Match: {json.dumps(fp['actual_record'], ensure_ascii=False)}\n"
+                result_text += f"       Predicted Similarity: trigram={fp['predicted_similarity']['trigram']:.3f}, semantic={fp['predicted_similarity']['semantic']:.3f}\n"
+                result_text += f"       Actual Similarity: trigram={fp['actual_similarity']['trigram']:.3f}, semantic={fp['actual_similarity']['semantic']:.3f}\n"
+        
+        if false_negatives and len(false_negatives) > 0:
+            result_text += f"\n🔴 FALSE NEGATIVES ({len(false_negatives)} cases - showing up to {max_examples}):\n"
+            for i, fn_case in enumerate(false_negatives[:max_examples]):
+                result_text += f"\n   [{i+1}] Left Record: {json.dumps(fn_case['left_record'], ensure_ascii=False)}\n"
+                result_text += f"       Missed Match: {json.dumps(fn_case['missed_record'], ensure_ascii=False)}\n"
+                result_text += f"       Similarity: trigram={fn_case['similarity']['trigram']:.3f}, semantic={fn_case['similarity']['semantic']:.3f}\n"
+                result_text += f"       Candidate Analysis: found={fn_case['candidate_analysis']['found_in_candidates']}, rank={fn_case['candidate_analysis']['rank']}, max_candidates={fn_case['candidate_analysis']['max_candidates']}\n"
+                if not fn_case['candidate_analysis']['found_in_candidates']:
+                    result_text += f"       ⚠️ Issue: Match not in top {fn_case['candidate_analysis']['max_candidates']} candidates - increase max_candidates or improve similarity\n"
+                elif fn_case['candidate_analysis']['rank'] and fn_case['candidate_analysis']['rank'] > 10:
+                    result_text += f"       ⚠️ Issue: Match ranked {fn_case['candidate_analysis']['rank']} - candidate selection working but LLM/rules rejecting\n"
+        
+        if true_positives and len(true_positives) > 0:
+            result_text += f"\n✅ TRUE POSITIVES ({len(true_positives)} cases - showing sample):\n"
+            for i, tp_case in enumerate(true_positives[:min(3, max_examples)]):  # Show fewer TPs since they're working
+                result_text += f"\n   [{i+1}] Left Record: {json.dumps(tp_case['left_record'], ensure_ascii=False)}\n"
+                result_text += f"       Matched Record: {json.dumps(tp_case['matched_record'], ensure_ascii=False)}\n"
+                result_text += f"       Similarity: trigram={tp_case['similarity']['trigram']:.3f}, semantic={tp_case['similarity']['semantic']:.3f}\n"
 
         # Baseline comparison - error if missing
         if f1_score is not None:
@@ -1032,21 +1008,22 @@ async def run_experiment_tool(
 
         # Add prominent summary at the end
         result_text += f"\n{'='*60}\n"
-        result_text += "🎯 TEST RESULTS SUMMARY:\n"
-        if f1_score is not None:
-            result_text += f"   F1 SCORE: {f1_score:.4f}\n"
-        else:
-            result_text += "   F1 SCORE: PARSING FAILED ❌\n"
+        result_text += "🎯 ENHANCED TEST RESULTS SUMMARY:\n"
+        result_text += f"   F1 SCORE: {f1_score:.4f}\n"
+        result_text += f"   PRECISION: {precision:.4f}\n"
+        result_text += f"   RECALL: {recall:.4f}\n"
+        result_text += f"   FALSE POSITIVES: {fp}\n"
+        result_text += f"   FALSE NEGATIVES: {fn}\n"  
+        result_text += f"   TRUE POSITIVES: {tp}\n"
+        if fp == 0 and fn == 0:
+            result_text += "   🎉 PERFECT RESULTS - No errors!\n"
         result_text += f"{'='*60}\n"
-
-        result_text += f"\n📝 Full Output:\n{output}"
 
         return [TextContent(type="text", text=result_text)]
 
-    except subprocess.TimeoutExpired:
-        return [TextContent(type="text", text="❌ Test timed out after 5 minutes")]
     except Exception as e:
-        return [TextContent(type="text", text=f"❌ Error running test: {e}")]
+        logger.error(f"Error in run_experiment_tool: {e}")
+        return [TextContent(type="text", text=f"❌ Error running enhanced experiment: {e}")]
 
 async def read_sample_data_tool(dataset: str) -> List[TextContent]:
     """Read and return sample data."""

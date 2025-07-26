@@ -16,7 +16,7 @@ import os
 import pathlib
 import time
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import pandas as pd
 
@@ -28,20 +28,17 @@ from src.entity_matching.enhanced_heuristic_engine import (
     load_enhanced_heuristics_for_dataset,
 )
 from src.entity_matching.hybrid_matcher import (
-    DUPLICATE_AWARE_AVAILABLE,
     CandidateCache,
     Config,
     call_openai_async,
-    ensure_duplicate_mapping,
     get_top_candidates_cached,
     semantic_similarity,
     token_count,
     trigram_similarity,
 )
 
-# Import duplicate-aware evaluation functions
-if DUPLICATE_AWARE_AVAILABLE:
-    from src.evaluation import evaluate_with_duplicates, load_duplicate_mapping
+# Import duplicate-aware evaluation functions (always available)
+from src.evaluation.duplicate_aware import ensure_duplicate_mapping, evaluate_with_duplicates, load_duplicate_mapping
 
 
 async def enhanced_match_single_record(
@@ -134,46 +131,16 @@ async def enhanced_match_single_record(
             except Exception as e:
                 logger.warning(f"Failed to evaluate prompt rule {rule.get('rule_name', 'unknown')}: {e}")
 
-    # Build base prompt
-    base_prompt = f"""You are an expert at entity matching. Your task is to find the candidate that refers to the same real-world entity as the left record.
+    # Build prompt using structured sections
+    from src.prompts.hybrid_matcher_prompt import build_prompt
 
-Two records match if they refer to the same entity, even if:
-- They have different formatting or spellings
-- One has more/less information than the other
-- They use different abbreviations or representations
-
-LEFT RECORD:
-{json.dumps(left_record, ensure_ascii=False)}
-
-CANDIDATES:
-{candidates_text}
-
-Compare the left record against the candidate. Look for:
-1. Same entity name (allowing for variations in spelling/format)
-2. Matching key identifiers (IDs, codes, etc.)
-3. Consistent attribute values where they overlap
-4. No contradictory information"""
-
-    # Add dynamic prompt modifications if any rules matched
-    if prompt_additions:
-        base_prompt += f"""
-
-ADDITIONAL GUIDANCE:
-{chr(10).join(f"- {addition}" for addition in prompt_additions)}"""
-
-    # Complete the prompt
-    prompt = base_prompt + f"""
-
-Think step by step and identify if the candidate represents the same entity.
-
-CRITICAL: Your response must contain ONLY a single number:
-- If you find a match, output ONLY the candidate number (e.g., "{best_idx}")
-- If no candidate represents the same entity, output ONLY "-1"
-- Do NOT include any explanation, reasoning, or other text
-- Do NOT use quotes around the number
-
-ANSWER:
-"""
+    # Format the complete prompt using structured sections
+    prompt = build_prompt(
+        left_record=left_record,
+        candidates_text=candidates_text,
+        best_idx=best_idx,
+        additional_guidance=prompt_additions if prompt_additions else None
+    )
 
     # Check token count
     total_tokens = token_count(prompt, cfg.model)
@@ -190,10 +157,26 @@ ANSWER:
         return -1, False
 
     try:
-        match_idx = int(response)
-        return (match_idx if match_idx == best_idx else -1), False
-    except ValueError:
-        print(f"  WARNING: Could not parse LLM response: '{response}'")
+        # Clean the response - remove whitespace and try to extract number
+        response_clean = response.strip()
+
+        # Try direct int conversion first
+        try:
+            match_idx = int(response_clean)
+            return (match_idx if match_idx == best_idx else -1), False
+        except ValueError:
+            # Try to extract number from response if it contains extra text
+            import re
+            numbers = re.findall(r'-?\d+', response_clean)
+            if numbers:
+                match_idx = int(numbers[0])  # Take first number found
+                print(f"  DEBUG: Extracted number {match_idx} from response: '{response_clean}'")
+                return (match_idx if match_idx == best_idx else -1), False
+            print(f"  WARNING: Could not parse LLM response: '{response_clean}' (no numbers found)")
+            return -1, False
+
+    except Exception as e:
+        print(f"  WARNING: Error parsing LLM response: '{response}', error: {e}")
         return -1, False
 
 
@@ -224,27 +207,27 @@ async def run_enhanced_matching(
     if heuristic_file and os.path.exists(heuristic_file):
         try:
             import json
-            with open(heuristic_file, 'r') as f:
+            with open(heuristic_file) as f:
                 heuristic_config = json.load(f)
-            
+
             if "hyperparameters" in heuristic_config:
                 hyperparams = heuristic_config["hyperparameters"]
-                
+
                 # Override weights from heuristic file
                 file_semantic = hyperparams.get("semantic_weight")
-                file_trigram = hyperparams.get("trigram_weight") 
+                file_trigram = hyperparams.get("trigram_weight")
                 file_syntactic = hyperparams.get("syntactic_weight")
-                
+
                 if file_semantic is not None:
                     semantic_weight = file_semantic
                 if file_trigram is not None:
                     trigram_weight = file_trigram
                 if file_syntactic is not None:
                     syntactic_weight = file_syntactic
-                
+
                 print(f"✅ Loaded weights from heuristic file: semantic={semantic_weight}, trigram={trigram_weight}, syntactic={syntactic_weight}")
             else:
-                print(f"⚠️ No hyperparameters found in heuristic file")
+                print("⚠️ No hyperparameters found in heuristic file")
         except Exception as e:
             print(f"⚠️ Could not extract weights from heuristic file: {e}")
 
@@ -300,23 +283,23 @@ async def run_enhanced_matching(
             # Use balanced sampling to keep evaluation manageable (~200 pairs)
             from src.entity_matching.balanced_sampling import balanced_train_sample, get_sample_info
             pairs = balanced_train_sample(all_pairs, target_size=200, random_state=42)
-            print(f"✅ Using validation set for evaluation (no test data leakage)")
+            print("✅ Using validation set for evaluation (200-pair balanced sample, no test data leakage)")
             print(get_sample_info(pairs, "validation sample"))
         elif (root / "train.csv").exists():
             train_pairs = pd.read_csv(root / "train.csv")
-            
+
             # Ensure balanced sampling to avoid all-positive or all-negative slices
             positive_pairs = train_pairs[train_pairs['label'] == 1]
             negative_pairs = train_pairs[train_pairs['label'] == 0]
-            
+
             # Take up to 50 of each class for balanced evaluation (100 total max)
             max_per_class = 50
             pos_sample = positive_pairs.head(min(max_per_class, len(positive_pairs)))
             neg_sample = negative_pairs.head(min(max_per_class, len(negative_pairs)))
-            
+
             # Combine and shuffle
             pairs = pd.concat([pos_sample, neg_sample]).sample(frac=1, random_state=42).reset_index(drop=True)
-            
+
             print(f"✅ Using balanced train sample: {len(pos_sample)} positive + {len(neg_sample)} negative = {len(pairs)} total pairs (no test data leakage)")
         else:
             raise ValueError("No validation or training data available - cannot evaluate without test data leakage")
@@ -431,8 +414,8 @@ async def run_enhanced_matching(
         preds.append(pred_label)
         labels.append(true_label)
 
-    # Calculate metrics using duplicate-aware evaluation when available
-    if DUPLICATE_AWARE_AVAILABLE and ensure_duplicate_mapping(dataset):
+    # Calculate metrics using duplicate-aware evaluation when mapping exists
+    if ensure_duplicate_mapping(dataset):
         try:
             # Clean dataset name for duplicate mapping lookup
             clean_dataset = dataset.replace("temp_", "").replace("_dev_temp", "").replace("_train_temp", "").replace("_validation_temp", "")

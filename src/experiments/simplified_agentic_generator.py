@@ -3,27 +3,21 @@
 Simplified agentic heuristic generator with only MCP tools + Read
 """
 
-import asyncio
 import json
 import os
-import pathlib
 import time
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
 
-import pandas as pd
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
 
 from claude_code_sdk import (
     AssistantMessage,
     ClaudeCodeOptions,
     ClaudeSDKClient,
-    McpServerConfig,
     ResultMessage,
     TextBlock,
     ToolResultBlock,
     ToolUseBlock,
-    query,
 )
 
 
@@ -34,7 +28,7 @@ def get_leaderboard_target_f1(dataset: str) -> float:
         "beer": 95.3,
         "itunes_amazon": 85.0,
         "amazon_google": 75.0,  # Updated from internal_leaderboard.md
-        "dblp_acm": 96.5,       # Updated from internal_leaderboard.md  
+        "dblp_acm": 96.5,       # Updated from internal_leaderboard.md
         "walmart_amazon": 85.1,  # Updated from internal_leaderboard.md
         "dblp_scholar": 89.8,    # Updated from internal_leaderboard.md
         "fodors_zagat": 99.6,
@@ -55,7 +49,7 @@ class SampleData:
 
 class SimplifiedAgenticGenerator:
     """Simplified agentic generator using only MCP tools + Read"""
-    
+
     def __init__(self, dataset: str, model: str = "claude-3-5-sonnet-20241022", no_cache: bool = False, mode: str = "heuristics"):
         self.dataset = dataset
         self.model = model
@@ -63,64 +57,71 @@ class SimplifiedAgenticGenerator:
         self.mode = mode
         self.target_f1 = get_leaderboard_target_f1(dataset)
 
-    async def generate_rules(self, dev_results: Dict[str, Any], output_file: Optional[str] = None, analysis_data: Optional[Dict] = None) -> Tuple[str, Dict[str, Any]]:
+    async def generate_rules(self, dev_results: Dict[str, Any], output_file: Optional[str] = None, analysis_data: Optional[Dict] = None, optimal_params: Optional[Dict[str, Any]] = None) -> Tuple[str, Dict[str, Any]]:
         """Generate rules using proper ClaudeSDKClient for interactive sessions"""
-        
+
         if output_file is None:
             output_file = f"results/generated_rules/{self.dataset}_mcp_generated_config.json"
-        
+
         print(f"🚀 SIMPLIFIED AGENTIC HEURISTIC GENERATION FOR {self.dataset}")
         print("============================================================")
         print(f"🎯 Target: F1 > {self.target_f1}")
-        
+
         # Create sample data and save it for MCP server to use
         sample_data = self._create_sample_data(dev_results, analysis_data)
         self._save_sample_data_for_mcp(sample_data)
-        
+
+        # Initialize baseline rules file with optimal parameters
+        self._initialize_baseline_rules(optimal_params)
+
+        # Set MCP server mode based on optimization mode
+        if self.mode == "prompt-modification":
+            mcp_mode = "prompt-only"
+        elif self.mode == "weights-only":
+            mcp_mode = "weights-only"
+        elif self.mode == "heuristics":
+            mcp_mode = "heuristics-only"
+        else:
+            mcp_mode = "full"
+
         # Configure with proper MCP tools and restrictions
         # McpServerConfig already imported above
-        from claude_code_sdk import ClaudeSDKClient
         import json
-        
+
         # Load MCP server config from file
         with open('mcp_config.json') as f:
             mcp_config = json.load(f)
-        
-        # Use the config directly as a dict (per SDK guide)
+
+        # Update MCP config to include the server mode environment variable
         mcp_servers = mcp_config['mcpServers']
-        
-        options = ClaudeCodeOptions(
-            mcp_servers=mcp_servers,
-            # Allow MCP tools + essential planning/analysis tools
-            allowed_tools=[
-                "Read",  # Allow reading code files for analysis
-                "Task",  # Allow planning and task management
-                "LS",    # Allow listing directories for navigation
-                "Grep",  # Allow searching through files
-                "mcp__entity-matching__ReadInstructions",
-                "mcp__entity-matching__ReadSampleData", 
-                "mcp__entity-matching__GetBaseline",
-                "mcp__entity-matching__WriteRules",
-                "mcp__entity-matching__TestRules",
-                "mcp__entity-matching__AnalyzePerformance",
-                "mcp__entity-matching__ReportIssue"
-            ],
-            # Explicitly disallow system tools (except Read, Task, LS, Grep which are allowed above)
-            disallowed_tools=[
-                "Bash", "Write", "Edit", "MultiEdit", "Glob", 
-                "NotebookEdit", "NotebookRead", "TodoWrite",
-                "WebSearch", "WebFetch"  # Block web access
-            ],
-            permission_mode="acceptEdits",
-            cwd=os.getcwd(),
-            max_turns=30
-            # Note: ClaudeSDKClient uses its own model, self.model is for reference
-            # Claude Code SDK uses Sonnet 4 (the model running this conversation)
-        )
+        if 'entity-matching' in mcp_servers:
+            if 'env' not in mcp_servers['entity-matching']:
+                mcp_servers['entity-matching']['env'] = {}
+            mcp_servers['entity-matching']['env']['MCP_SERVER_MODE'] = mcp_mode
+            mcp_servers['entity-matching']['env']['PYTHONPATH'] = '.'
+
+        allowed_tools=[
+            "Read",  # Allow reading code files for analysis
+            "Task",  # Allow planning and task management
+            "LS",    # Allow listing directories for navigation
+            "Grep",  # Allow searching through files
+            "mcp__entity-matching__ReadInstructions",
+            "mcp__entity-matching__ReadSampleData",
+            "mcp__entity-matching__GetBaseline",
+            "mcp__entity-matching__RunExperiment",
+            "mcp__entity-matching__ReportIssue",
+            "mcp__entity-matching__WriteWeights",
+        ]
 
         # Initial prompt for the interactive session - different for each mode
+        initial_prompt = "You are optimizing an entity matching system. It works by finding potential matching records by embedding, sequence-diff, and trigram similarity, " + \
+        "then sending max_candidates to an LLM to select the best match by an integer match index. You will be shown various metrics and example true and false positive matches. " + \
+        "You are iterating on the dev set, but the target is on the test set. So the scores may not perfectly align.\n\n"
+
         if self.mode == "weights-only":
-            initial_prompt = f"""WEIGHTS-ONLY OPTIMIZATION MODE: Focus only on optimizing semantic/trigram/syntactic weights.
+            initial_prompt += f"""WEIGHTS-ONLY OPTIMIZATION MODE: Focus only on optimizing semantic/trigram/syntactic weights.
+
+⚠️ CRITICAL: If ANY MCP tool fails or returns an error, IMMEDIATELY call mcp__entity-matching__ReportIssue to report the problem. Do not continue without reporting tool failures.
 
 START by calling: mcp__entity-matching__ReadInstructions with dataset "{self.dataset}"
 
@@ -135,9 +136,14 @@ WORKFLOW:
 
 FOCUS: Find optimal semantic_weight, trigram_weight, syntactic_weight (must sum to 1.0).
 DO NOT generate candidate_rules, score_rules, decision_rules, or prompt_rules - weights only!"""
-        
+
         elif self.mode == "prompt-modification":
-            initial_prompt = f"""PROMPT-MODIFICATION OPTIMIZATION MODE: Optimize weights AND generate prompt modification rules.
+            allowed_tools.append("mcp__entity-matching__WritePrompt")
+            allowed_tools.append("mcp__entity-matching__ReadPrompt")
+
+            initial_prompt += f"""PROMPT-MODIFICATION OPTIMIZATION MODE: Optimize weights AND modify the prompt structure.
+
+⚠️ CRITICAL: If ANY MCP tool fails or returns an error, IMMEDIATELY call mcp__entity-matching__ReportIssue to report the problem. Do not continue without reporting tool failures.
 
 START by calling: mcp__entity-matching__ReadInstructions with dataset "{self.dataset}"
 
@@ -146,18 +152,23 @@ Goal: Optimize {self.dataset} dataset for F1 > {self.target_f1}
 WORKFLOW:
 1. mcp__entity-matching__ReadInstructions (dataset: "{self.dataset}") - START HERE
 2. mcp__entity-matching__GetBaseline (dataset: "{self.dataset}") - Check current performance
-3. mcp__entity-matching__WriteRules with mode="prompt-modification" - Optimize weights AND create prompt rules
+3a. mcp__entity-matching__WriteWeights - Optimize similarity weights (semantic_weight, trigram_weight, syntactic_weight must sum to 1.0)
+3b.1. mcp__entity-matching__ReadPrompt - Read current prompt structure
+3b.2. mcp__entity-matching__WritePrompt - Modify prompt structure for better LLM guidance
 4. mcp__entity-matching__TestRules - Test on full dev set
-5. Iterate on both weights and prompt modifications
+5. Repeat steps 3 (a or b1 & 2) and 4 to iterate on both weights and prompt modifications, but only do one or the other at a time to be a good scientist.
 
-FOCUS: 
-- Find optimal semantic_weight, trigram_weight, syntactic_weight (must sum to 1.0)
-- Generate ONLY prompt_rules that dynamically improve LLM instructions based on record patterns
-- DO NOT generate candidate_rules, score_rules, decision_rules, or weight_rules
-- Prompt rules should contain conditions and prompt additions to guide LLM decision-making"""
-        
+FOCUS:
+- Find optimal semantic_weight, trigram_weight, syntactic_weight (must sum to 1.0) using WriteWeights
+- Modify the prompt structure using WritePrompt to give better LLM guidance for specific matching scenarios
+- Use WriteWeights for weight changes, WritePrompt for prompt modifications - these are separate tools!"""
+
         else:  # mode == "heuristics"
-            initial_prompt = f"""HEURISTICS OPTIMIZATION MODE: Full rule generation with traditional heuristic rules.
+            allowed_tools.append("mcp__entity-matching__WriteRules")
+
+            initial_prompt += f"""HEURISTICS OPTIMIZATION MODE: Full rule generation with traditional heuristic rules.
+
+⚠️ CRITICAL: If ANY MCP tool fails or returns an error, IMMEDIATELY call mcp__entity-matching__ReportIssue to report the problem. Do not continue without reporting tool failures.
 
 START by calling: mcp__entity-matching__ReadInstructions with dataset "{self.dataset}"
 
@@ -177,15 +188,34 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
         total_cost_usd = 0.0
         session_id = None
         start_time = time.time()
-        rules_generated = False
 
-        print(f"🚀 Starting interactive ClaudeSDKClient session...")
+        options = ClaudeCodeOptions(
+            mcp_servers=mcp_servers,
+            # Allow MCP tools + essential planning/analysis tools
+            allowed_tools=allowed_tools,
+            # Explicitly disallow system tools (except Read, Task, LS, Grep which are allowed above)
+            disallowed_tools=[
+                "Bash", "Write", "Edit", "MultiEdit", "Glob",
+                "NotebookEdit", "NotebookRead", "TodoWrite",
+                "WebSearch", "WebFetch"  # Block web access
+            ],
+            permission_mode="acceptEdits",
+            cwd=os.getcwd(),
+            max_turns=30
+        )
+
+        # Environment variable is already set via MCP config above
+        os.environ["MCP_SERVER_MODE"] = mcp_mode
+
+        print("🚀 Starting interactive ClaudeSDKClient session...")
+        print(f"  MCP_SERVER_MODE: {os.environ.get('MCP_SERVER_MODE')}")
         mcp_tools = [t for t in options.allowed_tools if 'mcp__' in t]
         print(f"   MCP tools: {len(mcp_tools)}")
         print(f"   MCP tool list: {mcp_tools}")
         print(f"   All allowed: {len(options.allowed_tools)}")
         print(f"   Disallowed: {len(options.disallowed_tools)}")
-        
+        print(f"   MCP server mode: {os.environ.get('MCP_SERVER_MODE', 'full')}")
+
         print("🔍 MCP tools configured and ready")
 
         try:
@@ -193,43 +223,43 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
             async with ClaudeSDKClient(options=options) as client:
                 # Send initial prompt
                 await client.query(initial_prompt)
-                
+
                 # Receive and process messages interactively
                 async for message in client.receive_messages():
                     if isinstance(message, AssistantMessage):
                         turn_count += 1
                         print(f"   💭 Turn {turn_count}: Claude is working...")
-                        
+
                         # Log tool calls for debugging
                         for block in message.content:
                             if isinstance(block, ToolUseBlock):
                                 print(f"      🔧 Tool: {block.name}")
-                                
-                                # CRITICAL DEBUG: Check if disallowed tools are being used  
-                                disallowed = ["Bash", "Write", "Edit", "MultiEdit", "Glob", 
+
+                                # CRITICAL DEBUG: Check if disallowed tools are being used
+                                disallowed = ["Bash", "Write", "Edit", "MultiEdit", "Glob",
                                             "NotebookEdit", "NotebookRead", "TodoWrite", "WebSearch", "WebFetch"]
                                 if block.name in disallowed:
                                     print(f"      ⚠️  ERROR: DISALLOWED TOOL USED: {block.name}")
-                                    print(f"         Tool restrictions are NOT working properly!")
+                                    print("         Tool restrictions are NOT working properly!")
                                     print(f"         All args: {json.dumps(block.input, indent=8)}")
-                                
+
                                 if hasattr(block, 'input') and block.input:
                                     # Show ALL args for debugging the "shit"
                                     print(f"         Args: {json.dumps(block.input, indent=8)}")
-                                    
+
                             elif isinstance(block, ToolResultBlock):
                                 # Show tool results summary for debugging - CRITICAL for MCP debugging
                                 print(f"      📋 Tool Result for tool use ID: {getattr(block, 'tool_use_id', 'unknown')}")
                                 if hasattr(block, 'content'):
                                     content_str = str(block.content)
                                     print(f"      📋 Result content ({len(content_str)} chars): {content_str[:500]}...")
-                                    
+
                                     # CRITICAL: Check for MCP errors
                                     if "error" in content_str.lower() or "failed" in content_str.lower():
                                         print(f"      🚨 TOOL ERROR DETECTED: {content_str}")
                                 else:
-                                    print(f"      📋 No content in tool result")
-                                    
+                                    print("      📋 No content in tool result")
+
                             elif isinstance(block, TextBlock):
                                 # Show reasoning snippets
                                 if len(block.text) > 150:
@@ -237,18 +267,18 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
                                 else:
                                     preview = block.text
                                 print(f"      💭 {preview}")
-                    
+
                     elif isinstance(message, ResultMessage):
                         # Session complete
                         total_cost_usd = message.total_cost_usd or 0.0
                         session_id = message.session_id
                         print(f"   ✅ Session complete: {turn_count} turns, ${total_cost_usd:.4f}")
                         break
-                    
+
                     # Check if rules were generated
                     if os.path.exists("results/temp/generated_rules.json"):
-                        rules_generated = True
-        
+                        pass
+
         except Exception as e:
             print(f"❌ Error during interactive session: {e}")
             raise
@@ -260,12 +290,12 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
         rules_file = "results/temp/generated_rules.json"
         if os.path.exists(rules_file):
             print(f"✅ Rules generated: {rules_file}")
-            
+
             # Copy to final location
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
-            with open(rules_file, 'r') as src:
+            with open(rules_file) as src:
                 rules_data = json.load(src)
-            
+
             # Add generation info
             rules_data['generation_cost_info'] = {
                 'total_cost_usd': total_cost_usd,
@@ -275,24 +305,23 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
                 'model': self.model,
                 'approach': 'interactive_client'
             }
-            
+
             with open(output_file, 'w') as dst:
                 json.dump(rules_data, dst, indent=2)
-            
+
             cost_info = rules_data['generation_cost_info']
             print(f"✅ Final rules saved: {output_file}")
             print(f"📊 {turn_count} turns, {duration_ms/1000:.1f}s, ${total_cost_usd:.4f}")
-            
+
             return output_file, cost_info
-        else:
-            raise RuntimeError("No rules were generated - interactive session completed but no output file")
+        raise RuntimeError("No rules were generated - interactive session completed but no output file")
 
     def _create_sample_data(self, dev_results: Dict[str, Any], analysis_data: Optional[Dict] = None) -> SampleData:
         """Create sample data for MCP tools"""
-        
+
         dev_metrics = dev_results.get("metadata", {})
         dev_pairs = dev_results.get("dev_pairs", [])
-        
+
         return SampleData(
             dataset=self.dataset,
             target_f1=self.target_f1,
@@ -305,7 +334,7 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
         """Save sample data to file for MCP server to read"""
         sample_file = f"results/temp/sample_data_{self.dataset}.json"
         os.makedirs(os.path.dirname(sample_file), exist_ok=True)
-        
+
         # Convert to JSON serializable format
         data = {
             "dataset": sample_data.dataset,
@@ -314,18 +343,64 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
             "dev_pairs": sample_data.dev_pairs,
             "analysis_insights": sample_data.analysis_insights
         }
-        
+
         with open(sample_file, 'w') as f:
             json.dump(data, f, indent=2)
-        
+
         print(f"📄 Sample data saved: {sample_file}")
+
+    def _initialize_baseline_rules(self, optimal_params: Optional[Dict[str, Any]]):
+        """Initialize baseline rules file with optimal parameters from pipeline"""
+        rules_file = "results/temp/generated_rules.json"
+        os.makedirs(os.path.dirname(rules_file), exist_ok=True)
+
+        # Use provided optimal_params or sensible defaults
+        if optimal_params:
+            max_candidates = optimal_params.get("max_candidates", 150)
+            semantic_weight = optimal_params.get("semantic_weight", 0.6)
+            trigram_weight = optimal_params.get("trigram_weight", 0.2)
+            syntactic_weight = optimal_params.get("syntactic_weight", 0.2)
+        else:
+            # Fallback to 3-weight system defaults
+            from src.entity_matching.candidate_optimization import get_optimal_candidates_for_dataset
+            optimal_candidates = get_optimal_candidates_for_dataset(self.dataset)
+            max_candidates = optimal_candidates if optimal_candidates else 150
+            semantic_weight = 0.6
+            trigram_weight = 0.2
+            syntactic_weight = 0.2
+
+        baseline_rules = {
+            "hyperparameters": {
+                "max_candidates": max_candidates,
+                "semantic_weight": semantic_weight,
+                "trigram_weight": trigram_weight,
+                "syntactic_weight": syntactic_weight,
+                "decision_threshold": 0.5,
+                "auto_accept_threshold": 0.9,
+                "auto_reject_threshold": 0.1
+            },
+            "candidate_rules": [],
+            "score_rules": [],
+            "decision_rules": [],
+            "weight_rules": [],
+            "prompt_rules": [],
+            "pipeline_rules": [],
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "generation_method": "baseline_initialization",
+            "mode": self.mode
+        }
+
+        with open(rules_file, 'w') as f:
+            json.dump(baseline_rules, f, indent=2)
+
+        print(f"📝 Baseline rules initialized: candidates={max_candidates}, semantic={semantic_weight}, trigram={trigram_weight}, syntactic={syntactic_weight}")
 
 
 async def generate_simplified_heuristics(
-    dataset: str, dev_results: Dict[str, Any], output_file: Optional[str] = None, 
+    dataset: str, dev_results: Dict[str, Any], output_file: Optional[str] = None,
     analysis_data: Optional[Dict] = None, model: str = "gpt-4.1-nano", no_cache: bool = False,
-    mode: str = "heuristics"
+    mode: str = "heuristics", optimal_params: Optional[Dict[str, Any]] = None
 ) -> Tuple[str, Dict[str, Any]]:
     """Main entry point for simplified agentic heuristic generation"""
     generator = SimplifiedAgenticGenerator(dataset, model, no_cache, mode)
-    return await generator.generate_rules(dev_results, output_file, analysis_data)
+    return await generator.generate_rules(dev_results, output_file, analysis_data, optimal_params)

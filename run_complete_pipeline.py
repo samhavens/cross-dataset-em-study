@@ -31,8 +31,8 @@ import pandas as pd
 from run_enhanced_matching import run_enhanced_matching
 from src.entity_matching.candidate_optimization import get_optimal_candidates_for_dataset
 from src.entity_matching.hybrid_matcher import run_matching
+# ClaudeSDKOptimizer removed - using new MCP-based SimplifiedAgenticGenerator instead
 from src.experiments.simplified_agentic_generator import generate_simplified_heuristics, get_leaderboard_target_f1
-from src.experiments.claude_sdk_optimizer import ClaudeSDKOptimizer
 from src.utils.json_serializer import json_serialize
 
 
@@ -74,7 +74,7 @@ async def run_dev_only_analysis_with_params(
         # Decide what to use as dev set
         if (data_root / "valid.csv").exists():
             print("✅ Using validation set for dev analysis (no test leakage)")
-            valid_pairs = pd.read_csv(data_root / "valid.csv") 
+            valid_pairs = pd.read_csv(data_root / "valid.csv")
             from src.entity_matching.balanced_sampling import balanced_train_sample, get_sample_info
             valid_slice = balanced_train_sample(valid_pairs, target_size=200, random_state=42)
             print(get_sample_info(valid_slice, "validation sample for dev analysis"))
@@ -100,16 +100,16 @@ async def run_dev_only_analysis_with_params(
         shutil.copytree(temp_dataset_dir, expected_path)
 
         try:
-            dev_results = await run_matching(
+            # Use same evaluation method as RunExperiment for consistency
+            from run_enhanced_matching import run_enhanced_matching
+            dev_results = await run_enhanced_matching(
                 dataset=f"temp_{dataset}_dev_temp",
-                limit=None,
                 max_candidates=params.get("max_candidates", 150),
                 model=model,
                 semantic_weight=params.get("semantic_weight", 0.5),
                 trigram_weight=params.get("trigram_weight"),
                 syntactic_weight=params.get("syntactic_weight"),
-                use_semantic=params.get("use_semantic", True),
-                embeddings_cache_dataset=dataset,  # Reuse cache from original dataset
+                use_validation=True,  # Use same 200-pair validation sample as RunExperiment
                 concurrency=concurrency,
             )
         finally:
@@ -228,174 +228,6 @@ async def run_train_for_rule_data(
 
 
 
-async def validate_and_optimize_rules(
-    dataset: str, heuristic_file: str, optimal_params: Dict[str, Any], concurrency: int
-) -> str:
-    """Validate rules on dev set and optimize them using Claude SDK - NO FILE SWAPPING"""
-    data_root = pathlib.Path("data") / "raw" / dataset
-    claude_optimizer = ClaudeSDKOptimizer()
-
-    if not claude_optimizer.claude_executable:
-        print("⚠️ Claude SDK not available - skipping rule optimization")
-        return heuristic_file
-
-    print("🔍 Running rule validation on dev set...")
-
-    # Create temporary dataset for validation - NO FILE SWAPPING
-    os.makedirs("results/temp", exist_ok=True)
-    temp_dataset_dir = pathlib.Path("results/temp") / f"{dataset}_validation_temp"
-    temp_dataset_dir.mkdir(exist_ok=True)
-
-    try:
-        import shutil
-
-        # Copy essential files
-        shutil.copy(data_root / "tableA.csv", temp_dataset_dir / "tableA.csv")
-        shutil.copy(data_root / "tableB.csv", temp_dataset_dir / "tableB.csv")
-
-        # Choose validation data
-        if (data_root / "valid.csv").exists():
-            print("✅ Using validation set for rule validation")
-            shutil.copy(data_root / "valid.csv", temp_dataset_dir / "test.csv")
-        elif (data_root / "train.csv").exists():
-            print("✅ Using balanced training sample for rule validation")
-            train_pairs = pd.read_csv(data_root / "train.csv")
-            from src.entity_matching.balanced_sampling import balanced_train_sample, get_sample_info
-            train_slice = balanced_train_sample(train_pairs, target_size=200, random_state=42)
-            print(get_sample_info(train_slice, "train sample for rule validation"))
-            train_slice.to_csv(temp_dataset_dir / "test.csv", index=False)
-        else:
-            print("⚠️ No validation or training set - skipping rule optimization to avoid test leakage")
-            return heuristic_file
-
-        # Run enhanced matching on temporary dataset
-        print("🔄 RULE VALIDATION: Testing rules on validation data...")
-        print("   📊 This is NOT the final test - just validating rules")
-        print("   🎯 Purpose: Check if rules help/hurt performance before final test")
-
-        # Copy to expected data/raw location
-        expected_path = pathlib.Path("data/raw") / f"temp_{dataset}_validation_temp"
-        if expected_path.exists():
-            shutil.rmtree(expected_path)
-        expected_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(temp_dataset_dir, expected_path)
-
-        try:
-            dev_results = await run_enhanced_matching(
-                dataset=f"temp_{dataset}_validation_temp",
-                limit=None,
-                max_candidates=optimal_params["max_candidates"],
-                model=optimal_params["model"],
-                semantic_weight=optimal_params["semantic_weight"],
-                trigram_weight=optimal_params.get("trigram_weight"),
-                syntactic_weight=optimal_params.get("syntactic_weight"),
-                heuristic_file=heuristic_file,
-                concurrency=concurrency,
-            )
-        finally:
-            # Clean up the expected path copy
-            if expected_path.exists():
-                shutil.rmtree(expected_path)
-
-        print(
-            f"✅ RULE VALIDATION completed: F1={dev_results['f1']:.4f}, Early decisions={dev_results.get('early_decisions', 0)}"
-        )
-
-    finally:
-        # Clean up temporary dataset
-        if temp_dataset_dir.exists():
-            shutil.rmtree(temp_dataset_dir)
-
-    # Analyze performance and optimize rules
-    print(
-        f"📊 Dev Results: F1={dev_results['f1']:.4f}, P={dev_results['precision']:.4f}, R={dev_results['recall']:.4f}"
-    )
-
-    # Load current heuristics
-    with open(heuristic_file) as f:
-        heuristics = json.load(f)
-
-    # Get leaderboard target
-    target_f1 = get_leaderboard_target_f1(dataset)
-
-    # Create optimization prompt
-    prompt = f"""You are an expert at entity matching rule optimization. Analyze these rule performance results and decide which rules to disable to improve F1 score.
-
-DATASET: {dataset}
-TARGET: F1 > {target_f1:.1f} (leaderboard target)
-
-CURRENT DEV PERFORMANCE:
-- F1 Score: {dev_results["f1"]:.4f}
-- Precision: {dev_results["precision"]:.4f}
-- Recall: {dev_results["recall"]:.4f}
-- Early Decisions: {dev_results.get("early_decisions", 0)}
-- LLM Call Reduction: {dev_results.get("llm_call_reduction", 0):.1f}%
-
-ASSESSMENT: {"ABOVE TARGET" if dev_results["f1"] > target_f1 / 100 else "BELOW TARGET - NEEDS OPTIMIZATION"}
-
-If F1 is below target and precision > 0.9, disable overly conservative rules to improve recall.
-If F1 is above target, make minimal changes.
-
-Generate optimized heuristics with problematic rules disabled:
-
-{{
-  "analysis": "Performance assessment and optimization strategy",
-  "rules_to_disable": ["rule_name1", "rule_name2"],
-  "optimized_heuristics": {json.dumps(heuristics, indent=2)}
-}}
-
-Only disable rules if F1 < target. If F1 >= target, return empty rules_to_disable array."""
-
-    try:
-        # Call Claude SDK
-        result = subprocess.run(
-            [claude_optimizer.claude_executable, "--print", prompt],
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=120,
-        )
-
-        if result.returncode != 0:
-            print(f"⚠️ Claude SDK optimization failed: {result.stderr}")
-            return heuristic_file
-
-        response = result.stdout
-
-        # Extract JSON from response
-        json_start = response.find("{")
-        json_end = response.rfind("}") + 1
-        json_str = response[json_start:json_end]
-
-        optimization_result = json.loads(json_str)
-
-        rules_to_disable = optimization_result.get("rules_to_disable", [])
-
-        if not rules_to_disable:
-            print("✅ No rule optimization needed - performance is acceptable")
-            return heuristic_file
-
-        print(f"🔧 Optimizing rules: disabling {len(rules_to_disable)} rules")
-        for rule_name in rules_to_disable:
-            print(f"   - Disabling: {rule_name}")
-
-        # Save optimized heuristics
-        optimized_heuristics = optimization_result["optimized_heuristics"]
-        optimized_heuristics["timestamp"] = datetime.now().isoformat()
-        optimized_heuristics["optimization_notes"] = (
-            f"Disabled {len(rules_to_disable)} rules: {', '.join(rules_to_disable)}"
-        )
-
-        optimized_file = heuristic_file.replace(".json", "_optimized.json")
-        with open(optimized_file, "w") as f:
-            json.dump(json_serialize(optimized_heuristics), f, indent=2)
-
-        print(f"✅ Optimized heuristics saved to: {optimized_file}")
-        return optimized_file
-
-    except Exception as e:
-        print(f"⚠️ Rule optimization failed: {e}")
-        return heuristic_file
 
 
 async def run_complete_pipeline(
@@ -403,7 +235,6 @@ async def run_complete_pipeline(
     early_exit: bool = False,  # noqa: ARG001
     resume: bool = False,
     concurrency: int = 3,
-    validate_rules: bool = False,
     model: str = "gpt-4.1-nano",
     use_agentic_rules: bool = True,  # noqa: ARG001
     known_best_params: Optional[Dict[str, Any]] = None,
@@ -489,7 +320,8 @@ async def run_complete_pipeline(
                 analysis_data,
                 model,
                 no_cache,
-                mode=mode
+                mode=mode,
+                optimal_params=optimal_params
             )
         except Exception as e:
             print(f"❌ Known params rule generation failed: {e}")
@@ -605,7 +437,8 @@ async def run_complete_pipeline(
                 analysis_data,
                 model,
                 no_cache,
-                mode=mode
+                mode=mode,
+                optimal_params=default_params
             )
         except Exception as e:
             print(f"❌ Analysis-driven rule generation failed: {e}")
@@ -725,35 +558,14 @@ async def run_complete_pipeline(
         print("❌ Rule generation failed")
         return results
 
-    # STEP 2.5: Rule validation and optimization (optional)
-    if validate_rules:
-        if "optimized_heuristics_file" in checkpoint and os.path.exists(checkpoint["optimized_heuristics_file"]):
-            print("✅ STEP 2.5: Using cached optimized rules from checkpoint")
-            heuristics_file = checkpoint["optimized_heuristics_file"]
-        else:
-            print("\n🔍 STEP 2.5: Rule validation and optimization on dev set")
-            optimized_file = await validate_and_optimize_rules(dataset, heuristics_file, optimal_params, concurrency)
-            if optimized_file != heuristics_file:
-                heuristics_file = optimized_file
-                results["rule_optimization"] = "claude_sdk_success"
-                results["optimized_heuristics_file"] = heuristics_file
-
-                # Save checkpoint
-                checkpoint["optimized_heuristics_file"] = heuristics_file
-                with open(checkpoint_file, "w") as f:
-                    json.dump(json_serialize(checkpoint), f, indent=2)
-            else:
-                results["rule_optimization"] = "no_changes_needed"
-
-            print(f"✅ Using heuristics: {heuristics_file}")
 
     # Pipeline execution logic based on mode
     if mode == "weights-only":
-        print(f"\n💨 WEIGHTS-ONLY MODE: Skipping both 3A and 3B (identical without rules)")
+        print("\n💨 WEIGHTS-ONLY MODE: Skipping both 3A and 3B (identical without rules)")
         # Use dev results as final results since no additional testing needed
         enhanced_results = {
             'f1': dev_results['f1'],
-            'precision': dev_results['precision'], 
+            'precision': dev_results['precision'],
             'recall': dev_results['recall'],
             'cost': 0.0,  # No additional cost for skipped steps
             'method': 'weights_only_dev_results'
@@ -761,9 +573,9 @@ async def run_complete_pipeline(
         baseline_results = {'metrics': enhanced_results, 'cost_usd': 0.0}
         enhanced_time = 0
         baseline_time = 0
-        
+
         print(f"✅ Final Results (dev optimization): F1={enhanced_results['f1']:.4f}")
-        
+
         # Skip to results compilation
         results["test_results"] = {
             "baseline": baseline_results,
@@ -773,29 +585,18 @@ async def run_complete_pipeline(
             "target_f1": get_leaderboard_target_f1(dataset),
             "mode": mode
         }
-        
+
         return results
 
-    elif mode == "prompt-modification":
-        print(f"\n🧠 PROMPT-MODIFICATION MODE: Skipping 3A, running 3B with prompt rules")
-        # Skip to Step 3B with enhanced matching using prompt rules
-        baseline_results = None  # No baseline needed in this mode
-        baseline_time = 0
-        
-        # Jump directly to Step 3B
-        print("\n🎯 STEP 3B: FINAL TEST EVALUATION WITH prompt modification rules")
-        print("⏳ Running enhanced matching with prompt rules on FULL TEST SET...")
-        
-        start_time = time.time()
-        
-        # Continue with the same enhanced matching logic as normal 3B...
-        # (The logic below will handle this)
-        
+    if mode == "prompt-modification":
+        print("\n🧠 PROMPT-MODIFICATION MODE: Running both 3A (before Claude) and 3B (after Claude)")
+        # Note: This mode needs both evaluations to show improvement from prompt optimization
+
     else:  # mode == "heuristics" (default)
-        print(f"\n🔧 HEURISTICS MODE: Running both 3A (baseline) and 3B (enhanced)")
+        print("\n🔧 HEURISTICS MODE: Running both 3A (baseline) and 3B (enhanced)")
 
     # STEP 3A: Test set evaluation WITHOUT rules (baseline with optimal params)
-    if mode != "prompt-modification":  # Skip 3A for prompt-modification mode
+    # Always run 3A - prompt-modification mode needs it for before/after comparison
         print("\n🎯 STEP 3A: FINAL TEST EVALUATION WITHOUT rules (optimal params baseline)")
         print("⏳ Running baseline matching on FULL TEST SET (this is the real evaluation)...")
 
@@ -839,10 +640,6 @@ async def run_complete_pipeline(
         print(
             f"✅ Baseline Results (no rules): F1={baseline_results['metrics']['f1']:.4f}, Cost=${baseline_results['cost_usd']:.3f}"
         )
-    else:
-        # prompt-modification mode: No baseline needed
-        baseline_results = None
-        baseline_time = 0
 
     # STEP 3B: Test set evaluation WITH generated rules
     print("\n🎯 STEP 3B: FINAL TEST EVALUATION WITH rules (enhanced approach)")
@@ -850,7 +647,7 @@ async def run_complete_pipeline(
     # Check if baseline already exceeds target - if so, skip expensive rules test
     # (Skip this check for prompt-modification mode where baseline_results is None)
     target_f1 = get_leaderboard_target_f1(dataset)
-    
+
     if baseline_results and baseline_results['metrics']['f1'] >= target_f1:
         baseline_f1 = baseline_results['metrics']['f1']
         print(f"🎉 BASELINE ALREADY EXCEEDS TARGET! ({baseline_f1:.4f} >= {target_f1:.1f})")
@@ -873,7 +670,8 @@ async def run_complete_pipeline(
 
         start_time = time.time()
 
-        # Extract learned weights from the heuristics file
+        # Extract learned parameters from the heuristics file
+        learned_max_candidates = optimal_params["max_candidates"]  # default
         learned_semantic_weight = optimal_params["semantic_weight"]  # default
         learned_trigram_weight = optimal_params.get("trigram_weight")  # default
         learned_syntactic_weight = optimal_params.get("syntactic_weight")  # default
@@ -884,26 +682,22 @@ async def run_complete_pipeline(
                     heuristics_config = json.load(f)
                     if "hyperparameters" in heuristics_config:
                         hyperparams = heuristics_config["hyperparameters"]
+                        learned_max_candidates = hyperparams.get("max_candidates", learned_max_candidates)
                         learned_semantic_weight = hyperparams.get("semantic_weight", learned_semantic_weight)
                         learned_trigram_weight = hyperparams.get("trigram_weight", learned_trigram_weight)
                         learned_syntactic_weight = hyperparams.get("syntactic_weight", learned_syntactic_weight)
             except Exception as e:
-                print(f"⚠️ Could not load weights from {heuristics_file}: {e}")
+                print(f"⚠️ Could not load parameters from {heuristics_file}: {e}")
 
-        # CRITICAL FIX: Always use 3-weight system with proper defaults
-        # If Claude only provided semantic_weight, calculate reasonable defaults for the other two
+        # Force use of Claude's optimized weights - no fallback allowed
         if learned_trigram_weight is None or learned_syntactic_weight is None:
-            # Use 3-weight defaults that preserve the semantic weight but add syntactic matching
-            remaining_weight = 1.0 - learned_semantic_weight
-            learned_trigram_weight = remaining_weight * 0.6  # 60% of remaining to trigram
-            learned_syntactic_weight = remaining_weight * 0.4  # 40% of remaining to syntactic
-            print(f"🔧 Auto-completed 3-weight system: semantic={learned_semantic_weight:.3f} → trigram={learned_trigram_weight:.3f}, syntactic={learned_syntactic_weight:.3f}")
-        else:
-            print(f"✅ Using complete 3-weight system: trigram={learned_trigram_weight:.3f}, syntactic={learned_syntactic_weight:.3f}, semantic={learned_semantic_weight:.3f}")
+            raise ValueError(f"Claude must provide complete weight optimization! Got: semantic={learned_semantic_weight}, trigram={learned_trigram_weight}, syntactic={learned_syntactic_weight}")
+        
+        print(f"✅ Using Claude's optimized parameters: candidates={learned_max_candidates}, semantic={learned_semantic_weight:.3f}, trigram={learned_trigram_weight:.3f}, syntactic={learned_syntactic_weight:.3f}")
 
         enhanced_results = await run_enhanced_matching(
             dataset=dataset,
-            max_candidates=optimal_params["max_candidates"],  # Use optimized candidates
+            max_candidates=learned_max_candidates,  # Use Claude's optimized candidates
             model="gpt-4.1-nano",  # Use cheaper model for test
             semantic_weight=learned_semantic_weight,  # Use learned semantic weight from Claude
             trigram_weight=learned_trigram_weight,  # Use learned trigram weight from Claude
@@ -914,9 +708,13 @@ async def run_complete_pipeline(
 
         print(f"✅ Enhanced Results (with rules): F1={enhanced_results['f1']:.4f}, Cost=${enhanced_results['cost']:.3f}")
 
-    # Calculate improvement
-    f1_improvement = enhanced_results["f1"] - baseline_results["metrics"]["f1"]
-    cost_change = enhanced_results["cost"] - baseline_results["cost_usd"]
+    # Calculate improvement (handle cases where baseline_results might be None)
+    if baseline_results:
+        f1_improvement = enhanced_results["f1"] - baseline_results["metrics"]["f1"]
+        cost_change = enhanced_results["cost"] - baseline_results["cost_usd"]
+    else:
+        f1_improvement = 0.0  # No baseline comparison available
+        cost_change = enhanced_results["cost"]
 
     print("\n📊 A/B COMPARISON:")
     print(
@@ -927,13 +725,23 @@ async def run_complete_pipeline(
         f"Rules {'✅ HELPED' if f1_improvement > 0.01 else '❌ DID NOT HELP' if f1_improvement < -0.01 else '➡️ NEUTRAL'}"
     )
 
-    results["baseline_results"] = {
-        "f1": baseline_results["metrics"]["f1"],
-        "precision": baseline_results["metrics"]["precision"],
-        "recall": baseline_results["metrics"]["recall"],
-        "cost_usd": baseline_results["cost_usd"],
-        "processing_time": baseline_time,
-    }
+    # Handle baseline results (might be None)
+    if baseline_results:
+        results["baseline_results"] = {
+            "f1": baseline_results["metrics"]["f1"],
+            "precision": baseline_results["metrics"]["precision"],
+            "recall": baseline_results["metrics"]["recall"],
+            "cost_usd": baseline_results["cost_usd"],
+            "processing_time": baseline_time,
+        }
+    else:
+        results["baseline_results"] = {
+            "f1": 0.0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "cost_usd": 0.0,
+            "processing_time": 0,
+        }
 
     results["enhanced_results"] = {
         "f1": enhanced_results["f1"],
@@ -1123,17 +931,14 @@ async def main():
     parser.add_argument("--early-exit", action="store_true", help="Early exit parameter (ignored, kept for backward compatibility)")
     parser.add_argument("--resume", action="store_true", help="Resume from checkpoint if available")
     parser.add_argument("--concurrency", type=int, default=20, help="Number of concurrent API requests (default: 20)")
-    parser.add_argument(
-        "--validate-rules", action="store_true", help="Validate and optimize rules on dev set before test"
-    )
     parser.add_argument("--model", default="gpt-4.1-nano", help="Model to use for analysis-driven optimization (default: gpt-4.1-nano)")
 
     parser.add_argument(
         "--use-agentic-rules", action="store_true", default=True, help="Use agentic rule generation (default: True)"
     )
     parser.add_argument(
-        "--mode", 
-        choices=["weights-only", "prompt-modification", "heuristics"], 
+        "--mode",
+        choices=["weights-only", "prompt-modification", "heuristics"],
         default="heuristics",
         help="Optimization mode: weights-only (fast weight tuning), prompt-modification (dynamic LLM guidance), heuristics (full rule generation)"
     )
@@ -1244,7 +1049,6 @@ async def main():
                 args.early_exit,
                 args.resume,
                 args.concurrency,
-                args.validate_rules,
                 args.model,
                 args.use_agentic_rules,
                 known_best_params,

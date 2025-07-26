@@ -34,6 +34,9 @@ except ImportError:
     SEMANTIC_AVAILABLE = False
     print("Warning: sentence-transformers not available. Install with: pip install sentence-transformers")
 
+# Duplicate-aware evaluation is always available (part of codebase)
+DUPLICATE_AWARE_AVAILABLE = True
+
 
 # Configuration
 class Config:

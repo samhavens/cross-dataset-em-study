@@ -31,6 +31,7 @@ import pandas as pd
 from run_enhanced_matching import run_enhanced_matching
 from src.entity_matching.candidate_optimization import get_optimal_candidates_for_dataset
 from src.entity_matching.hybrid_matcher import run_matching
+
 # ClaudeSDKOptimizer removed - using new MCP-based SimplifiedAgenticGenerator instead
 from src.experiments.simplified_agentic_generator import generate_simplified_heuristics, get_leaderboard_target_f1
 from src.utils.json_serializer import json_serialize
@@ -56,73 +57,42 @@ def get_available_datasets() -> list[str]:
 async def run_dev_only_analysis_with_params(
     dataset: str, params: Dict[str, Any], model: str = "gpt-4.1-nano", concurrency: int = 3
 ) -> Dict[str, Any]:
-    """Run dev set analysis with specific hyperparameters - NO FILE SWAPPING"""
-    data_root = pathlib.Path("data") / "raw" / dataset
-
-    # Create temporary dataset - NO FILE SWAPPING
-    os.makedirs("results/temp", exist_ok=True)
-    temp_dataset_dir = pathlib.Path("results/temp") / f"{dataset}_dev_temp"
-    temp_dataset_dir.mkdir(exist_ok=True)
-
-    try:
-        import shutil
-
-        # Copy essential files
-        shutil.copy(data_root / "tableA.csv", temp_dataset_dir / "tableA.csv")
-        shutil.copy(data_root / "tableB.csv", temp_dataset_dir / "tableB.csv")
-
-        # Decide what to use as dev set
-        if (data_root / "valid.csv").exists():
-            print("✅ Using validation set for dev analysis (no test leakage)")
-            valid_pairs = pd.read_csv(data_root / "valid.csv")
-            from src.entity_matching.balanced_sampling import balanced_train_sample, get_sample_info
-            valid_slice = balanced_train_sample(valid_pairs, target_size=200, random_state=42)
-            print(get_sample_info(valid_slice, "validation sample for dev analysis"))
-            valid_slice.to_csv(temp_dataset_dir / "test.csv", index=False)
-        elif (data_root / "train.csv").exists():
-            print("✅ Using balanced training sample for dev analysis (no test leakage)")
-            train_pairs = pd.read_csv(data_root / "train.csv")
-            from src.entity_matching.balanced_sampling import balanced_train_sample, get_sample_info
-            train_slice = balanced_train_sample(train_pairs, target_size=100, random_state=42)
-            print(get_sample_info(train_slice, "train sample for dev analysis"))
-            train_slice.to_csv(temp_dataset_dir / "test.csv", index=False)
-        else:
-            print("⚠️ No validation or training set - using test set for dev analysis (test won't be clean)")
-            shutil.copy(data_root / "test.csv", temp_dataset_dir / "test.csv")
-
-        # Run matching on temporary dataset
-        # We need to use a different approach since run_matching expects data/raw/dataset structure
-        # Let's create a symlink or copy to the expected location
-        expected_path = pathlib.Path("data/raw") / f"temp_{dataset}_dev_temp"
-        if expected_path.exists():
-            shutil.rmtree(expected_path)
-        expected_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(temp_dataset_dir, expected_path)
-
-        try:
-            # Use same evaluation method as RunExperiment for consistency
-            from run_enhanced_matching import run_enhanced_matching
-            dev_results = await run_enhanced_matching(
-                dataset=f"temp_{dataset}_dev_temp",
-                max_candidates=params.get("max_candidates", 150),
-                model=model,
-                semantic_weight=params.get("semantic_weight", 0.5),
-                trigram_weight=params.get("trigram_weight"),
-                syntactic_weight=params.get("syntactic_weight"),
-                use_validation=True,  # Use same 200-pair validation sample as RunExperiment
-                concurrency=concurrency,
-            )
-        finally:
-            # Clean up the expected path copy
-            if expected_path.exists():
-                shutil.rmtree(expected_path)
-
-        return dev_results
-
-    finally:
-        # Clean up temporary dataset
-        if temp_dataset_dir.exists():
-            shutil.rmtree(temp_dataset_dir)
+    """Run dev set analysis with specific hyperparameters - direct call to run_enhanced_matching"""
+    print(f"🎯 Running dev analysis on {dataset} with use_validation=True")
+    
+    # Call run_enhanced_matching directly on the original dataset
+    # use_validation=True makes it automatically sample 200 records from validation data
+    from run_enhanced_matching import run_enhanced_matching
+    raw_results = await run_enhanced_matching(
+        dataset=dataset,  # Use original dataset name
+        max_candidates=params.get("max_candidates", 150),
+        model=model,
+        semantic_weight=params.get("semantic_weight", 0.5),
+        trigram_weight=params.get("trigram_weight"),
+        syntactic_weight=params.get("syntactic_weight"),
+        use_validation=True,  # Let run_enhanced_matching handle validation sampling internally
+        concurrency=concurrency,
+    )
+    
+    # Transform format to match caller expectations
+    # run_enhanced_matching returns: {'f1': 0.85, 'cost': 1.2, ...}
+    # Callers expect: {'metrics': {'f1': 0.85}, 'cost_usd': 1.2, ...}
+    dev_results = {
+        'metrics': {
+            'f1': raw_results['f1'],
+            'precision': raw_results['precision'],
+            'recall': raw_results['recall'],
+            'accuracy': raw_results['accuracy']
+        },
+        'cost_usd': raw_results['cost'],
+        'predictions': raw_results.get('predictions', {}),
+        'failure_analysis': raw_results.get('failure_analysis', {}),
+        'early_decisions': raw_results.get('early_decisions', 0),
+        'llm_calls': raw_results.get('llm_calls', 0),
+        'llm_call_reduction': raw_results.get('llm_call_reduction', 0.0)
+    }
+    
+    return dev_results
 
 
 async def run_dev_only_analysis(dataset: str, model: str = "gpt-4.1-nano", concurrency: int = 3) -> Dict[str, Any]:
@@ -597,49 +567,49 @@ async def run_complete_pipeline(
 
     # STEP 3A: Test set evaluation WITHOUT rules (baseline with optimal params)
     # Always run 3A - prompt-modification mode needs it for before/after comparison
-        print("\n🎯 STEP 3A: FINAL TEST EVALUATION WITHOUT rules (optimal params baseline)")
-        print("⏳ Running baseline matching on FULL TEST SET (this is the real evaluation)...")
+    print("\n🎯 STEP 3A: FINAL TEST EVALUATION WITHOUT rules (optimal params baseline)")
+    print("⏳ Running baseline matching on FULL TEST SET (this is the real evaluation)...")
 
-        start_time = time.time()
-        # Extract learned weights from heuristics file for baseline evaluation
-        baseline_semantic_weight = optimal_params["semantic_weight"]  # default
-        baseline_trigram_weight = optimal_params.get("trigram_weight")  # default
-        baseline_syntactic_weight = optimal_params.get("syntactic_weight")  # default
+    start_time = time.time()
+    # Extract learned weights from heuristics file for baseline evaluation
+    baseline_semantic_weight = optimal_params["semantic_weight"]  # default
+    baseline_trigram_weight = optimal_params.get("trigram_weight")  # default
+    baseline_syntactic_weight = optimal_params.get("syntactic_weight")  # default
 
-        if heuristics_file and os.path.exists(heuristics_file):
-            try:
-                with open(heuristics_file) as f:
-                    heuristics_config = json.load(f)
-                    if "hyperparameters" in heuristics_config:
-                        hyperparams = heuristics_config["hyperparameters"]
-                        baseline_semantic_weight = hyperparams.get("semantic_weight", baseline_semantic_weight)
-                        baseline_trigram_weight = hyperparams.get("trigram_weight", baseline_trigram_weight)
-                        baseline_syntactic_weight = hyperparams.get("syntactic_weight", baseline_syntactic_weight)
-            except Exception:
-                pass  # Use default if can't load
+    if heuristics_file and os.path.exists(heuristics_file):
+        try:
+            with open(heuristics_file) as f:
+                heuristics_config = json.load(f)
+                if "hyperparameters" in heuristics_config:
+                    hyperparams = heuristics_config["hyperparameters"]
+                    baseline_semantic_weight = hyperparams.get("semantic_weight", baseline_semantic_weight)
+                    baseline_trigram_weight = hyperparams.get("trigram_weight", baseline_trigram_weight)
+                    baseline_syntactic_weight = hyperparams.get("syntactic_weight", baseline_syntactic_weight)
+        except Exception:
+            pass  # Use default if can't load
 
-        # Apply same fix: Always use 3-weight system with proper defaults for baseline too
-        if baseline_trigram_weight is None or baseline_syntactic_weight is None:
-            remaining_weight = 1.0 - baseline_semantic_weight
-            baseline_trigram_weight = remaining_weight * 0.6  # 60% of remaining to trigram
-            baseline_syntactic_weight = remaining_weight * 0.4  # 40% of remaining to syntactic
+    # Apply same fix: Always use 3-weight system with proper defaults for baseline too
+    if baseline_trigram_weight is None or baseline_syntactic_weight is None:
+        remaining_weight = 1.0 - baseline_semantic_weight
+        baseline_trigram_weight = remaining_weight * 0.6  # 60% of remaining to trigram
+        baseline_syntactic_weight = remaining_weight * 0.4  # 40% of remaining to syntactic
 
-        baseline_results = await run_matching(
-            dataset=dataset,
-            limit=None,
-            max_candidates=optimal_params["max_candidates"],  # Use optimized candidates
-            model="gpt-4.1-nano",  # Use cheaper model for test
-            semantic_weight=baseline_semantic_weight,  # Use learned semantic weight from Claude
-            trigram_weight=baseline_trigram_weight,  # Use learned trigram weight from Claude
-            syntactic_weight=baseline_syntactic_weight,  # Use learned syntactic weight from Claude
-            use_semantic=optimal_params["use_semantic"],
-            concurrency=concurrency,
-        )
-        baseline_time = time.time() - start_time
+    baseline_results = await run_matching(
+        dataset=dataset,
+        limit=None,
+        max_candidates=optimal_params["max_candidates"],  # Use optimized candidates
+        model="gpt-4.1-nano",  # Use cheaper model for test
+        semantic_weight=baseline_semantic_weight,  # Use learned semantic weight from Claude
+        trigram_weight=baseline_trigram_weight,  # Use learned trigram weight from Claude
+        syntactic_weight=baseline_syntactic_weight,  # Use learned syntactic weight from Claude
+        use_semantic=optimal_params["use_semantic"],
+        concurrency=concurrency,
+    )
+    baseline_time = time.time() - start_time
 
-        print(
-            f"✅ Baseline Results (no rules): F1={baseline_results['metrics']['f1']:.4f}, Cost=${baseline_results['cost_usd']:.3f}"
-        )
+    print(
+        f"✅ Baseline Results (no rules): F1={baseline_results['metrics']['f1']:.4f}, Cost=${baseline_results['cost_usd']:.3f}"
+    )
 
     # STEP 3B: Test set evaluation WITH generated rules
     print("\n🎯 STEP 3B: FINAL TEST EVALUATION WITH rules (enhanced approach)")
@@ -692,7 +662,7 @@ async def run_complete_pipeline(
         # Force use of Claude's optimized weights - no fallback allowed
         if learned_trigram_weight is None or learned_syntactic_weight is None:
             raise ValueError(f"Claude must provide complete weight optimization! Got: semantic={learned_semantic_weight}, trigram={learned_trigram_weight}, syntactic={learned_syntactic_weight}")
-        
+
         print(f"✅ Using Claude's optimized parameters: candidates={learned_max_candidates}, semantic={learned_semantic_weight:.3f}, trigram={learned_trigram_weight:.3f}, syntactic={learned_syntactic_weight:.3f}")
 
         enhanced_results = await run_enhanced_matching(

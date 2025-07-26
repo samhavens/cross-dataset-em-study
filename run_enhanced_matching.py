@@ -482,35 +482,36 @@ async def run_enhanced_matching(
     print(f"Cost: ${total_cost:.4f}")
 
     # Generate detailed failure analysis for debugging
+    import json  # Local import to fix UnboundLocalError
     false_positives = []
     false_negatives = []
     true_positives = []
-    
+
     for _, rec in pairs.iterrows():
         left_id = rec.ltable_id
         right_id = rec.rtable_id
         true_label = rec.label
-        
+
         if left_id in all_predictions:
             pred_right_id = all_predictions[left_id]
             pred_label = 1 if pred_right_id == right_id else 0
         else:
             pred_label = 0
             pred_right_id = None
-        
+
         left_record = A[left_id]
-        
+
         if pred_label == 1 and true_label == 0:
             # False Positive - predicted match but shouldn't match
             predicted_record = B[pred_right_id] if pred_right_id else None
             actual_record = B[right_id]
-            
+
             # Calculate similarities for the false positive prediction
             if predicted_record:
                 left_str = json.dumps(left_record, ensure_ascii=False).lower()
                 pred_str = json.dumps(predicted_record, ensure_ascii=False).lower()
                 actual_str = json.dumps(actual_record, ensure_ascii=False).lower()
-                
+
                 false_positives.append({
                     "left_record": left_record,
                     "predicted_record": predicted_record,
@@ -524,13 +525,13 @@ async def run_enhanced_matching(
                         "semantic": semantic_similarity(left_str, actual_str, cfg) if cfg.use_semantic else 0.0
                     }
                 })
-        
+
         elif pred_label == 0 and true_label == 1:
             # False Negative - should match but didn't predict
             actual_record = B[right_id]
             left_str = json.dumps(left_record, ensure_ascii=False).lower()
             actual_str = json.dumps(actual_record, ensure_ascii=False).lower()
-            
+
             # Check if actual match was in candidates
             candidates = get_top_candidates_cached(left_record, candidate_cache, max_candidates, cfg, dataset)
             found_in_candidates = any(idx == right_id for idx, _ in candidates)
@@ -540,7 +541,7 @@ async def run_enhanced_matching(
                     if idx == right_id:
                         candidate_rank = rank
                         break
-            
+
             false_negatives.append({
                 "left_record": left_record,
                 "missed_record": actual_record,
@@ -554,13 +555,13 @@ async def run_enhanced_matching(
                     "max_candidates": max_candidates
                 }
             })
-        
+
         elif pred_label == 1 and true_label == 1:
             # True Positive - correctly predicted match
             matched_record = B[right_id]
             left_str = json.dumps(left_record, ensure_ascii=False).lower()
             matched_str = json.dumps(matched_record, ensure_ascii=False).lower()
-            
+
             true_positives.append({
                 "left_record": left_record,
                 "matched_record": matched_record,

@@ -10,7 +10,6 @@ import asyncio
 import json
 import logging
 import os
-import subprocess
 import sys
 
 from pathlib import Path
@@ -19,8 +18,6 @@ from typing import Any, Dict, List
 # Add the src directory to Python path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import builtins
-import contextlib
 
 from datetime import datetime
 
@@ -388,37 +385,38 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[TextCon
             result = await write_prompt_tool(**arguments)
         elif name == "ReportIssue":
             issue_description = arguments.get("issue_description", "No description provided")
-            
+
             # Log to console and logger
             logger.error(f"🚨 CLAUDE REPORTED ISSUE: {issue_description}")
             print(f"🚨 CLAUDE REPORTED ISSUE: {issue_description}")
-            
+
             # Also log to results file
             import os
+
             from datetime import datetime
-            
+
             os.makedirs("results", exist_ok=True)
             issues_file = "results/claude_reported_issues.json"
-            
+
             issue_entry = {
                 "timestamp": datetime.now().isoformat(),
                 "issue_description": issue_description,
                 "server_mode": os.environ.get("MCP_SERVER_MODE", "unknown"),
                 "tool_call_context": name
             }
-            
+
             # Load existing issues or create new list
             try:
                 if os.path.exists(issues_file):
-                    with open(issues_file, 'r') as f:
+                    with open(issues_file) as f:
                         issues = json.load(f)
                 else:
                     issues = []
             except Exception:
                 issues = []
-            
+
             issues.append(issue_entry)
-            
+
             # Save updated issues
             try:
                 with open(issues_file, 'w') as f:
@@ -426,7 +424,7 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[TextCon
                 print(f"📝 Issue logged to: {issues_file}")
             except Exception as e:
                 print(f"⚠️ Failed to log issue to file: {e}")
-            
+
             result = [TextContent(type="text", text=f"✅ Issue reported and logged to {issues_file}: {issue_description}")]
         else:
             error_msg = f"Unknown tool: {name}"
@@ -457,11 +455,16 @@ async def generate_candidate_comparison(
 ) -> str:
     """Generate candidate comparison showing how weights affect candidate ranking."""
     try:
-        import pandas as pd
         import pathlib
+
+        import pandas as pd
+
         from src.entity_matching.hybrid_matcher import (
-            CandidateCache, Config, get_top_candidates_cached,
-            semantic_similarity, trigram_similarity
+            CandidateCache,
+            Config,
+            get_top_candidates_cached,
+            semantic_similarity,
+            trigram_similarity,
         )
 
         # Load dataset
@@ -544,7 +547,7 @@ async def generate_candidate_comparison(
         new_ids = [c['idx'] for c in new_candidates]
 
         if old_ids != new_ids:
-            comparison += f"\n📊 **Ranking Changes**: "
+            comparison += "\n📊 **Ranking Changes**: "
             changes = []
             for new_pos, cand_id in enumerate(new_ids, 1):
                 if cand_id in old_ids:
@@ -559,7 +562,7 @@ async def generate_candidate_comparison(
             else:
                 comparison += "Order unchanged"
         else:
-            comparison += f"\n📊 **Ranking**: Order unchanged, but scores adjusted"
+            comparison += "\n📊 **Ranking**: Order unchanged, but scores adjusted"
 
         return comparison
 
@@ -638,9 +641,9 @@ async def write_weights_tool(
         comparison_text = ""
         if show_candidate_comparison:
             if not dataset:
-                comparison_text = f"\n⚠️ dataset parameter required when show_candidate_comparison=true\n"
+                comparison_text = "\n⚠️ dataset parameter required when show_candidate_comparison=true\n"
             elif old_semantic is None:
-                comparison_text = f"\n💡 No previous weights found - showing candidates with new weights only\n"
+                comparison_text = "\n💡 No previous weights found - showing candidates with new weights only\n"
                 # Could show just the new candidates here, but for now just skip comparison
             else:
                 try:
@@ -837,10 +840,10 @@ async def run_experiment_tool(
 
         # Extract parameters from rules file
         max_candidates = 50  # default
-        semantic_weight = 0.5  # default  
+        semantic_weight = 0.5  # default
         trigram_weight = None
         syntactic_weight = None
-        
+
         try:
             with open(rules_file) as f:
                 rules_config = json.load(f)
@@ -856,9 +859,9 @@ async def run_experiment_tool(
         import sys
         sys.path.append(os.getcwd())
         from run_enhanced_matching import run_enhanced_matching
-        
+
         logger.info(f"Running experiment with max_candidates={max_candidates}, semantic={semantic_weight}, trigram={trigram_weight}, syntactic={syntactic_weight}")
-        
+
         # Call the function directly to get structured results
         results = await run_enhanced_matching(
             dataset=dataset,
@@ -870,27 +873,27 @@ async def run_experiment_tool(
             heuristic_file=rules_file,
             use_validation=True  # Always use validation for consistency
         )
-        
+
         # Extract core metrics from structured results
         f1_score = results["f1"]
-        precision = results["precision"] 
+        precision = results["precision"]
         recall = results["recall"]
         tp = results["failure_analysis"]["summary"]["total_tp"]
         fp = results["failure_analysis"]["summary"]["total_fp"]
         fn = results["failure_analysis"]["summary"]["total_fn"]
         # Calculate TN from total - we know the total from failure analysis
-        total_pairs = tp + fp + fn  # This gives us the total pairs evaluated
+        tp + fp + fn  # This gives us the total pairs evaluated
         tn = 0  # In entity matching, TN is usually 0 or very small
-        
+
         # Get failure analysis data
         false_positives = results["failure_analysis"]["false_positives"]
         false_negatives = results["failure_analysis"]["false_negatives"]
         true_positives = results["failure_analysis"]["true_positives"]
-        
+
         # Track actual weights used (from parameters)
         actual_weights = {
             "semantic": semantic_weight,
-            "trigram": trigram_weight, 
+            "trigram": trigram_weight,
             "syntactic": syntactic_weight
         }
 
@@ -943,7 +946,7 @@ async def run_experiment_tool(
         if tp == 0 and fn > 0:
             result_text += "   🚨 CRITICAL: No true positives found! All matches were missed.\n"
             result_text += "      → System is too conservative or similarity weights are wrong\n"
-        
+
         # Add detailed failure analysis with record details
         if false_positives and len(false_positives) > 0:
             result_text += f"\n🔴 FALSE POSITIVES ({len(false_positives)} cases - showing up to {max_examples}):\n"
@@ -953,7 +956,7 @@ async def run_experiment_tool(
                 result_text += f"       Should Match: {json.dumps(fp['actual_record'], ensure_ascii=False)}\n"
                 result_text += f"       Predicted Similarity: trigram={fp['predicted_similarity']['trigram']:.3f}, semantic={fp['predicted_similarity']['semantic']:.3f}\n"
                 result_text += f"       Actual Similarity: trigram={fp['actual_similarity']['trigram']:.3f}, semantic={fp['actual_similarity']['semantic']:.3f}\n"
-        
+
         if false_negatives and len(false_negatives) > 0:
             result_text += f"\n🔴 FALSE NEGATIVES ({len(false_negatives)} cases - showing up to {max_examples}):\n"
             for i, fn_case in enumerate(false_negatives[:max_examples]):
@@ -965,7 +968,7 @@ async def run_experiment_tool(
                     result_text += f"       ⚠️ Issue: Match not in top {fn_case['candidate_analysis']['max_candidates']} candidates - increase max_candidates or improve similarity\n"
                 elif fn_case['candidate_analysis']['rank'] and fn_case['candidate_analysis']['rank'] > 10:
                     result_text += f"       ⚠️ Issue: Match ranked {fn_case['candidate_analysis']['rank']} - candidate selection working but LLM/rules rejecting\n"
-        
+
         if true_positives and len(true_positives) > 0:
             result_text += f"\n✅ TRUE POSITIVES ({len(true_positives)} cases - showing sample):\n"
             for i, tp_case in enumerate(true_positives[:min(3, max_examples)]):  # Show fewer TPs since they're working
@@ -995,7 +998,7 @@ async def run_experiment_tool(
                     result_text += f"   Baseline max_candidates: {baseline_max_candidates}\n"
                     result_text += f"   Baseline evaluation set: {baseline_eval_set}\n"
                     result_text += f"   Current max_candidates: {max_candidates or 'default (50)'}\n"
-                    result_text += f"   Current evaluation set: FULL validation (no sampling)\n"
+                    result_text += "   Current evaluation set: FULL validation (no sampling)\n"
 
                     # Warn about significant discrepancies
                     if abs(change) > 0.1:
@@ -1013,7 +1016,7 @@ async def run_experiment_tool(
         result_text += f"   PRECISION: {precision:.4f}\n"
         result_text += f"   RECALL: {recall:.4f}\n"
         result_text += f"   FALSE POSITIVES: {fp}\n"
-        result_text += f"   FALSE NEGATIVES: {fn}\n"  
+        result_text += f"   FALSE NEGATIVES: {fn}\n"
         result_text += f"   TRUE POSITIVES: {tp}\n"
         if fp == 0 and fn == 0:
             result_text += "   🎉 PERFECT RESULTS - No errors!\n"
@@ -1140,12 +1143,18 @@ async def read_sample_data_tool(dataset: str) -> List[TextContent]:
 async def read_instructions_tool(dataset: str) -> List[TextContent]:
     """Provide clear task instructions."""
 
-    # Get target F1 from leaderboard
+    # Get target F1 from leaderboard - COMPLETE SET
     leaderboard_targets = {
+        "abt_buy": 92.4,
+        "amazon_google": 75.0,
         "beer": 95.3,
+        "dblp_acm": 96.5,
+        "dblp_scholar": 89.8,
+        "fodors_zagat": 99.6,
         "itunes_amazon": 85.0,
-        "amazon_google": 77.0,
-        "dblp_acm": 95.0
+        "rotten_imdb": 97.2,
+        "walmart_amazon": 85.1,
+        "zomato_yelp": 98.2
     }
 
     target_f1 = leaderboard_targets.get(dataset, 85.0)
@@ -1347,8 +1356,9 @@ async def read_prompt_tool() -> List[TextContent]:
 async def write_prompt_tool(prompt_data: dict) -> List[TextContent]:
     """Write/update the prompt data structure with diff output."""
     try:
-        from src.prompts.hybrid_matcher_prompt import get_prompt_data, update_prompt_data, build_prompt
         import difflib
+
+        from src.prompts.hybrid_matcher_prompt import build_prompt, get_prompt_data, update_prompt_data
 
         # Validate the structure
         if "sections" not in prompt_data:

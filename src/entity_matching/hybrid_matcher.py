@@ -134,52 +134,75 @@ MAX = 1_000_000  # token limit for the matching prompt
 
 
 async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> str:
-    """Make async call to OpenAI API with timeout"""
-    try:
-        # o3/o4 models use max_completion_tokens instead of max_tokens and don't support temperature=0
-        if cfg.model.startswith(("o3", "o4")):
-            response = await asyncio.wait_for(
-                client.chat.completions.create(
-                    model=cfg.model,
-                    messages=[{"role": "user", "content": prompt}],
-                    max_completion_tokens=max(cfg.max_tokens, 1000),  # Give o4 models more tokens
-                ),
-                timeout=120  # 2 minute timeout for nano models
-            )
-        else:
-            response = await asyncio.wait_for(
-                client.chat.completions.create(
-                    model=cfg.model,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=cfg.temperature,
-                    max_tokens=cfg.max_tokens,
-                ),
-                timeout=120  # 2 minute timeout for nano models
-            )
+    """Make async call to OpenAI API with exponential backoff and retries"""
+    import random
+    
+    max_retries = 4
+    base_delay = 2.0
+    max_timeout = 300  # 5 minutes for complex entity matching prompts
+    
+    for attempt in range(max_retries):
+        try:
+            # Increase timeout progressively: 120s -> 180s -> 240s -> 300s
+            timeout = min(120 + (attempt * 60), max_timeout)
+            
+            # o3/o4 models use max_completion_tokens instead of max_tokens and don't support temperature=0
+            if cfg.model.startswith(("o3", "o4")):
+                response = await asyncio.wait_for(
+                    client.chat.completions.create(
+                        model=cfg.model,
+                        messages=[{"role": "user", "content": prompt}],
+                        max_completion_tokens=max(cfg.max_tokens, 1000),  # Give o4 models more tokens
+                    ),
+                    timeout=timeout
+                )
+            else:
+                response = await asyncio.wait_for(
+                    client.chat.completions.create(
+                        model=cfg.model,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=cfg.temperature,
+                        max_tokens=cfg.max_tokens,
+                    ),
+                    timeout=timeout
+                )
+            
+            # Success! Track usage and return
+            usage = response.usage
+            cfg.total_input_tokens += usage.prompt_tokens
+            cfg.total_output_tokens += usage.completion_tokens
 
-        # Track usage
-        usage = response.usage
-        cfg.total_input_tokens += usage.prompt_tokens
-        cfg.total_output_tokens += usage.completion_tokens
+            content = response.choices[0].message.content
+            if content is None:
+                print(f"  WARNING: Empty response from OpenAI API for model {cfg.model}")
+                print(f"  Response object: {response}")
+                return ""
 
-        content = response.choices[0].message.content
-        if content is None:
-            print(f"  WARNING: Empty response from OpenAI API for model {cfg.model}")
-            print(f"  Response object: {response}")
-            return ""
+            result = content.strip()
+            if cfg.model.startswith(("o3", "o4")) and not result:
+                print(f"  WARNING: o4 model returned empty string. Raw content: '{content}'")
 
-        result = content.strip()
-        if cfg.model.startswith(("o3", "o4")) and not result:
-            print(f"  WARNING: o4 model returned empty string. Raw content: '{content}'")
+            return result
 
-        return result
-
-    except asyncio.TimeoutError:
-        print(f"OpenAI API timeout after 2 minutes for model {cfg.model}")
-        return ""
-    except Exception as e:
-        print(f"OpenAI API error: {e}")
-        return ""
+        except asyncio.TimeoutError:
+            delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+            print(f"OpenAI API timeout (attempt {attempt + 1}/{max_retries}) after {timeout}s for model {cfg.model}")
+            if attempt < max_retries - 1:
+                print(f"  Retrying in {delay:.1f}s with {timeout + 60}s timeout...")
+                await asyncio.sleep(delay)
+            continue
+            
+        except Exception as e:
+            delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
+            print(f"OpenAI API error (attempt {attempt + 1}/{max_retries}): {e}")
+            if attempt < max_retries - 1:
+                print(f"  Retrying in {delay:.1f}s...")
+                await asyncio.sleep(delay)
+            continue
+    
+    # All retries exhausted
+    print(f"❌ OpenAI API failed after {max_retries} attempts for model {cfg.model}")
+    return ""
 
 
 def syntactic_similarity(s1: str, s2: str) -> float:

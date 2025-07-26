@@ -193,7 +193,7 @@ Our best results on entity matching datasets. Shows the better of baseline (opti
             else:
                 # No results - create placeholder
                 method_desc = "❌ Not tested"
-                notes = "Run: python run_complete_pipeline.py --dataset " + dataset
+                notes = f"File: results/{dataset}_complete_pipeline.json"
 
             # Format target
             target_display = f"{target_f1:.1f}" if target_f1 > 0 else "Unknown"

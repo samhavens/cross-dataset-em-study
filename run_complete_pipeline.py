@@ -783,6 +783,134 @@ async def run_complete_pipeline(
         else:
             print("💡 RECOMMENDATION: Use baseline approach (simpler, similar performance)!")
 
+    # ENHANCED: Save comprehensive optimization artifacts for reuse
+    optimization_artifacts = {}
+    
+    # Save generated heuristics file content if it exists
+    if heuristics_file and os.path.exists(heuristics_file):
+        with open(heuristics_file) as f:
+            optimization_artifacts["generated_heuristics"] = json.load(f)
+        optimization_artifacts["heuristics_file_path"] = heuristics_file
+    
+    # Save sample data used for optimization
+    sample_data_file = f"results/temp/sample_data_{dataset}.json"
+    if os.path.exists(sample_data_file):
+        with open(sample_data_file) as f:
+            optimization_artifacts["sample_data"] = json.load(f)
+    
+    # Save optimal hyperparameters discovered
+    optimization_artifacts["optimal_hyperparameters"] = {
+        "baseline": {
+            "max_candidates": baseline_results.get("max_candidates", optimal_candidates),
+            "semantic_weight": baseline_results.get("semantic_weight", default_params.get("semantic_weight")),
+            "trigram_weight": baseline_results.get("trigram_weight", default_params.get("trigram_weight")),
+            "syntactic_weight": baseline_results.get("syntactic_weight", default_params.get("syntactic_weight"))
+        }
+    }
+    
+    # Extract enhanced hyperparameters if available
+    if heuristics_file and os.path.exists(heuristics_file):
+        try:
+            with open(heuristics_file) as f:
+                enhanced_config = json.load(f)
+            if "hyperparameters" in enhanced_config:
+                optimization_artifacts["optimal_hyperparameters"]["enhanced"] = enhanced_config["hyperparameters"]
+        except:
+            pass
+    
+    # Save EVERYTHING needed to reproduce results
+    optimization_artifacts["reproduction_data"] = {}
+    
+    # 1. Save current prompt structure (if modified)
+    try:
+        from src.prompts.hybrid_matcher_prompt import get_prompt_data
+        current_prompt = get_prompt_data()
+        optimization_artifacts["reproduction_data"]["final_prompt_structure"] = current_prompt
+    except Exception as e:
+        optimization_artifacts["reproduction_data"]["prompt_error"] = str(e)
+    
+    # 2. Save exact command to reproduce
+    optimization_artifacts["reproduction_data"]["exact_command"] = {
+        "script": "run_enhanced_matching.py",
+        "args": [
+            f"--dataset {dataset}",
+            f"--max-candidates {baseline_results.get('max_candidates', optimal_candidates)}",
+            f"--semantic-weight {baseline_results.get('semantic_weight', default_params.get('semantic_weight', 0.5))}",
+            f"--trigram-weight {baseline_results.get('trigram_weight', default_params.get('trigram_weight'))}",
+            f"--syntactic-weight {baseline_results.get('syntactic_weight', default_params.get('syntactic_weight'))}",
+            f"--heuristic-file {heuristics_file}" if heuristics_file and os.path.exists(heuristics_file) else "",
+            "--use-validation"
+        ],
+        "full_command": f"python run_enhanced_matching.py --dataset {dataset} --max-candidates {baseline_results.get('max_candidates', optimal_candidates)} --semantic-weight {baseline_results.get('semantic_weight', default_params.get('semantic_weight', 0.5))} --use-validation" + (f" --heuristic-file {heuristics_file}" if heuristics_file and os.path.exists(heuristics_file) else "")
+    }
+    
+    # 3. Save rule generation conversation logs with CONTENT
+    log_files = [
+        f"results/temp/claude_conversation_{dataset}.log",
+        f"results/temp/optimization_log_{dataset}.json", 
+        "results/temp/mcp_server.log"
+    ]
+    optimization_artifacts["conversation_logs"] = []
+    for log_file in log_files:
+        if os.path.exists(log_file):
+            try:
+                # Read and include the actual log content for full reproduction
+                with open(log_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    # Truncate if too long, but keep the important parts
+                    if len(content) > 50000:  # 50KB limit
+                        content = content[-50000:]  # Keep last 50KB (most recent)
+                        content = "...[truncated]...\n" + content
+                optimization_artifacts["conversation_logs"].append({
+                    "file": log_file,
+                    "content": content,
+                    "size_bytes": len(content),
+                    "note": "Full conversation content included for reproduction"
+                })
+            except Exception as e:
+                optimization_artifacts["conversation_logs"].append({
+                    "file": log_file,
+                    "error": str(e),
+                    "note": "Failed to read log content"
+                })
+    
+    # 4. Save temp files that Claude generated
+    temp_files = [
+        f"results/temp/sample_data_{dataset}.json",
+        "results/temp/generated_rules.json",
+        "results/temp/prompt_data.json"
+    ]
+    optimization_artifacts["temp_artifacts"] = []
+    for temp_file in temp_files:
+        if os.path.exists(temp_file):
+            try:
+                with open(temp_file, 'r') as f:
+                    temp_content = json.load(f) if temp_file.endswith('.json') else f.read()
+                optimization_artifacts["temp_artifacts"].append({
+                    "file": temp_file,
+                    "content": temp_content,
+                    "note": "Temporary artifact generated during optimization"
+                })
+            except Exception as e:
+                optimization_artifacts["temp_artifacts"].append({
+                    "file": temp_file,
+                    "error": str(e)
+                })
+    
+    # Save method comparison and recommendation
+    optimization_artifacts["method_recommendation"] = {
+        "best_method": "enhanced" if enhanced_results["f1"] > baseline_results["metrics"]["f1"] else "baseline",
+        "f1_improvement": f1_improvement,
+        "should_use_rules": f1_improvement > 0.01,
+        "reasoning": (
+            "Rules provide significant improvement" if f1_improvement > 0.01
+            else "Baseline sufficient, rules add complexity without benefit" if f1_improvement < -0.01
+            else "Marginal difference, use simpler baseline approach"
+        )
+    }
+    
+    results["optimization_artifacts"] = optimization_artifacts
+    
     results["summary"] = {
         "dev_f1": dev_results["metrics"]["f1"],
         "baseline_f1": baseline_results["metrics"]["f1"],
@@ -794,6 +922,7 @@ async def run_complete_pipeline(
         "total_time_seconds": total_time,
         "beat_leaderboard": beat_leaderboard,
         "leaderboard_target": target_f1,
+        "reusable_config_path": heuristics_file if heuristics_file and os.path.exists(heuristics_file) else None
     }
 
     # Save results with comprehensive JSON serialization
@@ -897,7 +1026,7 @@ def extract_failure_records(dataset: str, results: Dict[str, Any]) -> Dict[str, 
 async def main():
     parser = argparse.ArgumentParser(description="Complete entity matching pipeline")
     parser.add_argument("--dataset", help="Dataset name (e.g. beer, walmart_amazon)")
-    parser.add_argument("--datasets", choices=["all"], help="Run on all available datasets")
+    parser.add_argument("--datasets", help="Run on comma-separated list of datasets or 'all' for all datasets")
     parser.add_argument("--early-exit", action="store_true", help="Early exit parameter (ignored, kept for backward compatibility)")
     parser.add_argument("--resume", action="store_true", help="Resume from checkpoint if available")
     parser.add_argument("--concurrency", type=int, default=20, help="Number of concurrent API requests (default: 20)")
@@ -972,12 +1101,25 @@ async def main():
         parser.error("Cannot specify both --dataset and --datasets")
 
     # Get list of datasets to process
-    if args.datasets == "all":
-        datasets = get_available_datasets()
-        if not datasets:
-            print("❌ No datasets found in data/raw directory")
-            return None
-        print(f"🗂️ Found {len(datasets)} datasets: {', '.join(datasets)}")
+    if args.datasets:
+        if args.datasets == "all":
+            datasets = get_available_datasets()
+            if not datasets:
+                print("❌ No datasets found in data/raw directory")
+                return None
+            print(f"🗂️ Found {len(datasets)} datasets: {', '.join(datasets)}")
+        else:
+            # Parse comma-separated list
+            datasets = [d.strip() for d in args.datasets.split(",")]
+            print(f"🗂️ Processing {len(datasets)} datasets: {', '.join(datasets)}")
+            
+            # Validate dataset names
+            available_datasets = get_available_datasets()
+            invalid_datasets = [d for d in datasets if d not in available_datasets]
+            if invalid_datasets:
+                print(f"❌ Invalid datasets: {', '.join(invalid_datasets)}")
+                print(f"Available datasets: {', '.join(available_datasets)}")
+                return None
     else:
         datasets = [args.dataset]
 

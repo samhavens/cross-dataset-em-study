@@ -396,10 +396,17 @@ class CandidateCache:
 
     def __init__(self, right_records: Union[List[dict], Dict[int, dict]], cache_file: str = None):
         """Pre-compute all expensive operations on right records"""
-        self.right_records = right_records
+        # Handle pandas DataFrame input
+        if hasattr(right_records, 'to_dict'):
+            # Convert DataFrame to dict format for compatibility
+            self.right_records = right_records.set_index('id').to_dict('index')
+            self.is_dict_access = True
+        else:
+            self.right_records = right_records
+            self.is_dict_access = isinstance(right_records, dict)
+            
         self.json_strings = {}  # id -> json string
         self.trigram_sets = {}  # id -> trigram set
-        self.is_dict_access = isinstance(right_records, dict)
         self.cache_file = cache_file
 
         # Try to load from cache file if provided
@@ -474,11 +481,15 @@ class CandidateCache:
             if not self.is_dict_access:
                 self.json_strings = {int(k): v for k, v in self.json_strings.items()}
                 self.trigram_sets = {int(k): v for k, v in self.trigram_sets.items()}
-            # For dict access, keys might be strings or ints, ensure consistency
-            # Convert all keys to the same type as the original records
-            elif self.right_records and isinstance(next(iter(self.right_records.keys())), int):
-                self.json_strings = {int(k) if isinstance(k, str) else k: v for k, v in self.json_strings.items()}
-                self.trigram_sets = {int(k) if isinstance(k, str) else k: v for k, v in self.trigram_sets.items()}
+            # For dict access with integer keys, convert string keys back to ints
+            else:
+                # Sample a key to determine the original type
+                if self.right_records:
+                    sample_key = next(iter(self.right_records.keys()))
+                    if isinstance(sample_key, int):
+                        # Convert all string keys back to integers
+                        self.json_strings = {int(k): v for k, v in self.json_strings.items()}
+                        self.trigram_sets = {int(k): v for k, v in self.trigram_sets.items()}
 
             return True
         except Exception as e:

@@ -51,6 +51,8 @@ def json_serialize(obj: Any) -> Any:
     if isinstance(obj, np.integer):
         return int(obj)
     if isinstance(obj, np.floating):
+        if np.isnan(obj):
+            return None  # Convert NaN to null for valid JSON
         return float(obj)
     if isinstance(obj, np.ndarray):
         return obj.tolist()
@@ -74,7 +76,11 @@ def json_serialize(obj: Any) -> Any:
         return float(obj)
 
     # Handle native Python types
-    if isinstance(obj, (str, int, float, bool)):
+    if isinstance(obj, (str, int, bool)):
+        return obj
+    if isinstance(obj, float):
+        if obj != obj:  # NaN check (NaN != NaN is True)
+            return None
         return obj
 
     # Handle collections

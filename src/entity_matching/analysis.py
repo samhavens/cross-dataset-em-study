@@ -294,6 +294,15 @@ def analyze_candidate_recall(
     original_use_heuristics = cfg.use_heuristics
     cfg.use_heuristics = False
 
+    # Create candidate cache if not provided
+    if candidate_cache is None:
+        if verbose:
+            print("📦 Building candidate cache for fast processing...")
+        B_records_list = list(B_records.values())
+        candidate_cache = CandidateCache(B_records_list)
+        if verbose:
+            print("✅ Candidate cache ready")
+
     # Define thresholds to test
     base_thresholds = [1, 5, 10, 25, 50, 100, 150, 200, 300, 500]
 
@@ -349,7 +358,7 @@ def analyze_candidate_recall(
 
         try:
             left_record = A_records[left_id]
-            candidates = get_top_candidates_cached(left_record, candidate_cache, max_threshold, cfg, dataset, intelligent_boost=False, fast_analysis=True)
+            candidates = get_top_candidates_cached(left_record, candidate_cache, max_threshold, cfg, dataset, intelligent_boost=False, fast_analysis=False)
             candidate_ids = [c[0] for c in candidates]
             candidates_cache[left_id] = candidate_ids
         except Exception as e:

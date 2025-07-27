@@ -16,7 +16,7 @@ import os
 import pathlib
 import time
 
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 
@@ -47,6 +47,7 @@ async def enhanced_match_single_record(
     cfg: Config,
     client: AsyncOpenAI,
     heuristic_engine: EnhancedHeuristicEngine,
+    prompt_data: Optional[Dict[str, Any]] = None,
 ) -> tuple[int, bool]:
     """Enhanced matching with sophisticated control logic"""
     logger = logging.getLogger(__name__)
@@ -111,25 +112,24 @@ async def enhanced_match_single_record(
     # Fall back to LLM if no early decision
     # Proceeding to LLM (removed verbose logging)
 
-    # Build prompt with the best candidate
-    candidates_text = f"{best_idx}) {json.dumps(best_record, ensure_ascii=False)}"
+    # Build prompt with all candidates (recall@N) - fixes recall@1 architecture flaw
+    candidates_lines = []
+    for position, (actual_id, record) in enumerate(candidates, 1):
+        # Remove the 'id' field from the record to prevent LLM confusion (match baseline behavior)
+        cleaned_record = {k: v for k, v in record.items() if k != 'id'}
+        candidates_lines.append(f"{position}) {json.dumps(cleaned_record, ensure_ascii=False)}")
+    candidates_text = "\n".join(candidates_lines)
 
-    # Apply prompt rules if available
-    prompt_additions = []
-    if heuristic_engine and hasattr(heuristic_engine, 'prompt_rules'):
-        for rule in heuristic_engine.prompt_rules:
-            try:
-                # Evaluate condition in safe context
-                condition_context = {
-                    'left_record': left_record,
-                    'right_record': best_record,
-                    'candidate_record': best_record,  # alias for compatibility
-                }
-                if eval(rule['condition'], {"__builtins__": {}}, condition_context):
-                    prompt_additions.append(rule['prompt_addition'])
-                    logger.info(f"Applied prompt rule: {rule['rule_name']}")
-            except Exception as e:
-                logger.warning(f"Failed to evaluate prompt rule {rule.get('rule_name', 'unknown')}: {e}")
+    # best_idx is actually a record ID, find its position in the candidates list
+    display_best_idx = 1  # Default to first candidate if not found
+    for position, (actual_id, record) in enumerate(candidates, 1):
+        if actual_id == best_idx:
+            display_best_idx = position
+            break
+    
+    # DEBUG LOGGING: Log candidate display info
+    logger.debug(f"🔍 Candidate mapping: best_idx (record_id)={best_idx}, display_best_idx (position)={display_best_idx}")
+    logger.debug(f"🔍 Showing {len(candidates)} candidates to LLM, positions 1-{len(candidates)}")
 
     # Build prompt using structured sections
     from src.prompts.hybrid_matcher_prompt import build_prompt
@@ -138,8 +138,9 @@ async def enhanced_match_single_record(
     prompt = build_prompt(
         left_record=left_record,
         candidates_text=candidates_text,
-        best_idx=best_idx,
-        additional_guidance=prompt_additions if prompt_additions else None
+        best_idx=display_best_idx,
+        prompt_data=prompt_data,
+        additional_guidance=None
     )
 
     # Check token count
@@ -150,6 +151,9 @@ async def enhanced_match_single_record(
 
     # Get LLM response
     response = await call_openai_async(prompt, cfg, client)
+    
+    # DEBUG LOGGING: Log LLM interaction
+    logger.debug(f"🔍 LLM raw response: '{response}'")
 
     # Parse response
     if not response:
@@ -162,17 +166,31 @@ async def enhanced_match_single_record(
 
         # Try direct int conversion first
         try:
-            match_idx = int(response_clean)
-            return (match_idx if match_idx == best_idx else -1), False
+            llm_choice = int(response_clean)
         except ValueError:
             # Try to extract number from response if it contains extra text
             import re
             numbers = re.findall(r'-?\d+', response_clean)
             if numbers:
-                match_idx = int(numbers[0])  # Take first number found
-                print(f"  DEBUG: Extracted number {match_idx} from response: '{response_clean}'")
-                return (match_idx if match_idx == best_idx else -1), False
-            print(f"  WARNING: Could not parse LLM response: '{response_clean}' (no numbers found)")
+                llm_choice = int(numbers[0])  # Take first number found
+                print(f"  DEBUG: Extracted number {llm_choice} from response: '{response_clean}'")
+            else:
+                print(f"  WARNING: Could not parse LLM response: '{response_clean}' (no numbers found)")
+                return -1, False
+
+        # Handle LLM response: -1 means no match, 1-N means candidate choice
+        if llm_choice == -1:
+            logger.debug(f"🔍 LLM chose no match (-1)")
+            return -1, False
+        elif 1 <= llm_choice <= len(candidates):
+            # Convert 1-based LLM response to 0-based candidate index
+            candidate_idx = llm_choice - 1
+            chosen_right_id, _ = candidates[candidate_idx]
+            logger.debug(f"🔍 LLM chose position {llm_choice} → candidate_idx={candidate_idx} → right_id={chosen_right_id}")
+            # Return the candidate index (not the ID - calling code expects index)
+            return candidate_idx, False
+        else:
+            logger.warning(f"🔍 LLM chose invalid candidate {llm_choice} (valid range: 1-{len(candidates)} or -1)")
             return -1, False
 
     except Exception as e:
@@ -203,7 +221,8 @@ async def run_enhanced_matching(
     # Load enhanced heuristic engine
     heuristic_engine = load_enhanced_heuristics_for_dataset(dataset, heuristic_file)
 
-    # CRITICAL FIX: Extract weights from heuristic file if provided
+    # Load configuration from heuristic file if provided
+    prompt_data = None
     if heuristic_file and os.path.exists(heuristic_file):
         try:
             import json
@@ -228,8 +247,14 @@ async def run_enhanced_matching(
                 print(f"✅ Loaded weights from heuristic file: semantic={semantic_weight}, trigram={trigram_weight}, syntactic={syntactic_weight}")
             else:
                 print("⚠️ No hyperparameters found in heuristic file")
+
+            # Load prompt data from heuristic file if available
+            if "prompt_data" in heuristic_config:
+                prompt_data = heuristic_config["prompt_data"]
+                print(f"✅ Loaded prompt data from heuristic file")
+
         except Exception as e:
-            print(f"⚠️ Could not extract weights from heuristic file: {e}")
+            print(f"⚠️ Could not extract configuration from heuristic file: {e}")
 
     # Show final weights being used
     if trigram_weight is not None and syntactic_weight is not None:
@@ -309,7 +334,7 @@ async def run_enhanced_matching(
 
     # Note: limit parameter removed - always use full evaluation set for reliable results
 
-    print(f"Processing {len(pairs)} pairs with enhanced control logic...")
+    print(f"Processing {len(pairs)} pairs with {max_candidates} candidates ({max_candidates / len(B):.1%} of table B) per record")
 
     # Create candidate cache for massive speed improvement with persistent caching
     print("🔄 Creating candidate cache...")
@@ -340,11 +365,11 @@ async def run_enhanced_matching(
 
         # Enhanced matching with control logic
         match_idx, was_early_decision = await enhanced_match_single_record(
-            left_record, top_candidates, cfg, client, heuristic_engine
+            left_record, top_candidates, cfg, client, heuristic_engine, prompt_data
         )
 
-        # Return results for thread-safe aggregation
-        return left_id, match_idx, was_early_decision
+        # Return results for thread-safe aggregation (include candidates for ID mapping)
+        return left_id, match_idx, was_early_decision, top_candidates
 
     # Create batches for concurrent processing using dynamic batching like baseline
     batch_size = max(1, len(pairs) // 20)  # Dynamic batch size for ~20 progress updates
@@ -373,9 +398,11 @@ async def run_enhanced_matching(
             batch_results = await task
 
             # Aggregate results thread-safely
-            for left_id, match_idx, was_early_decision in batch_results:
+            for left_id, match_idx, was_early_decision, top_candidates in batch_results:
                 if match_idx != -1:
-                    all_predictions[left_id] = match_idx
+                    # match_idx is a candidate index, convert to right_id for evaluation
+                    right_id, _ = top_candidates[match_idx]
+                    all_predictions[left_id] = right_id
 
                 if was_early_decision:
                     early_decisions += 1
@@ -480,6 +507,7 @@ async def run_enhanced_matching(
     print(f"Accuracy: {accuracy:.4f}")
     print(f"TP: {tp}, FP: {fp}, FN: {fn}, TN: {tn}")
     print(f"Cost: ${total_cost:.4f}")
+    print(f"Candidate selection: {max_candidates} candidates ({max_candidates / len(B):.1%} of table B)")
 
     # Generate detailed failure analysis for debugging
     import json  # Local import to fix UnboundLocalError

@@ -35,6 +35,7 @@ from src.entity_matching.hybrid_matcher import run_matching
 # ClaudeSDKOptimizer removed - using new MCP-based SimplifiedAgenticGenerator instead
 from src.experiments.simplified_agentic_generator import generate_simplified_heuristics, get_leaderboard_target_f1
 from src.utils.json_serializer import json_serialize
+from src.evaluation.duplicate_aware import load_duplicate_mapping, compare_evaluations
 
 
 def get_available_datasets() -> list[str]:
@@ -594,6 +595,12 @@ async def run_complete_pipeline(
         baseline_trigram_weight = remaining_weight * 0.6  # 60% of remaining to trigram
         baseline_syntactic_weight = remaining_weight * 0.4  # 40% of remaining to syntactic
 
+    # Display baseline parameters for comparison
+    print(f"📊 Baseline Parameters:")
+    print(f"   Max Candidates: {optimal_params['max_candidates']}")
+    print(f"   Weights: semantic={baseline_semantic_weight:.3f}, trigram={baseline_trigram_weight:.3f}, syntactic={baseline_syntactic_weight:.3f}")
+    print(f"   Weight Sum: {baseline_semantic_weight + baseline_trigram_weight + baseline_syntactic_weight:.3f}")
+
     baseline_results = await run_matching(
         dataset=dataset,
         limit=None,
@@ -703,6 +710,7 @@ async def run_complete_pipeline(
             "recall": baseline_results["metrics"]["recall"],
             "cost_usd": baseline_results["cost_usd"],
             "processing_time": baseline_time,
+            "predictions": baseline_results.get("predictions", {}),  # Include predictions for duplicate-aware eval
         }
     else:
         results["baseline_results"] = {
@@ -771,6 +779,74 @@ async def run_complete_pipeline(
         leaderboard_msg = f"📈 Still working on it (target: {target_f1:.1f})"
 
     print(f"Leaderboard: {leaderboard_msg}")
+
+    # DUPLICATE-AWARE EVALUATION
+    print("\n🔍 DUPLICATE-AWARE EVALUATION")
+    print("=" * 50)
+    
+    try:
+        # Load duplicate mapping (generates on-demand if needed)
+        duplicate_mapping = load_duplicate_mapping(dataset)
+        
+        # Check if duplicates were found
+        has_duplicates = bool(duplicate_mapping["tableA_mapping"] or duplicate_mapping["tableB_mapping"])
+        
+        if has_duplicates:
+            print(f"✅ Found duplicates - performing duplicate-aware evaluation")
+            
+            # Evaluate baseline with duplicate-awareness
+            if baseline_results and baseline_results.get("predictions"):
+                baseline_predictions = [(int(k), int(v)) for k, v in baseline_results["predictions"].items()]
+                # Load ground truth
+                data_root = pathlib.Path("data/raw") / dataset
+                test_pairs = pd.read_csv(data_root / "test.csv")
+                ground_truth = [(int(row.ltable_id), int(row.rtable_id)) for _, row in test_pairs.iterrows() if row.label == 1]
+                
+                baseline_dup_comparison = compare_evaluations(baseline_predictions, ground_truth, duplicate_mapping)
+                baseline_dup_aware_f1 = baseline_dup_comparison["duplicate_aware_evaluation"]["f1"]
+                baseline_f1_gain = baseline_dup_comparison["improvement"]["f1_gain"]
+                
+                print(f"📊 Baseline duplicate-aware F1: {baseline_dup_aware_f1:.4f} (gain: {baseline_f1_gain:+.4f})")
+            else:
+                baseline_dup_aware_f1 = None
+                baseline_f1_gain = 0
+                
+            # Evaluate enhanced with duplicate-awareness
+            if enhanced_results.get("predictions"):
+                enhanced_predictions = [(int(k), int(v)) for k, v in enhanced_results["predictions"].items()]
+                enhanced_dup_comparison = compare_evaluations(enhanced_predictions, ground_truth, duplicate_mapping)
+                enhanced_dup_aware_f1 = enhanced_dup_comparison["duplicate_aware_evaluation"]["f1"]
+                enhanced_f1_gain = enhanced_dup_comparison["improvement"]["f1_gain"]
+                
+                print(f"📊 Enhanced duplicate-aware F1: {enhanced_dup_aware_f1:.4f} (gain: {enhanced_f1_gain:+.4f})")
+            else:
+                enhanced_dup_aware_f1 = None
+                enhanced_f1_gain = 0
+                
+            # Update leaderboard check with duplicate-aware results
+            best_dup_aware_f1 = max(baseline_dup_aware_f1 or 0, enhanced_dup_aware_f1 or 0)
+            dup_aware_beats_leaderboard = (
+                best_dup_aware_f1 > target_f1 / 100 if target_f1 > 10 else best_dup_aware_f1 > target_f1
+            )
+            
+            if dup_aware_beats_leaderboard:
+                print(f"🎉 DUPLICATE-AWARE BEATS LEADERBOARD! {best_dup_aware_f1:.4f} > {target_f1/100 if target_f1 > 10 else target_f1:.4f}")
+            
+        else:
+            print("ℹ️ No duplicates found - standard evaluation is accurate")
+            baseline_dup_aware_f1 = baseline_results["metrics"]["f1"] if baseline_results else None
+            enhanced_dup_aware_f1 = enhanced_results["f1"]
+            baseline_f1_gain = 0
+            enhanced_f1_gain = 0
+            dup_aware_beats_leaderboard = beat_leaderboard
+            
+    except Exception as e:
+        print(f"⚠️ Duplicate-aware evaluation failed: {e}")
+        baseline_dup_aware_f1 = baseline_results["metrics"]["f1"] if baseline_results else None
+        enhanced_dup_aware_f1 = enhanced_results["f1"]
+        baseline_f1_gain = 0
+        enhanced_f1_gain = 0
+        dup_aware_beats_leaderboard = beat_leaderboard
 
     # Add recommendation
     if baseline_beats_leaderboard and not enhanced_beats_leaderboard:
@@ -922,7 +998,13 @@ async def run_complete_pipeline(
         "total_time_seconds": total_time,
         "beat_leaderboard": beat_leaderboard,
         "leaderboard_target": target_f1,
-        "reusable_config_path": heuristics_file if heuristics_file and os.path.exists(heuristics_file) else None
+        "reusable_config_path": heuristics_file if heuristics_file and os.path.exists(heuristics_file) else None,
+        # Duplicate-aware evaluation results
+        "duplicate_aware_baseline_f1": baseline_dup_aware_f1,
+        "duplicate_aware_enhanced_f1": enhanced_dup_aware_f1,
+        "duplicate_aware_baseline_gain": baseline_f1_gain,
+        "duplicate_aware_enhanced_gain": enhanced_f1_gain,
+        "duplicate_aware_beats_leaderboard": dup_aware_beats_leaderboard,
     }
 
     # Save results with comprehensive JSON serialization
@@ -1193,7 +1275,7 @@ async def main():
             print("\n📈 RESULTS:")
             for dataset in successful_datasets:
                 result = all_results[dataset]
-                f1 = result.get('final_f1', 0)
+                f1 = result.get('enhanced_results', {}).get('f1', 0)
                 target = result.get('leaderboard_target', 0)
                 beat_target = "🎯" if f1 >= target else "  "
                 print(f"  {beat_target} {dataset:15} F1={f1:.4f} (target: {target:.1f})")

@@ -30,12 +30,13 @@ import pandas as pd
 
 from run_enhanced_matching import run_enhanced_matching
 from src.entity_matching.candidate_optimization import get_optimal_candidates_for_dataset
+from src.entity_matching.experiment_registry import ExperimentRegistry
 from src.entity_matching.hybrid_matcher import run_matching
+from src.evaluation.duplicate_aware import compare_evaluations, load_duplicate_mapping
 
 # ClaudeSDKOptimizer removed - using new MCP-based SimplifiedAgenticGenerator instead
 from src.experiments.simplified_agentic_generator import generate_simplified_heuristics, get_leaderboard_target_f1
 from src.utils.json_serializer import json_serialize
-from src.evaluation.duplicate_aware import load_duplicate_mapping, compare_evaluations
 
 
 def get_available_datasets() -> list[str]:
@@ -56,14 +57,20 @@ def get_available_datasets() -> list[str]:
 
 
 async def run_dev_only_analysis_with_params(
-    dataset: str, params: Dict[str, Any], model: str = "gpt-4.1-nano", concurrency: int = 3
+    dataset: str,
+    params: Dict[str, Any],
+    model: str = "gpt-4.1-nano",
+    concurrency: int = 3,
+    embedding_base_url: str = None,
+    embedding_model: str = "all-MiniLM-L6-v2",
 ) -> Dict[str, Any]:
     """Run dev set analysis with specific hyperparameters - direct call to run_enhanced_matching"""
     print(f"🎯 Running dev analysis on {dataset} with use_validation=True")
-    
+
     # Call run_enhanced_matching directly on the original dataset
     # use_validation=True makes it automatically sample 200 records from validation data
     from run_enhanced_matching import run_enhanced_matching
+
     raw_results = await run_enhanced_matching(
         dataset=dataset,  # Use original dataset name
         max_candidates=params.get("max_candidates", 150),
@@ -73,27 +80,27 @@ async def run_dev_only_analysis_with_params(
         syntactic_weight=params.get("syntactic_weight"),
         use_validation=True,  # Let run_enhanced_matching handle validation sampling internally
         concurrency=concurrency,
+        embedding_base_url=embedding_base_url,
+        embedding_model=embedding_model,
     )
-    
+
     # Transform format to match caller expectations
     # run_enhanced_matching returns: {'f1': 0.85, 'cost': 1.2, ...}
     # Callers expect: {'metrics': {'f1': 0.85}, 'cost_usd': 1.2, ...}
-    dev_results = {
-        'metrics': {
-            'f1': raw_results['f1'],
-            'precision': raw_results['precision'],
-            'recall': raw_results['recall'],
-            'accuracy': raw_results['accuracy']
+    return {
+        "metrics": {
+            "f1": raw_results["f1"],
+            "precision": raw_results["precision"],
+            "recall": raw_results["recall"],
+            "accuracy": raw_results["accuracy"],
         },
-        'cost_usd': raw_results['cost'],
-        'predictions': raw_results.get('predictions', {}),
-        'failure_analysis': raw_results.get('failure_analysis', {}),
-        'early_decisions': raw_results.get('early_decisions', 0),
-        'llm_calls': raw_results.get('llm_calls', 0),
-        'llm_call_reduction': raw_results.get('llm_call_reduction', 0.0)
+        "cost_usd": raw_results["cost"],
+        "predictions": raw_results.get("predictions", {}),
+        "failure_analysis": raw_results.get("failure_analysis", {}),
+        "early_decisions": raw_results.get("early_decisions", 0),
+        "llm_calls": raw_results.get("llm_calls", 0),
+        "llm_call_reduction": raw_results.get("llm_call_reduction", 0.0),
     }
-    
-    return dev_results
 
 
 async def run_dev_only_analysis(dataset: str, model: str = "gpt-4.1-nano", concurrency: int = 3) -> Dict[str, Any]:
@@ -108,7 +115,7 @@ async def run_dev_only_analysis(dataset: str, model: str = "gpt-4.1-nano", concu
         "semantic_weight": 0.6,
         "trigram_weight": 0.2,
         "syntactic_weight": 0.2,
-        "use_semantic": True
+        "use_semantic": True,
     }
 
     print(f"🎯 Dev analysis parameters: candidates={default_candidates}, semantic=0.6, trigram=0.2, syntactic=0.2")
@@ -198,23 +205,17 @@ async def run_train_for_rule_data(
             shutil.rmtree(temp_dataset_dir)
 
 
-
-
-
 async def run_complete_pipeline(
     dataset: str,
-    early_exit: bool = False,  # noqa: ARG001
     resume: bool = False,
     concurrency: int = 3,
     model: str = "gpt-4.1-nano",
-    use_agentic_rules: bool = True,  # noqa: ARG001
     known_best_params: Optional[Dict[str, Any]] = None,
-    use_train_for_rules: bool = False,  # noqa: ARG001
-    mode: str = "heuristics",
-    use_analysis_driven: bool = True,  # noqa: ARG001 - kept for backward compatibility
+    use_train_for_rules: bool = False,
+    mode: str = "prompt-modification",
     no_cache: bool = False,
-    max_analysis_pairs: int = 500,
-    max_analysis_candidates: int = 200,
+    embedding_base_url: str = None,
+    embedding_model: str = "all-MiniLM-L6-v2",
 ) -> Dict[str, Any]:
     """Complete pipeline: dev analysis -> ACTUAL rule generation -> test with enhanced matching"""
 
@@ -222,6 +223,32 @@ async def run_complete_pipeline(
     print(f"Dataset: {dataset}", flush=True)
     if resume:
         print("🔄 RESUME MODE: Will skip completed steps", flush=True)
+    print("=" * 60, flush=True)
+
+    # Create pipeline registry and experiment configuration
+    from src.entity_matching.experiment_config import ExperimentConfig
+
+    # Initialize experiment registry for this pipeline run
+    registry = ExperimentRegistry()
+    print(f"📋 Initialized experiment registry: {registry.pipeline_run_id}")
+
+    # Create baseline experiment configuration for this pipeline run
+    base_experiment_config = ExperimentConfig(
+        dataset=dataset,
+        llm_model=model,
+        embedding_model=embedding_model,
+        embedding_base_url=embedding_base_url,
+        concurrency=concurrency,
+        mode=mode,
+        use_train_for_rules=use_train_for_rules,
+        no_cache=no_cache,
+        semantic_weight=known_best_params.get("semantic_weight", 0.5) if known_best_params else 0.5,
+        trigram_weight=known_best_params.get("trigram_weight") if known_best_params else None,
+        syntactic_weight=known_best_params.get("syntactic_weight") if known_best_params else None,
+    )
+
+    print(f"🔬 Pipeline Registry ID: {registry.pipeline_run_id}")
+    print(f"⚙️ Base Config: {base_experiment_config}")
     print("=" * 60, flush=True)
 
     # Check for existing checkpoint
@@ -243,9 +270,41 @@ async def run_complete_pipeline(
         print(f"✅ STEP 1: Using provided hyperparameters: {known_best_params}")
         print("⏳ Running single dev evaluation to get predictions for rule generation...")
 
+        # Create dev experiment configuration
+        dev_config = ExperimentConfig(
+            dataset=dataset,
+            llm_model=model,
+            embedding_model=embedding_model,
+            embedding_base_url=embedding_base_url,
+            use_validation=True,  # Key difference for dev stage
+            max_candidates=known_best_params.get("max_candidates", get_optimal_candidates_for_dataset(dataset) or 150),
+            semantic_weight=known_best_params.get("semantic_weight", 0.6),
+            trigram_weight=known_best_params.get("trigram_weight", 0.2),
+            syntactic_weight=known_best_params.get("syntactic_weight", 0.2),
+            concurrency=concurrency,
+            mode=mode,
+            no_cache=no_cache,
+        )
+
         start_time = time.time()
-        dev_results = await run_dev_only_analysis_with_params(dataset, known_best_params, model, concurrency)
+        dev_results = await run_dev_only_analysis_with_params(
+            dataset, known_best_params, model, concurrency, embedding_base_url, embedding_model
+        )
         dev_time = time.time() - start_time
+
+        # Register dev experiment
+        registry.register_experiment(
+            dev_config,
+            "dev",
+            {
+                "f1": dev_results["metrics"]["f1"],
+                "precision": dev_results["metrics"]["precision"],
+                "recall": dev_results["metrics"]["recall"],
+                "cost_usd": dev_results["cost_usd"],
+                "processing_time": dev_time,
+            },
+            "Development stage with known parameters and validation data",
+        )
 
         # Get optimal candidate count from recall analysis if available
         optimal_candidates = get_optimal_candidates_for_dataset(dataset)
@@ -261,10 +320,12 @@ async def run_complete_pipeline(
             "use_semantic": known_best_params.get("use_semantic", True),
         }
 
-        print(f"🎯 Known params dev run: candidates={optimal_params['max_candidates']}, "
-              f"semantic={optimal_params['semantic_weight']}, "
-              f"trigram={optimal_params['trigram_weight']}, "
-              f"syntactic={optimal_params['syntactic_weight']}")
+        print(
+            f"🎯 Known params dev run: candidates={optimal_params['max_candidates']}, "
+            f"semantic={optimal_params['semantic_weight']}, "
+            f"trigram={optimal_params['trigram_weight']}, "
+            f"syntactic={optimal_params['syntactic_weight']}"
+        )
 
         print(
             f"✅ Dev Results with known params: F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}"
@@ -278,21 +339,23 @@ async def run_complete_pipeline(
         analysis_data = analyze_dataset_for_claude(
             dataset=dataset,
             max_pairs=200,
-            max_candidates=max_analysis_candidates,
-            max_analysis_pairs=max_analysis_pairs or None,
+            max_candidates=known_best_params.get("max_candidates", 50) if known_best_params else 50,
             output_file=analysis_file,
-            verbose=True
+            verbose=True,
+            embedding_base_url=embedding_base_url,
+            embedding_model=embedding_model,
         )
 
         try:
             heuristics_file, rule_cost_info = await generate_simplified_heuristics(
-                dataset, dev_results,
+                dataset,
+                dev_results,
                 f"results/generated_rules/{dataset}_known_params_config.json",
                 analysis_data,
                 model,
                 no_cache,
                 mode=mode,
-                optimal_params=optimal_params
+                optimal_params=optimal_params,
             )
         except Exception as e:
             print(f"❌ Known params rule generation failed: {e}")
@@ -304,7 +367,7 @@ async def run_complete_pipeline(
                     "results/temp/generated_rules.json",
                     "results/temp/final_rules.json",
                     f"{dataset}_rules_final.json",
-                    f"{dataset}_rules.json"
+                    f"{dataset}_rules.json",
                 ]
                 heuristics_file = None
                 for pf in potential_files:
@@ -349,10 +412,11 @@ async def run_complete_pipeline(
         analysis_data = analyze_dataset_for_claude(
             dataset=dataset,
             max_pairs=200,
-            max_candidates=max_analysis_candidates,
-            max_analysis_pairs=max_analysis_pairs or None,
+            max_candidates=known_best_params.get("max_candidates", 50) if known_best_params else 50,
             output_file=analysis_file,
-            verbose=True
+            verbose=True,
+            embedding_base_url=embedding_base_url,
+            embedding_model=embedding_model,
         )
 
         # Get optimal candidate count from recall analysis if available
@@ -384,11 +448,47 @@ async def run_complete_pipeline(
             print("📁 Loading cached dev predictions...")
             with open(dev_cache_file) as f:
                 dev_results = json.load(f)
-            print(f"✅ Using cached dev predictions: F1={dev_results['metrics']['f1']:.4f}, {len(dev_results.get('predictions', {}))} predictions")
+            print(
+                f"✅ Using cached dev predictions: F1={dev_results['metrics']['f1']:.4f}, {len(dev_results.get('predictions', {}))} predictions"
+            )
         else:
+            # Create dev experiment configuration for analysis-driven approach
+            dev_config = ExperimentConfig(
+                dataset=dataset,
+                llm_model=model,
+                embedding_model=embedding_model,
+                embedding_base_url=embedding_base_url,
+                use_validation=True,  # Dev stage uses validation data
+                max_candidates=default_candidates,
+                semantic_weight=0.6,
+                trigram_weight=0.2,
+                syntactic_weight=0.2,
+                concurrency=analysis_concurrency,
+                mode=mode,
+                no_cache=no_cache,
+            )
+
             print("🔄 Running quick evaluation to get predictions for rule generation...")
-            dev_results = await run_dev_only_analysis_with_params(dataset, default_params, model, analysis_concurrency)
-            print(f"✅ Quick evaluation: F1={dev_results['metrics']['f1']:.4f}, {len(dev_results.get('predictions', {}))} predictions")
+            dev_results = await run_dev_only_analysis_with_params(
+                dataset, default_params, model, analysis_concurrency, embedding_base_url, embedding_model
+            )
+            print(
+                f"✅ Quick evaluation: F1={dev_results['metrics']['f1']:.4f}, {len(dev_results.get('predictions', {}))} predictions"
+            )
+
+            # Register dev experiment
+            registry.register_experiment(
+                dev_config,
+                "dev",
+                {
+                    "f1": dev_results["metrics"]["f1"],
+                    "precision": dev_results["metrics"]["precision"],
+                    "recall": dev_results["metrics"]["recall"],
+                    "cost_usd": dev_results["cost_usd"],
+                    "processing_time": 0,  # Will be updated with actual time later
+                },
+                "Development stage with analysis-driven optimization and validation data",
+            )
 
             # Cache dev predictions
             os.makedirs(os.path.dirname(dev_cache_file), exist_ok=True)
@@ -396,20 +496,21 @@ async def run_complete_pipeline(
             # Clean dev_results for JSON serialization
             cleaned_dev_results = json_serialize(dev_results)
 
-            with open(dev_cache_file, 'w') as f:
+            with open(dev_cache_file, "w") as f:
                 json.dump(cleaned_dev_results, f, indent=2)
             print(f"💾 Cached dev predictions to {dev_cache_file}")
 
         print("🤖 Generating joint hyperparameter + rule optimization with Claude...")
         try:
             heuristics_file, rule_cost_info = await generate_simplified_heuristics(
-                dataset, dev_results,
+                dataset,
+                dev_results,
                 f"results/generated_rules/{dataset}_analysis_driven_config.json",
                 analysis_data,
                 model,
                 no_cache,
                 mode=mode,
-                optimal_params=default_params
+                optimal_params=default_params,
             )
         except Exception as e:
             print(f"❌ Analysis-driven rule generation failed: {e}")
@@ -421,7 +522,7 @@ async def run_complete_pipeline(
                     "results/temp/generated_rules.json",
                     "results/temp/final_rules.json",
                     f"{dataset}_rules_final.json",
-                    f"{dataset}_rules.json"
+                    f"{dataset}_rules.json",
                 ]
                 heuristics_file = None
                 for pf in potential_files:
@@ -450,7 +551,8 @@ async def run_complete_pipeline(
                 default_candidates = optimal_candidates if optimal_candidates else 150
 
                 claude_params = {
-                    "max_candidates": hyperparams.get("max_candidates") or hyperparams.get("n_candidates", default_candidates),
+                    "max_candidates": hyperparams.get("max_candidates")
+                    or hyperparams.get("n_candidates", default_candidates),
                     "semantic_weight": hyperparams.get("semantic_weight", 0.5),
                     "trigram_weight": hyperparams.get("trigram_weight"),
                     "syntactic_weight": hyperparams.get("syntactic_weight"),
@@ -475,17 +577,54 @@ async def run_complete_pipeline(
                     "use_semantic": True,
                 }
 
-            # If Claude chose different parameters, run another evaluation
-            if (optimal_params["max_candidates"] != default_params["max_candidates"] or
-                abs(optimal_params["semantic_weight"] - default_params["semantic_weight"]) > 0.05):
+            # If Claude chose different parameters, run another evaluation and register it
+            if (
+                optimal_params["max_candidates"] != default_params["max_candidates"]
+                or abs(optimal_params["semantic_weight"] - default_params["semantic_weight"]) > 0.05
+            ):
                 print("🔄 Running evaluation with Claude-chosen parameters (different from defaults)...")
-                dev_results = await run_dev_only_analysis_with_params(dataset, optimal_params, model, analysis_concurrency)
+
+                # Create updated dev config with Claude's parameters
+                claude_dev_config = ExperimentConfig(
+                    dataset=dataset,
+                    llm_model=model,
+                    embedding_model=embedding_model,
+                    embedding_base_url=embedding_base_url,
+                    use_validation=True,  # Dev stage uses validation data
+                    max_candidates=optimal_params["max_candidates"],
+                    semantic_weight=optimal_params["semantic_weight"],
+                    trigram_weight=optimal_params.get("trigram_weight"),
+                    syntactic_weight=optimal_params.get("syntactic_weight"),
+                    concurrency=analysis_concurrency,
+                    mode=mode,
+                    no_cache=no_cache,
+                )
+
+                dev_results = await run_dev_only_analysis_with_params(
+                    dataset, optimal_params, model, analysis_concurrency, embedding_base_url, embedding_model
+                )
+
+                # Register updated dev experiment with Claude's parameters
+                registry.register_experiment(
+                    claude_dev_config,
+                    "dev",
+                    {
+                        "f1": dev_results["metrics"]["f1"],
+                        "precision": dev_results["metrics"]["precision"],
+                        "recall": dev_results["metrics"]["recall"],
+                        "cost_usd": dev_results["cost_usd"],
+                        "processing_time": analysis_time,
+                    },
+                    "Development stage updated with Claude-chosen parameters",
+                )
             else:
                 print("✅ Using existing evaluation results (Claude chose similar parameters)")
 
             dev_time = analysis_time
 
-            print(f"✅ Analysis-driven approach: F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}")
+            print(
+                f"✅ Analysis-driven approach: F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}"
+            )
             print(f"💰 Analysis + rule generation cost: ${rule_cost_info.get('total_cost_usd', 0):.4f}")
 
             # Save the heuristics file info for later use
@@ -494,8 +633,6 @@ async def run_complete_pipeline(
 
         else:
             raise RuntimeError("Analysis-driven optimization failed - no fallback available")
-
-
 
     print(f"✅ Best Dev Results: F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}")
     print(
@@ -515,7 +652,9 @@ async def run_complete_pipeline(
     if "heuristics_file" in checkpoint:
         print("✅ STEP 2: Using rules from analysis-driven optimization (already generated)")
         heuristics_file = checkpoint["heuristics_file"]
-        rule_generation_cost = checkpoint.get("rule_generation_cost", {"total_cost_usd": 0.0, "method": "analysis_driven"})
+        rule_generation_cost = checkpoint.get(
+            "rule_generation_cost", {"total_cost_usd": 0.0, "method": "analysis_driven"}
+        )
     else:
         # This shouldn't happen with the new simplified flow, but handle gracefully
         raise RuntimeError("No heuristics file found - analysis-driven optimization should have generated rules")
@@ -529,19 +668,18 @@ async def run_complete_pipeline(
         print("❌ Rule generation failed")
         return results
 
-
     # Pipeline execution logic based on mode
     if mode == "weights-only":
         print("\n💨 WEIGHTS-ONLY MODE: Skipping both 3A and 3B (identical without rules)")
         # Use dev results as final results since no additional testing needed
         enhanced_results = {
-            'f1': dev_results['f1'],
-            'precision': dev_results['precision'],
-            'recall': dev_results['recall'],
-            'cost': 0.0,  # No additional cost for skipped steps
-            'method': 'weights_only_dev_results'
+            "f1": dev_results["f1"],
+            "precision": dev_results["precision"],
+            "recall": dev_results["recall"],
+            "cost": 0.0,  # No additional cost for skipped steps
+            "method": "weights_only_dev_results",
         }
-        baseline_results = {'metrics': enhanced_results, 'cost_usd': 0.0}
+        baseline_results = {"metrics": enhanced_results, "cost_usd": 0.0}
         enhanced_time = 0
         baseline_time = 0
 
@@ -554,7 +692,7 @@ async def run_complete_pipeline(
             "baseline_time": baseline_time,
             "enhanced_time": enhanced_time,
             "target_f1": get_leaderboard_target_f1(dataset),
-            "mode": mode
+            "mode": mode,
         }
 
         return results
@@ -563,13 +701,18 @@ async def run_complete_pipeline(
         print("\n🧠 PROMPT-MODIFICATION MODE: Running both 3A (before Claude) and 3B (after Claude)")
         # Note: This mode needs both evaluations to show improvement from prompt optimization
 
-    else:  # mode == "heuristics" (default)
+    else:  # mode == "heuristics"
         print("\n🔧 HEURISTICS MODE: Running both 3A (baseline) and 3B (enhanced)")
 
     # STEP 3A: Test set evaluation WITHOUT rules (baseline with optimal params)
     # Always run 3A - prompt-modification mode needs it for before/after comparison
     print("\n🎯 STEP 3A: FINAL TEST EVALUATION WITHOUT rules (optimal params baseline)")
     print("⏳ Running baseline matching on FULL TEST SET (this is the real evaluation)...")
+
+    # Get dev experiment config for baseline consistency
+    dev_experiment = registry.get_dev_experiment()
+    if not dev_experiment:
+        raise RuntimeError("No dev experiment found - cannot ensure consistency between dev and 3A")
 
     start_time = time.time()
     # Extract learned weights from heuristics file for baseline evaluation
@@ -596,21 +739,53 @@ async def run_complete_pipeline(
         baseline_syntactic_weight = remaining_weight * 0.4  # 40% of remaining to syntactic
 
     # Display baseline parameters for comparison
-    print(f"📊 Baseline Parameters:")
+    print("📊 Baseline Parameters:")
     print(f"   Max Candidates: {optimal_params['max_candidates']}")
-    print(f"   Weights: semantic={baseline_semantic_weight:.3f}, trigram={baseline_trigram_weight:.3f}, syntactic={baseline_syntactic_weight:.3f}")
+    print(
+        f"   Weights: semantic={baseline_semantic_weight:.3f}, trigram={baseline_trigram_weight:.3f}, syntactic={baseline_syntactic_weight:.3f}"
+    )
     print(f"   Weight Sum: {baseline_semantic_weight + baseline_trigram_weight + baseline_syntactic_weight:.3f}")
+
+    # Create 3A baseline experiment config (identical to dev but with test data)
+    baseline_config = ExperimentConfig(
+        dataset=dev_experiment.dataset,
+        llm_model=dev_experiment.llm_model,
+        embedding_model=dev_experiment.embedding_model,
+        embedding_base_url=dev_experiment.embedding_base_url,
+        use_validation=False,  # Key difference - use test data
+        max_candidates=dev_experiment.max_candidates,
+        semantic_weight=baseline_semantic_weight,
+        trigram_weight=baseline_trigram_weight,
+        syntactic_weight=baseline_syntactic_weight,
+        concurrency=concurrency,
+        mode=dev_experiment.mode,
+        no_cache=dev_experiment.no_cache,
+    )
 
     baseline_results = await run_matching(
         dataset=dataset,
         limit=None,
-        max_candidates=optimal_params["max_candidates"],  # Use optimized candidates
+        max_candidates=baseline_config.max_candidates,
         model="gpt-4.1-nano",  # Use cheaper model for test
-        semantic_weight=baseline_semantic_weight,  # Use learned semantic weight from Claude
-        trigram_weight=baseline_trigram_weight,  # Use learned trigram weight from Claude
-        syntactic_weight=baseline_syntactic_weight,  # Use learned syntactic weight from Claude
+        semantic_weight=baseline_semantic_weight,
+        trigram_weight=baseline_trigram_weight,
+        syntactic_weight=baseline_syntactic_weight,
         use_semantic=optimal_params["use_semantic"],
         concurrency=concurrency,
+    )
+
+    # Register 3A baseline experiment
+    registry.register_experiment(
+        baseline_config,
+        "3A_baseline",
+        {
+            "f1": baseline_results["metrics"]["f1"],
+            "precision": baseline_results["metrics"]["precision"],
+            "recall": baseline_results["metrics"]["recall"],
+            "cost_usd": baseline_results["cost_usd"],
+            "processing_time": baseline_time,
+        },
+        "Baseline test evaluation without rules, using dev stage parameters",
     )
     baseline_time = time.time() - start_time
 
@@ -625,23 +800,25 @@ async def run_complete_pipeline(
     # (Skip this check for prompt-modification mode where baseline_results is None)
     target_f1 = get_leaderboard_target_f1(dataset)
 
-    if baseline_results and baseline_results['metrics']['f1'] >= target_f1:
-        baseline_f1 = baseline_results['metrics']['f1']
+    if baseline_results and baseline_results["metrics"]["f1"] >= target_f1:
+        baseline_f1 = baseline_results["metrics"]["f1"]
         print(f"🎉 BASELINE ALREADY EXCEEDS TARGET! ({baseline_f1:.4f} >= {target_f1:.1f})")
         print("   Skipping expensive rules test since baseline is already excellent.")
         print("   Using baseline results as final results.")
 
         # Use baseline results as enhanced results
         enhanced_results = {
-            'f1': baseline_results['metrics']['f1'],
-            'precision': baseline_results['metrics']['precision'],
-            'recall': baseline_results['metrics']['recall'],
-            'cost': baseline_results['cost_usd'],
-            'method': 'baseline_skip_rules'
+            "f1": baseline_results["metrics"]["f1"],
+            "precision": baseline_results["metrics"]["precision"],
+            "recall": baseline_results["metrics"]["recall"],
+            "cost": baseline_results["cost_usd"],
+            "method": "baseline_skip_rules",
         }
         enhanced_time = 0  # No additional time needed
 
-        print(f"✅ Final Results (baseline used): F1={enhanced_results['f1']:.4f}, Cost=${enhanced_results['cost']:.3f}")
+        print(
+            f"✅ Final Results (baseline used): F1={enhanced_results['f1']:.4f}, Cost=${enhanced_results['cost']:.3f}"
+        )
     else:
         print("⏳ Running enhanced matching with rules on FULL TEST SET (this is the real evaluation)...")
 
@@ -668,22 +845,84 @@ async def run_complete_pipeline(
 
         # Force use of Claude's optimized weights - no fallback allowed
         if learned_trigram_weight is None or learned_syntactic_weight is None:
-            raise ValueError(f"Claude must provide complete weight optimization! Got: semantic={learned_semantic_weight}, trigram={learned_trigram_weight}, syntactic={learned_syntactic_weight}")
+            raise ValueError(
+                f"Claude must provide complete weight optimization! Got: semantic={learned_semantic_weight}, trigram={learned_trigram_weight}, syntactic={learned_syntactic_weight}"
+            )
 
-        print(f"✅ Using Claude's optimized parameters: candidates={learned_max_candidates}, semantic={learned_semantic_weight:.3f}, trigram={learned_trigram_weight:.3f}, syntactic={learned_syntactic_weight:.3f}")
+        print(
+            f"✅ Using Claude's optimized parameters: candidates={learned_max_candidates}, semantic={learned_semantic_weight:.3f}, trigram={learned_trigram_weight:.3f}, syntactic={learned_syntactic_weight:.3f}"
+        )
+
+        # Get best Claude experiment config if available
+        best_claude_config = registry.get_best_claude_experiment()
+        if best_claude_config:
+            print(f"🏆 Using winning Claude experiment: {best_claude_config.experiment_id}")
+            # Create 3B config using Claude's winning settings but with same base settings as 3A
+            enhanced_config = ExperimentConfig(
+                dataset=baseline_config.dataset,
+                llm_model=baseline_config.llm_model,
+                embedding_model=baseline_config.embedding_model,
+                embedding_base_url=baseline_config.embedding_base_url,
+                use_validation=False,  # Test data like 3A
+                max_candidates=best_claude_config.max_candidates,
+                semantic_weight=best_claude_config.semantic_weight,
+                trigram_weight=best_claude_config.trigram_weight,
+                syntactic_weight=best_claude_config.syntactic_weight,
+                prompt_data=best_claude_config.prompt_data,
+                concurrency=concurrency,
+                mode=baseline_config.mode,
+                no_cache=baseline_config.no_cache,
+                heuristic_file=heuristics_file,
+            )
+        else:
+            print("⚠️ No Claude experiments found - using file-based parameters")
+            # Fallback: create enhanced config based on file parameters
+            enhanced_config = ExperimentConfig(
+                dataset=baseline_config.dataset,
+                llm_model=baseline_config.llm_model,
+                embedding_model=baseline_config.embedding_model,
+                embedding_base_url=baseline_config.embedding_base_url,
+                use_validation=False,  # Test data like 3A
+                max_candidates=learned_max_candidates,
+                semantic_weight=learned_semantic_weight,
+                trigram_weight=learned_trigram_weight,
+                syntactic_weight=learned_syntactic_weight,
+                concurrency=concurrency,
+                mode=baseline_config.mode,
+                no_cache=baseline_config.no_cache,
+                heuristic_file=heuristics_file,
+            )
 
         enhanced_results = await run_enhanced_matching(
             dataset=dataset,
-            max_candidates=learned_max_candidates,  # Use Claude's optimized candidates
+            max_candidates=enhanced_config.max_candidates,
             model="gpt-4.1-nano",  # Use cheaper model for test
-            semantic_weight=learned_semantic_weight,  # Use learned semantic weight from Claude
-            trigram_weight=learned_trigram_weight,  # Use learned trigram weight from Claude
-            syntactic_weight=learned_syntactic_weight,  # Use learned syntactic weight from Claude
+            semantic_weight=enhanced_config.semantic_weight,
+            trigram_weight=enhanced_config.trigram_weight,
+            syntactic_weight=enhanced_config.syntactic_weight,
             heuristic_file=heuristics_file,
+            embedding_base_url=embedding_base_url,
+            embedding_model=embedding_model,
+        )
+
+        # Register 3B enhanced experiment
+        registry.register_experiment(
+            enhanced_config,
+            "3B_enhanced",
+            {
+                "f1": enhanced_results["f1"],
+                "precision": enhanced_results["precision"],
+                "recall": enhanced_results["recall"],
+                "cost_usd": enhanced_results["cost"],
+                "processing_time": enhanced_time,
+            },
+            f"Enhanced test evaluation with rules{' using winning Claude experiment' if best_claude_config else ' using file-based parameters'}",
         )
         enhanced_time = time.time() - start_time
 
-        print(f"✅ Enhanced Results (with rules): F1={enhanced_results['f1']:.4f}, Cost=${enhanced_results['cost']:.3f}")
+        print(
+            f"✅ Enhanced Results (with rules): F1={enhanced_results['f1']:.4f}, Cost=${enhanced_results['cost']:.3f}"
+        )
 
     # Calculate improvement (handle cases where baseline_results might be None)
     if baseline_results:
@@ -744,7 +983,7 @@ async def run_complete_pipeline(
     total_cost = dev_results["cost_usd"] + baseline_results["cost_usd"] + enhanced_results["cost"] + rule_gen_cost
     total_time = dev_time + baseline_time + enhanced_time
 
-    print(f"\\n🏆 FINAL RESULTS FOR {dataset.upper()}")
+    print(f"\n🏆 FINAL RESULTS FOR {dataset.upper()}")
     print(f"Dev F1:        {dev_results['metrics']['f1']:.4f} (${dev_results['cost_usd']:.3f})")
     print(f"Rule Generation: {rule_generation_cost.get('method', 'unknown')} (${rule_gen_cost:.4f})")
     print(
@@ -783,63 +1022,67 @@ async def run_complete_pipeline(
     # DUPLICATE-AWARE EVALUATION
     print("\n🔍 DUPLICATE-AWARE EVALUATION")
     print("=" * 50)
-    
+
     try:
         # Load duplicate mapping (generates on-demand if needed)
         duplicate_mapping = load_duplicate_mapping(dataset)
-        
+
         # Check if duplicates were found
         has_duplicates = bool(duplicate_mapping["tableA_mapping"] or duplicate_mapping["tableB_mapping"])
-        
+
         if has_duplicates:
-            print(f"✅ Found duplicates - performing duplicate-aware evaluation")
-            
+            print("✅ Found duplicates - performing duplicate-aware evaluation")
+
             # Evaluate baseline with duplicate-awareness
             if baseline_results and baseline_results.get("predictions"):
                 baseline_predictions = [(int(k), int(v)) for k, v in baseline_results["predictions"].items()]
                 # Load ground truth
                 data_root = pathlib.Path("data/raw") / dataset
                 test_pairs = pd.read_csv(data_root / "test.csv")
-                ground_truth = [(int(row.ltable_id), int(row.rtable_id)) for _, row in test_pairs.iterrows() if row.label == 1]
-                
+                ground_truth = [
+                    (int(row.ltable_id), int(row.rtable_id)) for _, row in test_pairs.iterrows() if row.label == 1
+                ]
+
                 baseline_dup_comparison = compare_evaluations(baseline_predictions, ground_truth, duplicate_mapping)
                 baseline_dup_aware_f1 = baseline_dup_comparison["duplicate_aware_evaluation"]["f1"]
                 baseline_f1_gain = baseline_dup_comparison["improvement"]["f1_gain"]
-                
+
                 print(f"📊 Baseline duplicate-aware F1: {baseline_dup_aware_f1:.4f} (gain: {baseline_f1_gain:+.4f})")
             else:
                 baseline_dup_aware_f1 = None
                 baseline_f1_gain = 0
-                
+
             # Evaluate enhanced with duplicate-awareness
             if enhanced_results.get("predictions"):
                 enhanced_predictions = [(int(k), int(v)) for k, v in enhanced_results["predictions"].items()]
                 enhanced_dup_comparison = compare_evaluations(enhanced_predictions, ground_truth, duplicate_mapping)
                 enhanced_dup_aware_f1 = enhanced_dup_comparison["duplicate_aware_evaluation"]["f1"]
                 enhanced_f1_gain = enhanced_dup_comparison["improvement"]["f1_gain"]
-                
+
                 print(f"📊 Enhanced duplicate-aware F1: {enhanced_dup_aware_f1:.4f} (gain: {enhanced_f1_gain:+.4f})")
             else:
                 enhanced_dup_aware_f1 = None
                 enhanced_f1_gain = 0
-                
+
             # Update leaderboard check with duplicate-aware results
             best_dup_aware_f1 = max(baseline_dup_aware_f1 or 0, enhanced_dup_aware_f1 or 0)
             dup_aware_beats_leaderboard = (
                 best_dup_aware_f1 > target_f1 / 100 if target_f1 > 10 else best_dup_aware_f1 > target_f1
             )
-            
+
             if dup_aware_beats_leaderboard:
-                print(f"🎉 DUPLICATE-AWARE BEATS LEADERBOARD! {best_dup_aware_f1:.4f} > {target_f1/100 if target_f1 > 10 else target_f1:.4f}")
-            
+                print(
+                    f"🎉 DUPLICATE-AWARE BEATS LEADERBOARD! {best_dup_aware_f1:.4f} > {target_f1 / 100 if target_f1 > 10 else target_f1:.4f}"
+                )
+
         else:
-            print("ℹ️ No duplicates found - standard evaluation is accurate")
+            print("i️  No duplicates found - standard evaluation is accurate")
             baseline_dup_aware_f1 = baseline_results["metrics"]["f1"] if baseline_results else None
             enhanced_dup_aware_f1 = enhanced_results["f1"]
             baseline_f1_gain = 0
             enhanced_f1_gain = 0
             dup_aware_beats_leaderboard = beat_leaderboard
-            
+
     except Exception as e:
         print(f"⚠️ Duplicate-aware evaluation failed: {e}")
         baseline_dup_aware_f1 = baseline_results["metrics"]["f1"] if baseline_results else None
@@ -861,29 +1104,29 @@ async def run_complete_pipeline(
 
     # ENHANCED: Save comprehensive optimization artifacts for reuse
     optimization_artifacts = {}
-    
+
     # Save generated heuristics file content if it exists
     if heuristics_file and os.path.exists(heuristics_file):
         with open(heuristics_file) as f:
             optimization_artifacts["generated_heuristics"] = json.load(f)
         optimization_artifacts["heuristics_file_path"] = heuristics_file
-    
+
     # Save sample data used for optimization
     sample_data_file = f"results/temp/sample_data_{dataset}.json"
     if os.path.exists(sample_data_file):
         with open(sample_data_file) as f:
             optimization_artifacts["sample_data"] = json.load(f)
-    
+
     # Save optimal hyperparameters discovered
     optimization_artifacts["optimal_hyperparameters"] = {
         "baseline": {
             "max_candidates": baseline_results.get("max_candidates", optimal_candidates),
             "semantic_weight": baseline_results.get("semantic_weight", default_params.get("semantic_weight")),
             "trigram_weight": baseline_results.get("trigram_weight", default_params.get("trigram_weight")),
-            "syntactic_weight": baseline_results.get("syntactic_weight", default_params.get("syntactic_weight"))
+            "syntactic_weight": baseline_results.get("syntactic_weight", default_params.get("syntactic_weight")),
         }
     }
-    
+
     # Extract enhanced hyperparameters if available
     if heuristics_file and os.path.exists(heuristics_file):
         try:
@@ -893,18 +1136,19 @@ async def run_complete_pipeline(
                 optimization_artifacts["optimal_hyperparameters"]["enhanced"] = enhanced_config["hyperparameters"]
         except:
             pass
-    
+
     # Save EVERYTHING needed to reproduce results
     optimization_artifacts["reproduction_data"] = {}
-    
+
     # 1. Save current prompt structure (if modified)
     try:
         from src.prompts.hybrid_matcher_prompt import get_prompt_data
+
         current_prompt = get_prompt_data()
         optimization_artifacts["reproduction_data"]["final_prompt_structure"] = current_prompt
     except Exception as e:
         optimization_artifacts["reproduction_data"]["prompt_error"] = str(e)
-    
+
     # 2. Save exact command to reproduce
     optimization_artifacts["reproduction_data"]["exact_command"] = {
         "script": "run_enhanced_matching.py",
@@ -915,78 +1159,80 @@ async def run_complete_pipeline(
             f"--trigram-weight {baseline_results.get('trigram_weight', default_params.get('trigram_weight'))}",
             f"--syntactic-weight {baseline_results.get('syntactic_weight', default_params.get('syntactic_weight'))}",
             f"--heuristic-file {heuristics_file}" if heuristics_file and os.path.exists(heuristics_file) else "",
-            "--use-validation"
+            "--use-validation",
         ],
-        "full_command": f"python run_enhanced_matching.py --dataset {dataset} --max-candidates {baseline_results.get('max_candidates', optimal_candidates)} --semantic-weight {baseline_results.get('semantic_weight', default_params.get('semantic_weight', 0.5))} --use-validation" + (f" --heuristic-file {heuristics_file}" if heuristics_file and os.path.exists(heuristics_file) else "")
+        "full_command": f"python run_enhanced_matching.py --dataset {dataset} --max-candidates {baseline_results.get('max_candidates', optimal_candidates)} --semantic-weight {baseline_results.get('semantic_weight', default_params.get('semantic_weight', 0.5))} --use-validation"
+        + (f" --heuristic-file {heuristics_file}" if heuristics_file and os.path.exists(heuristics_file) else ""),
     }
-    
+
     # 3. Save rule generation conversation logs with CONTENT
     log_files = [
         f"results/temp/claude_conversation_{dataset}.log",
-        f"results/temp/optimization_log_{dataset}.json", 
-        "results/temp/mcp_server.log"
+        f"results/temp/optimization_log_{dataset}.json",
+        "results/temp/mcp_server.log",
     ]
     optimization_artifacts["conversation_logs"] = []
     for log_file in log_files:
         if os.path.exists(log_file):
             try:
                 # Read and include the actual log content for full reproduction
-                with open(log_file, 'r', encoding='utf-8') as f:
+                with open(log_file, encoding="utf-8") as f:
                     content = f.read()
                     # Truncate if too long, but keep the important parts
                     if len(content) > 50000:  # 50KB limit
                         content = content[-50000:]  # Keep last 50KB (most recent)
                         content = "...[truncated]...\n" + content
-                optimization_artifacts["conversation_logs"].append({
-                    "file": log_file,
-                    "content": content,
-                    "size_bytes": len(content),
-                    "note": "Full conversation content included for reproduction"
-                })
+                optimization_artifacts["conversation_logs"].append(
+                    {
+                        "file": log_file,
+                        "content": content,
+                        "size_bytes": len(content),
+                        "note": "Full conversation content included for reproduction",
+                    }
+                )
             except Exception as e:
-                optimization_artifacts["conversation_logs"].append({
-                    "file": log_file,
-                    "error": str(e),
-                    "note": "Failed to read log content"
-                })
-    
+                optimization_artifacts["conversation_logs"].append(
+                    {"file": log_file, "error": str(e), "note": "Failed to read log content"}
+                )
+
     # 4. Save temp files that Claude generated
     temp_files = [
         f"results/temp/sample_data_{dataset}.json",
         "results/temp/generated_rules.json",
-        "results/temp/prompt_data.json"
+        "results/temp/prompt_data.json",
     ]
     optimization_artifacts["temp_artifacts"] = []
     for temp_file in temp_files:
         if os.path.exists(temp_file):
             try:
-                with open(temp_file, 'r') as f:
-                    temp_content = json.load(f) if temp_file.endswith('.json') else f.read()
-                optimization_artifacts["temp_artifacts"].append({
-                    "file": temp_file,
-                    "content": temp_content,
-                    "note": "Temporary artifact generated during optimization"
-                })
+                with open(temp_file) as f:
+                    temp_content = json.load(f) if temp_file.endswith(".json") else f.read()
+                optimization_artifacts["temp_artifacts"].append(
+                    {
+                        "file": temp_file,
+                        "content": temp_content,
+                        "note": "Temporary artifact generated during optimization",
+                    }
+                )
             except Exception as e:
-                optimization_artifacts["temp_artifacts"].append({
-                    "file": temp_file,
-                    "error": str(e)
-                })
-    
+                optimization_artifacts["temp_artifacts"].append({"file": temp_file, "error": str(e)})
+
     # Save method comparison and recommendation
     optimization_artifacts["method_recommendation"] = {
         "best_method": "enhanced" if enhanced_results["f1"] > baseline_results["metrics"]["f1"] else "baseline",
         "f1_improvement": f1_improvement,
         "should_use_rules": f1_improvement > 0.01,
         "reasoning": (
-            "Rules provide significant improvement" if f1_improvement > 0.01
-            else "Baseline sufficient, rules add complexity without benefit" if f1_improvement < -0.01
+            "Rules provide significant improvement"
+            if f1_improvement > 0.01
+            else "Baseline sufficient, rules add complexity without benefit"
+            if f1_improvement < -0.01
             else "Marginal difference, use simpler baseline approach"
-        )
+        ),
     }
-    
+
     results["optimization_artifacts"] = optimization_artifacts
-    
+
     results["summary"] = {
         "dev_f1": dev_results["metrics"]["f1"],
         "baseline_f1": baseline_results["metrics"]["f1"],
@@ -1005,6 +1251,10 @@ async def run_complete_pipeline(
         "duplicate_aware_baseline_gain": baseline_f1_gain,
         "duplicate_aware_enhanced_gain": enhanced_f1_gain,
         "duplicate_aware_beats_leaderboard": dup_aware_beats_leaderboard,
+        # Experiment reproducibility and registry
+        "pipeline_registry_id": registry.pipeline_run_id,
+        "registry_path": str(registry.save_registry()),
+        "experiment_genealogy": registry.get_experiment_genealogy(),
     }
 
     # Save results with comprehensive JSON serialization
@@ -1109,25 +1359,16 @@ async def main():
     parser = argparse.ArgumentParser(description="Complete entity matching pipeline")
     parser.add_argument("--dataset", help="Dataset name (e.g. beer, walmart_amazon)")
     parser.add_argument("--datasets", help="Run on comma-separated list of datasets or 'all' for all datasets")
-    parser.add_argument("--early-exit", action="store_true", help="Early exit parameter (ignored, kept for backward compatibility)")
     parser.add_argument("--resume", action="store_true", help="Resume from checkpoint if available")
     parser.add_argument("--concurrency", type=int, default=20, help="Number of concurrent API requests (default: 20)")
-    parser.add_argument("--model", default="gpt-4.1-nano", help="Model to use for analysis-driven optimization (default: gpt-4.1-nano)")
-
     parser.add_argument(
-        "--use-agentic-rules", action="store_true", default=True, help="Use agentic rule generation (default: True)"
+        "--model", default="gpt-4.1-nano", help="Model to use for analysis-driven optimization (default: gpt-4.1-nano)"
     )
     parser.add_argument(
         "--mode",
         choices=["weights-only", "prompt-modification", "heuristics"],
-        default="heuristics",
-        help="Optimization mode: weights-only (fast weight tuning), prompt-modification (dynamic LLM guidance), heuristics (full rule generation)"
-    )
-    parser.add_argument(
-        "--use-legacy-rules",
-        dest="use_agentic_rules",
-        action="store_false",
-        help="Use legacy rule generation instead of agentic",
+        default="prompt-modification",
+        help="Optimization mode: weights-only (fast weight tuning), prompt-modification (dynamic LLM guidance), heuristics (full rule generation)",
     )
     parser.add_argument(
         "--known-best-params",
@@ -1145,33 +1386,19 @@ async def main():
         help="Use train set with optimal params to get more error examples for rule generation",
     )
     parser.add_argument(
-        "--use-analysis-driven",
-        action="store_true",
-        default=True,
-        help="Use analysis-driven optimization (default: True, kept for backward compatibility)",
-    )
-    parser.add_argument(
-        "--use-sweep",
-        dest="use_analysis_driven",
-        action="store_false",
-        help="Deprecated: sweep mode no longer available",
-    )
-    parser.add_argument(
         "--no-cache",
         action="store_true",
         help="Disable caching and force regeneration of all analysis files",
     )
+
     parser.add_argument(
-        "--max-analysis-pairs",
-        type=int,
-        default=500,
-        help="Maximum number of positive pairs to analyze for candidate recall (default: 500, use 0 for no limit)"
+        "--embedding-base-url",
+        help="Base URL for embedding API (e.g., http://localhost:8080 for TEI or https://api.openai.com/ for OpenAI). If not provided, uses local SentenceTransformer",
     )
     parser.add_argument(
-        "--max-analysis-candidates",
-        type=int,
-        default=500,
-        help="Maximum candidates to test in analysis (tests recall@1 through recall@N, default: 500)"
+        "--embedding-model",
+        default="all-MiniLM-L6-v2",
+        help="Embedding model name (default: all-MiniLM-L6-v2 for local, or 'tei' for TEI endpoint)",
     )
 
     args = parser.parse_args()
@@ -1194,7 +1421,7 @@ async def main():
             # Parse comma-separated list
             datasets = [d.strip() for d in args.datasets.split(",")]
             print(f"🗂️ Processing {len(datasets)} datasets: {', '.join(datasets)}")
-            
+
             # Validate dataset names
             available_datasets = get_available_datasets()
             invalid_datasets = [d for d in datasets if d not in available_datasets]
@@ -1216,7 +1443,9 @@ async def main():
             return None
 
     # Build known_best_params from CLI arguments if provided
-    if not known_best_params and any([args.max_candidates, args.semantic_weight, args.trigram_weight, args.syntactic_weight]):
+    if not known_best_params and any(
+        [args.max_candidates, args.semantic_weight, args.trigram_weight, args.syntactic_weight]
+    ):
         known_best_params = {}
         if args.max_candidates:
             known_best_params["max_candidates"] = args.max_candidates
@@ -1233,25 +1462,22 @@ async def main():
     failed_datasets = []
 
     for i, dataset in enumerate(datasets):
-        print(f"\n{'='*80}")
-        print(f"📊 PROCESSING DATASET {i+1}/{len(datasets)}: {dataset.upper()}")
-        print(f"{'='*80}")
+        print(f"\n{'=' * 80}")
+        print(f"📊 PROCESSING DATASET {i + 1}/{len(datasets)}: {dataset.upper()}")
+        print(f"{'=' * 80}")
 
         try:
             result = await run_complete_pipeline(
                 dataset,
-                args.early_exit,
                 args.resume,
                 args.concurrency,
                 args.model,
-                args.use_agentic_rules,
                 known_best_params,
                 args.use_train_for_rules,
                 args.mode,
-                True,  # Always use analysis-driven (ignore args.use_analysis_driven)
                 args.no_cache,
-                args.max_analysis_pairs,
-                args.max_analysis_candidates,
+                args.embedding_base_url,
+                args.embedding_model,
             )
             all_results[dataset] = result
             print(f"✅ {dataset}: F1={result.get('enhanced_results', {}).get('f1', 0):.4f}")
@@ -1263,9 +1489,9 @@ async def main():
 
     # Print summary if multiple datasets
     if len(datasets) > 1:
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print(f"📊 SUMMARY: {len(datasets)} DATASETS PROCESSED")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         successful_datasets = [d for d in datasets if d not in failed_datasets]
         print(f"✅ Successful: {len(successful_datasets)}")
@@ -1275,8 +1501,8 @@ async def main():
             print("\n📈 RESULTS:")
             for dataset in successful_datasets:
                 result = all_results[dataset]
-                f1 = result.get('enhanced_results', {}).get('f1', 0)
-                target = result.get('leaderboard_target', 0)
+                f1 = result.get("enhanced_results", {}).get("f1", 0)
+                target = result.get("leaderboard_target", 0)
                 beat_target = "🎯" if f1 >= target else "  "
                 print(f"  {beat_target} {dataset:15} F1={f1:.4f} (target: {target:.1f})")
 
@@ -1294,18 +1520,22 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\n🛑 Pipeline interrupted by user")
         import sys
+
         sys.exit(1)
     except Exception as e:
         print(f"💥 Pipeline failed with unhandled exception: {e}")
         import traceback
+
         traceback.print_exc()
         import sys
+
         sys.exit(1)
     finally:
         # Clean up any remaining asyncio tasks
         try:
             # Cancel all pending tasks
             import asyncio
+
             try:
                 loop = asyncio.get_event_loop()
                 if not loop.is_closed():

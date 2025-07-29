@@ -129,19 +129,19 @@ def get_tools_for_mode(mode: str) -> List[Tool]:
                 "required": []
             }
         ),
-        "WriteWeights": Tool(
-            name="WriteWeights",
-            description="""Update similarity weights for entity matching.
+        "TestWeights": Tool(
+            name="TestWeights",
+            description="""Preview candidate rankings with different similarity weights (READ-ONLY, no side effects).
 
-            RETURNS: Success message with updated weights summary, preserved rules count, and optional candidate comparison.
+            RETURNS: Candidate comparison showing top-N candidate rankings for a specific record with the given weights.
 
-            CANDIDATE COMPARISON (if show_candidate_comparison=true):
-            - Shows old vs new top-N candidate rankings for a specific record from your dataset
+            CANDIDATE COMPARISON:
+            - Shows how candidates would rank with these weights
             - Displays individual similarity scores (trigram, semantic, combined)
-            - Highlights ranking changes (e.g., 'ID123: 3→1, ID456: new')
-            - Helps understand how weight changes affect candidate selection
+            - Pure analysis tool - makes NO changes to system state
+            - Use RunExperiment to actually apply weights and run full experiments
 
-            Example: {"semantic_weight": 0.6, "trigram_weight": 0.3, "syntactic_weight": 0.1, "show_candidate_comparison": true, "dataset": "beer"}""",
+            Example: {"semantic_weight": 0.6, "trigram_weight": 0.3, "syntactic_weight": 0.1, "dataset": "beer", "record_id": 5}""",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -163,36 +163,35 @@ def get_tools_for_mode(mode: str) -> List[Tool]:
                         "maximum": 1.0,
                         "description": "Weight for syntactic similarity (required)"
                     },
-                    "max_candidates": {
-                        "type": "integer",
-                        "minimum": 10,
-                        "maximum": 500,
-                        "default": 100,
-                        "description": "Maximum number of candidates to consider"
-                    },
-                    "show_candidate_comparison": {
-                        "type": "boolean",
-                        "default": False,
-                        "description": "Show how weight changes affect candidate ranking for a sample record"
-                    },
                     "dataset": {
                         "type": "string",
-                        "description": "Dataset name for candidate comparison (required if show_candidate_comparison=true). E.g., 'beer', 'itunes_amazon'"
+                        "description": "Dataset name (e.g., 'beer', 'itunes_amazon')"
                     },
                     "record_id": {
                         "type": "integer",
                         "default": 0,
-                        "description": "Record ID to analyze for comparison (defaults to 0)"
+                        "description": "Record ID to analyze (defaults to 0)"
+                    },
+                    "max_candidates": {
+                        "type": "integer",
+                        "minimum": 10,
+                        "maximum": 500,
+                        "default": 50,
+                        "description": "Maximum number of candidates to consider"
                     },
                     "top_n": {
                         "type": "integer",
                         "minimum": 5,
                         "maximum": 25,
                         "default": 10,
-                        "description": "Number of top candidates to show in comparison"
+                        "description": "Number of top candidates to show"
+                    },
+                    "config_file": {
+                        "type": "string",
+                        "description": "Path to experiment configuration file for consistent settings"
                     }
                 },
-                "required": ["semantic_weight", "trigram_weight", "syntactic_weight"]
+                "required": ["semantic_weight", "trigram_weight", "syntactic_weight", "dataset"]
             }
         ),
         "WritePrompt": Tool(
@@ -253,9 +252,9 @@ def get_tools_for_mode(mode: str) -> List[Tool]:
         "RunExperiment": Tool(
             name="RunExperiment",
             description=(
-                "Run entity matching experiment and return detailed results including all false positives, "
-                "false negatives, similarity scores, and candidate rankings. Essential for debugging and "
-                "rule optimization. Uses full dev set for accurate evaluation (no sampling)."
+                "Run complete entity matching experiment with full configuration. "
+                "Saves experiment config and returns detailed results. "
+                "This is the main tool for testing complete configurations."
             ),
             inputSchema={
                 "type": "object",
@@ -264,15 +263,44 @@ def get_tools_for_mode(mode: str) -> List[Tool]:
                         "type": "string",
                         "description": "Dataset name (e.g., 'beer', 'itunes_amazon')"
                     },
-                    "rules_file": {
+                    "semantic_weight": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "maximum": 1.0,
+                        "default": 0.5,
+                        "description": "Semantic similarity weight"
+                    },
+                    "trigram_weight": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "maximum": 1.0,
+                        "description": "Trigram similarity weight (auto-calculated if not provided)"
+                    },
+                    "syntactic_weight": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "maximum": 1.0,
+                        "description": "Syntactic similarity weight (auto-calculated if not provided)"
+                    },
+                    "max_candidates": {
+                        "type": "integer",
+                        "minimum": 10,
+                        "maximum": 500,
+                        "default": 50,
+                        "description": "Maximum candidates to consider"
+                    },
+                    "config_file": {
                         "type": "string",
-                        "default": "results/temp/generated_rules.json",
-                        "description": "Path to rules file to test"
+                        "description": "Path to experiment config file (inherits embedding model, base_url, etc.)"
+                    },
+                    "prompt_data": {
+                        "type": "object",
+                        "description": "Custom prompt structure (optional)"
                     },
                     "max_examples": {
                         "type": "integer",
                         "default": 20,
-                        "description": "Maximum FP/FN examples to return (to avoid overwhelming output)"
+                        "description": "Maximum FP/FN examples to return"
                     }
                 },
                 "required": ["dataset"]
@@ -369,8 +397,8 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[TextCon
     try:
         if name == "WriteRules":
             result = await write_rules_tool(**arguments)
-        elif name == "WriteWeights":
-            result = await write_weights_tool(**arguments)
+        elif name == "TestWeights":
+            result = await test_weights_tool(**arguments)
         elif name == "RunExperiment":
             result = await run_experiment_tool(**arguments)
         elif name == "ReadSampleData":
@@ -451,7 +479,8 @@ async def generate_candidate_comparison(
     dataset: str, record_id: int, top_n: int,
     old_semantic: float, old_trigram: float, old_syntactic: float,
     new_semantic: float, new_trigram: float, new_syntactic: float,
-    max_candidates: int
+    max_candidates: int,
+    config_file: str = None
 ) -> str:
     """Generate candidate comparison showing how weights affect candidate ranking."""
     try:
@@ -461,7 +490,6 @@ async def generate_candidate_comparison(
 
         from src.entity_matching.hybrid_matcher import (
             CandidateCache,
-            Config,
             get_top_candidates_cached,
             semantic_similarity,
             trigram_similarity,
@@ -489,15 +517,39 @@ async def generate_candidate_comparison(
 
         left_record = A[record_id]
 
-        # Create candidate cache
-        cache_file = f".candidate_cache/{dataset}_candidates_{max_candidates}.json"
+        # Load experiment configuration if provided
+        from src.entity_matching.experiment_config import ExperimentConfig
+
+        if config_file and pathlib.Path(config_file).exists():
+            exp_config = ExperimentConfig.from_file(config_file)
+            print(f"📄 Loaded experiment config: {exp_config}")
+        else:
+            # Create default config for this dataset
+            exp_config = ExperimentConfig(
+                dataset=dataset,
+                max_candidates=max_candidates
+            )
+            print(f"📄 Using default config: {exp_config}")
+
+        # Create candidate cache with model-specific path
+        cache_key = exp_config.get_cache_key()
+        cache_file = f".candidate_cache/{cache_key}.json"
         candidate_cache = CandidateCache(B, cache_file=cache_file)
 
         # Function to get top candidates with specific weights
         def get_candidates_with_weights(sem_w, tri_w, syn_w):
-            cfg = Config()
-            cfg.set_weights(tri_w, syn_w, sem_w)
-            cfg.use_semantic = True
+            # Create config based on experiment config with updated weights
+            test_config = ExperimentConfig(
+                dataset=exp_config.dataset,
+                embedding_model=exp_config.embedding_model,
+                embedding_base_url=exp_config.embedding_base_url,
+                llm_model=exp_config.llm_model,
+                max_candidates=max_candidates,
+                semantic_weight=sem_w,
+                trigram_weight=tri_w,
+                syntactic_weight=syn_w
+            )
+            cfg = test_config.to_legacy_config()
 
             candidates = get_top_candidates_cached(
                 left_record, candidate_cache, max_candidates, cfg, dataset
@@ -569,11 +621,48 @@ async def generate_candidate_comparison(
     except Exception as e:
         return f"\n⚠️ Error generating candidate comparison: {e}\n"
 
+async def test_weights_tool(
+    semantic_weight: float,
+    trigram_weight: float,
+    syntactic_weight: float,
+    dataset: str,
+    record_id: int = 0,
+    max_candidates: int = 50,
+    top_n: int = 10,
+    config_file: str = None
+) -> List[TextContent]:
+    """Preview candidate rankings with given weights (READ-ONLY, no side effects)."""
+
+    try:
+        # Just show candidate comparison - no file writing
+        comparison_text = await generate_candidate_comparison(
+            dataset, record_id, top_n,
+            0.5, 0.25, 0.25,  # dummy old weights
+            semantic_weight, trigram_weight, syntactic_weight,
+            max_candidates,
+            config_file=config_file
+        )
+
+        return [TextContent(
+            type="text",
+            text=f"📊 CANDIDATE PREVIEW (READ-ONLY)\n"
+                 f"Weights: semantic={semantic_weight}, trigram={trigram_weight}, syntactic={syntactic_weight}\n"
+                 f"Dataset: {dataset}, Record: {record_id}, Max candidates: {max_candidates}\n\n"
+                 f"{comparison_text}"
+        )]
+
+    except Exception as e:
+        return [TextContent(
+            type="text",
+            text=f"❌ TestWeights failed: {e!s}"
+        )]
+
+
 async def write_weights_tool(
     semantic_weight: float,
     trigram_weight: float,
     syntactic_weight: float,
-    max_candidates: int = 100,
+    max_candidates: int,
     show_candidate_comparison: bool = False,
     dataset: str = None,
     record_id: int = 0,
@@ -651,7 +740,8 @@ async def write_weights_tool(
                         dataset, record_id, top_n,
                         old_semantic, old_trigram, old_syntactic,
                         semantic_weight, trigram_weight, syntactic_weight,
-                        max_candidates
+                        max_candidates,
+                        config_file=arguments.get("config_file")
                     )
                 except Exception as e:
                     comparison_text = f"\n⚠️ Could not generate candidate comparison: {e}\n"
@@ -828,49 +918,77 @@ async def write_rules_tool(
 
 async def run_experiment_tool(
     dataset: str,
-    rules_file: str = "results/temp/generated_rules.json",
+    semantic_weight: float = 0.5,
+    trigram_weight: float = None,
+    syntactic_weight: float = None,
+    max_candidates: int = 50,
+    config_file: str = None,
+    prompt_data: dict = None,
     max_examples: int = 20
 ) -> List[TextContent]:
-    """Test rules and return performance metrics with detailed failure analysis on full dev set."""
+    """Run complete experiment with full config, inherit embedding settings, save experiment."""
 
     try:
-        # Check if rules file exists
-        if not os.path.exists(rules_file):
-            return [TextContent(type="text", text=f"❌ Rules file not found: {rules_file}")]
+        import os
+        import pathlib
 
-        # Extract parameters from rules file
-        max_candidates = 50  # default
-        semantic_weight = 0.5  # default
-        trigram_weight = None
-        syntactic_weight = None
+        from src.entity_matching.experiment_config import ExperimentConfig
 
-        try:
-            with open(rules_file) as f:
-                rules_config = json.load(f)
-            hyperparams = rules_config.get("hyperparameters", {})
-            max_candidates = hyperparams.get("max_candidates", max_candidates)
-            semantic_weight = hyperparams.get("semantic_weight", semantic_weight)
-            trigram_weight = hyperparams.get("trigram_weight")
-            syntactic_weight = hyperparams.get("syntactic_weight")
-        except Exception as e:
-            logger.warning(f"Could not parse rules file {rules_file}: {e}")
+        # Step 1: Load base config if provided, otherwise create default
+        if config_file and pathlib.Path(config_file).exists():
+            base_config = ExperimentConfig.from_file(config_file)
+            logger.info(f"📄 Loaded base config: {base_config}")
+        else:
+            # Create default config
+            base_config = ExperimentConfig(dataset=dataset)
+            logger.info(f"📄 Using default config: {base_config}")
 
-        # Import and call run_enhanced_matching directly for structured data
+        # Step 2: Override with Claude's specifications
+        experiment_config = ExperimentConfig(
+            # Inherit from base config
+            dataset=base_config.dataset,
+            embedding_model=base_config.embedding_model,  # INHERITED - Claude cannot change
+            embedding_base_url=base_config.embedding_base_url,  # INHERITED - Claude cannot change
+            llm_model=base_config.llm_model,
+            concurrency=base_config.concurrency,
+            mode=base_config.mode,
+
+            # Claude's specifications override
+            semantic_weight=semantic_weight,
+            trigram_weight=trigram_weight,
+            syntactic_weight=syntactic_weight,
+            max_candidates=max_candidates,
+            prompt_data=prompt_data,
+        )
+
+        # Step 3: Save experiment config
+        config_save_path = experiment_config.save_experiment()
+        logger.info(f"💾 Saved experiment config: {config_save_path}")
+
+        # Step 4: Save prompt data if provided
+        if prompt_data:
+            os.makedirs("results/temp", exist_ok=True)
+            with open("results/temp/prompt_data.json", "w") as f:
+                json.dump(prompt_data, f, indent=2)
+            logger.info("💾 Saved custom prompt data")
+
+        # Step 5: Run the experiment
         import sys
         sys.path.append(os.getcwd())
         from run_enhanced_matching import run_enhanced_matching
 
-        logger.info(f"Running experiment with max_candidates={max_candidates}, semantic={semantic_weight}, trigram={trigram_weight}, syntactic={syntactic_weight}")
+        logger.info(f"🚀 Running experiment: {experiment_config}")
 
-        # Call the function directly to get structured results
+        # Call run_enhanced_matching with experiment config settings
         results = await run_enhanced_matching(
-            dataset=dataset,
-            max_candidates=max_candidates,
-            model="gpt-4.1-nano",
-            semantic_weight=semantic_weight,
-            trigram_weight=trigram_weight,
-            syntactic_weight=syntactic_weight,
-            heuristic_file=rules_file,
+            dataset=experiment_config.dataset,
+            max_candidates=experiment_config.max_candidates,
+            model=experiment_config.llm_model,
+            semantic_weight=experiment_config.semantic_weight,
+            trigram_weight=experiment_config.trigram_weight,
+            syntactic_weight=experiment_config.syntactic_weight,
+            embedding_base_url=experiment_config.embedding_base_url,
+            embedding_model=experiment_config.embedding_model,
             use_validation=True  # Always use validation for consistency
         )
 
@@ -897,8 +1015,82 @@ async def run_experiment_tool(
             "syntactic": syntactic_weight
         }
 
+        # Step 6: Register with active pipeline registry if available
+        try:
+            from src.entity_matching.experiment_registry import ExperimentRegistry
+            registry = ExperimentRegistry.find_active_pipeline_registry()
+            if registry:
+                registry.register_experiment(
+                    experiment_config,
+                    "claude_optimization",
+                    {
+                        "f1": f1_score,
+                        "precision": precision,
+                        "recall": recall,
+                        "cost_usd": results.get("cost", 0.0),
+                        "tp": tp,
+                        "fp": fp,
+                        "fn": fn
+                    },
+                    f"Claude optimization experiment with weights {semantic_weight:.2f}/{trigram_weight:.2f}/{syntactic_weight:.2f}"
+                )
+                logger.info(f"📋 Registered experiment {experiment_config.experiment_id} with active pipeline registry {registry.pipeline_run_id}")
+            else:
+                logger.info("📋 No active pipeline registry found - experiment not linked to pipeline")
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to register with pipeline registry: {e}")
+
+        # Save experiment results with full tracking
+        experiment_results = {
+            "experiment_id": experiment_config.experiment_id,
+            "config_path": str(config_save_path),
+            "results": results,
+            "summary": {
+                "f1": f1_score,
+                "precision": precision,
+                "recall": recall,
+                "tp": tp,
+                "fp": fp,
+                "fn": fn
+            }
+        }
+
+        # Save to experiment directory
+        results_file = experiment_config.get_experiment_dir() / "results.json"
+        with open(results_file, "w") as f:
+            import json
+            json.dump(experiment_results, f, indent=2, default=str)
+
+        # Log complete experiment results
+        logger.info(f"🧪 EXPERIMENT {experiment_config.experiment_id} COMPLETE")
+        logger.info(f"   📊 Results: F1={f1_score:.4f}, P={precision:.4f}, R={recall:.4f}")
+        logger.info(f"   ⚖️  Config: {experiment_config}")
+        logger.info(f"   📁 Saved: {config_save_path}")
+        logger.info(f"   📊 Results: {results_file}")
+
+        if fp > 0 or fn > 0:
+            logger.info("   ⚠️  FAILURE EXAMPLES:")
+
+            # Log a few false positives
+            if fp > 0 and false_positives:
+                logger.info(f"   🔴 FALSE POSITIVES (showing first 3 of {fp}):")
+                for i, fp_example in enumerate(false_positives[:3]):
+                    left = fp_example.get('left_record', {})
+                    right = fp_example.get('predicted_record', {})
+                    logger.info(f"      FP{i+1}: Left='{left.get('name', 'N/A')}' → Right='{right.get('name', 'N/A')}'")
+
+            # Log a few false negatives
+            if fn > 0 and false_negatives:
+                logger.info(f"   🟡 FALSE NEGATIVES (showing first 3 of {fn}):")
+                for i, fn_example in enumerate(false_negatives[:3]):
+                    left = fn_example.get('left_record', {})
+                    true_right = fn_example.get('true_record', {})
+                    logger.info(f"      FN{i+1}: Left='{left.get('name', 'N/A')}' ≠ True='{true_right.get('name', 'N/A')}'")
+        else:
+            logger.info("   ✅ Perfect results - no errors!")
+
         eval_data = "FULL validation set"
-        result_text = f"🧪 Enhanced Test Results for {dataset} ({eval_data}):\n"
+        result_text = f"🧪 Enhanced Test Results for {dataset} ({eval_data}) [Experiment {experiment_id}]:\n"
 
         # Show weight verification - compare requested vs actual
         try:
@@ -1387,6 +1579,7 @@ async def write_prompt_tool(prompt_data: dict) -> List[TextContent]:
                 left_record=sample_left,
                 candidates_text=sample_candidates,
                 best_idx=0,
+                prompt_data=None,  # Use default behavior for MCP server
                 additional_guidance=None
             )
         except Exception as e:
@@ -1401,6 +1594,7 @@ async def write_prompt_tool(prompt_data: dict) -> List[TextContent]:
                 left_record=sample_left,
                 candidates_text=sample_candidates,
                 best_idx=0,
+                prompt_data=None,  # Use default behavior for MCP server
                 additional_guidance=None
             )
         except Exception as e:

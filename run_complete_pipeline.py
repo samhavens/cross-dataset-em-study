@@ -23,6 +23,10 @@ import time
 # Fix tokenizer fork warnings in async processing
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+# Set environment variables for output visibility in chained commands
+os.environ["PYTHONUNBUFFERED"] = "1"
+os.environ["PYTHONIOENCODING"] = "utf-8"
+
 from datetime import datetime
 from typing import Any, Dict, Optional
 
@@ -36,6 +40,7 @@ from src.evaluation.duplicate_aware import compare_evaluations, load_duplicate_m
 
 # ClaudeSDKOptimizer removed - using new MCP-based SimplifiedAgenticGenerator instead
 from src.experiments.simplified_agentic_generator import generate_simplified_heuristics, get_leaderboard_target_f1
+from src.prompts.hybrid_matcher_prompt import get_prompt_data
 from src.utils.json_serializer import json_serialize
 
 
@@ -242,6 +247,7 @@ async def run_complete_pipeline(
         mode=mode,
         use_train_for_rules=use_train_for_rules,
         no_cache=no_cache,
+        max_candidates=known_best_params.get("max_candidates", 50) if known_best_params else 50,
         semantic_weight=known_best_params.get("semantic_weight", 0.5) if known_best_params else 0.5,
         trigram_weight=known_best_params.get("trigram_weight") if known_best_params else None,
         syntactic_weight=known_best_params.get("syntactic_weight") if known_best_params else None,
@@ -265,12 +271,26 @@ async def run_complete_pipeline(
         "pipeline_version": "complete_v3_working_rules",
     }
 
+    # Initialize default_params for later use (will be overridden in different branches)
+    optimal_candidates_default = get_optimal_candidates_for_dataset(dataset) or 100
+    default_params = {
+        "max_candidates": optimal_candidates_default,
+        "semantic_weight": 0.6,
+        "trigram_weight": 0.2,
+        "syntactic_weight": 0.2,
+        "model": model,
+        "use_semantic": True,
+    }
+
     # STEP 1: Analysis-driven optimization (default) OR known params
     if known_best_params:
         print(f"✅ STEP 1: Using provided hyperparameters: {known_best_params}")
         print("⏳ Running single dev evaluation to get predictions for rule generation...")
 
         # Create dev experiment configuration
+        # Load current prompt data
+        current_prompt_data = get_prompt_data()
+
         dev_config = ExperimentConfig(
             dataset=dataset,
             llm_model=model,
@@ -281,6 +301,7 @@ async def run_complete_pipeline(
             semantic_weight=known_best_params.get("semantic_weight", 0.6),
             trigram_weight=known_best_params.get("trigram_weight", 0.2),
             syntactic_weight=known_best_params.get("syntactic_weight", 0.2),
+            prompt_data=current_prompt_data,
             concurrency=concurrency,
             mode=mode,
             no_cache=no_cache,
@@ -332,7 +353,8 @@ async def run_complete_pipeline(
         )
 
         # Generate rules based on the dev results
-        print("🤖 Generating rules based on known hyperparameters...")
+        print("🤖 Generating rules based on known hyperparameters...", flush=True)
+        print("    📡 Starting Claude optimization session (progress will be shown below)...", flush=True)
         from src.entity_matching.analysis import analyze_dataset_for_claude
 
         analysis_file = f"results/{dataset}_claude_analysis.json"
@@ -356,6 +378,8 @@ async def run_complete_pipeline(
                 no_cache,
                 mode=mode,
                 optimal_params=optimal_params,
+                embedding_model=embedding_model,
+                embedding_base_url=embedding_base_url,
             )
         except Exception as e:
             print(f"❌ Known params rule generation failed: {e}")
@@ -384,7 +408,7 @@ async def run_complete_pipeline(
         if heuristics_file and os.path.exists(heuristics_file):
             checkpoint["heuristics_file"] = heuristics_file
             checkpoint["rule_generation_cost"] = rule_cost_info
-            print(f"✅ Rules generated: {heuristics_file}")
+            print(f"✅ Rules generated: {heuristics_file}", flush=True)
         else:
             raise RuntimeError("Rule generation failed for known parameters")
     elif "dev_results" in checkpoint and "optimal_params" in checkpoint:
@@ -453,6 +477,9 @@ async def run_complete_pipeline(
             )
         else:
             # Create dev experiment configuration for analysis-driven approach
+            # Load current prompt data
+            current_prompt_data = get_prompt_data()
+
             dev_config = ExperimentConfig(
                 dataset=dataset,
                 llm_model=model,
@@ -463,6 +490,7 @@ async def run_complete_pipeline(
                 semantic_weight=0.6,
                 trigram_weight=0.2,
                 syntactic_weight=0.2,
+                prompt_data=current_prompt_data,
                 concurrency=analysis_concurrency,
                 mode=mode,
                 no_cache=no_cache,
@@ -500,7 +528,8 @@ async def run_complete_pipeline(
                 json.dump(cleaned_dev_results, f, indent=2)
             print(f"💾 Cached dev predictions to {dev_cache_file}")
 
-        print("🤖 Generating joint hyperparameter + rule optimization with Claude...")
+        print("🤖 Generating joint hyperparameter + rule optimization with Claude...", flush=True)
+        print("    📡 Starting Claude optimization session (progress will be shown below)...", flush=True)
         try:
             heuristics_file, rule_cost_info = await generate_simplified_heuristics(
                 dataset,
@@ -511,6 +540,8 @@ async def run_complete_pipeline(
                 no_cache,
                 mode=mode,
                 optimal_params=default_params,
+                embedding_model=embedding_model,
+                embedding_base_url=embedding_base_url,
             )
         except Exception as e:
             print(f"❌ Analysis-driven rule generation failed: {e}")
@@ -577,48 +608,8 @@ async def run_complete_pipeline(
                     "use_semantic": True,
                 }
 
-            # If Claude chose different parameters, run another evaluation and register it
-            if (
-                optimal_params["max_candidates"] != default_params["max_candidates"]
-                or abs(optimal_params["semantic_weight"] - default_params["semantic_weight"]) > 0.05
-            ):
-                print("🔄 Running evaluation with Claude-chosen parameters (different from defaults)...")
-
-                # Create updated dev config with Claude's parameters
-                claude_dev_config = ExperimentConfig(
-                    dataset=dataset,
-                    llm_model=model,
-                    embedding_model=embedding_model,
-                    embedding_base_url=embedding_base_url,
-                    use_validation=True,  # Dev stage uses validation data
-                    max_candidates=optimal_params["max_candidates"],
-                    semantic_weight=optimal_params["semantic_weight"],
-                    trigram_weight=optimal_params.get("trigram_weight"),
-                    syntactic_weight=optimal_params.get("syntactic_weight"),
-                    concurrency=analysis_concurrency,
-                    mode=mode,
-                    no_cache=no_cache,
-                )
-
-                dev_results = await run_dev_only_analysis_with_params(
-                    dataset, optimal_params, model, analysis_concurrency, embedding_base_url, embedding_model
-                )
-
-                # Register updated dev experiment with Claude's parameters
-                registry.register_experiment(
-                    claude_dev_config,
-                    "dev",
-                    {
-                        "f1": dev_results["metrics"]["f1"],
-                        "precision": dev_results["metrics"]["precision"],
-                        "recall": dev_results["metrics"]["recall"],
-                        "cost_usd": dev_results["cost_usd"],
-                        "processing_time": analysis_time,
-                    },
-                    "Development stage updated with Claude-chosen parameters",
-                )
-            else:
-                print("✅ Using existing evaluation results (Claude chose similar parameters)")
+            # Claude's experiments are already tracked via MCP server, no need for additional dev run
+            print("✅ Using dev evaluation results (Claude experiments tracked separately via MCP)")
 
             dev_time = analysis_time
 
@@ -634,10 +625,41 @@ async def run_complete_pipeline(
         else:
             raise RuntimeError("Analysis-driven optimization failed - no fallback available")
 
-    print(f"✅ Best Dev Results: F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}")
-    print(
-        f"🎯 Optimal Parameters: {optimal_params['max_candidates']} candidates, {optimal_params['semantic_weight']:.2f} semantic weight, {optimal_params['model']}"
-    )
+    # NOW refresh registry after Claude optimization completes - this avoids the hanging issue
+    print("🔄 Claude optimization complete, now refreshing registry...")
+    registry.reload_from_disk()  # Explicit reload
+    best_claude_config_for_3b = registry.get_best_claude_experiment()
+    claude_experiments_for_3b = registry.get_claude_experiments()
+    print(f"🔍 Found {len(claude_experiments_for_3b)} Claude experiments for Step 3B")
+
+    # Get Claude's best results for accurate logging
+    best_claude_config = registry.get_best_claude_experiment()
+    if best_claude_config:
+        claude_experiments = registry.get_claude_experiments()
+        # Find the best experiment to get its F1 score
+        best_claude_entry = None
+        best_f1 = 0.0
+        for exp in claude_experiments:
+            f1 = registry._extract_f1_score(exp.results)
+            if f1 and f1 > best_f1:
+                best_f1 = f1
+                best_claude_entry = exp
+        
+        if best_claude_entry:
+            print(f"✅ Best Dev Results (Claude): F1={best_f1:.4f}, Cost=${best_claude_entry.results.get('cost_usd', 0):.3f}")
+        else:
+            print(f"✅ Best Dev Results (initial): F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}")
+    else:
+        print(f"✅ Best Dev Results (initial): F1={dev_results['metrics']['f1']:.4f}, Cost=${dev_results['cost_usd']:.3f}")
+    # Display Claude's optimal parameters if available
+    if best_claude_config:
+        print(
+            f"🎯 Optimal Parameters (Claude): {best_claude_config.max_candidates} candidates, {best_claude_config.semantic_weight:.2f} semantic, {best_claude_config.trigram_weight:.2f} trigram, {best_claude_config.syntactic_weight:.2f} syntactic, {best_claude_config.llm_model}"
+        )
+    else:
+        print(
+            f"🎯 Optimal Parameters (initial): {optimal_params['max_candidates']} candidates, {optimal_params['semantic_weight']:.2f} semantic weight, {optimal_params['model']}"
+        )
 
     results["dev_results"] = {
         "f1": dev_results["metrics"]["f1"],
@@ -673,9 +695,9 @@ async def run_complete_pipeline(
         print("\n💨 WEIGHTS-ONLY MODE: Skipping both 3A and 3B (identical without rules)")
         # Use dev results as final results since no additional testing needed
         enhanced_results = {
-            "f1": dev_results["f1"],
-            "precision": dev_results["precision"],
-            "recall": dev_results["recall"],
+            "f1": dev_results["metrics"]["f1"],
+            "precision": dev_results["metrics"]["precision"],
+            "recall": dev_results["metrics"]["recall"],
             "cost": 0.0,  # No additional cost for skipped steps
             "method": "weights_only_dev_results",
         }
@@ -757,22 +779,46 @@ async def run_complete_pipeline(
         semantic_weight=baseline_semantic_weight,
         trigram_weight=baseline_trigram_weight,
         syntactic_weight=baseline_syntactic_weight,
+        prompt_data=dev_experiment.prompt_data,  # Keep same prompt data
         concurrency=concurrency,
         mode=dev_experiment.mode,
         no_cache=dev_experiment.no_cache,
     )
 
-    baseline_results = await run_matching(
+    # Calculate max candidates needed for cache efficiency (before any stages run)
+    # Use existing registry that was created at the beginning of the function
+    best_claude_config = registry.get_best_claude_experiment()
+    max_candidates_needed = baseline_config.max_candidates
+    if best_claude_config:
+        max_candidates_needed = max(baseline_config.max_candidates, best_claude_config.max_candidates)
+        print(f"🔧 Using max_candidates={max_candidates_needed} for cache efficiency (3A:{baseline_config.max_candidates}, Claude:{best_claude_config.max_candidates})")
+    else:
+        print(f"🔧 Using max_candidates={max_candidates_needed} (no Claude experiments found)")
+
+    raw_baseline_results = await run_enhanced_matching(
         dataset=dataset,
-        limit=None,
-        max_candidates=baseline_config.max_candidates,
+        max_candidates=max_candidates_needed,
         model="gpt-4.1-nano",  # Use cheaper model for test
         semantic_weight=baseline_semantic_weight,
         trigram_weight=baseline_trigram_weight,
         syntactic_weight=baseline_syntactic_weight,
-        use_semantic=optimal_params["use_semantic"],
         concurrency=concurrency,
+        embedding_base_url=embedding_base_url,
+        embedding_model=embedding_model,
     )
+
+    # Transform format to match caller expectations
+    baseline_results = {
+        "metrics": {
+            "f1": raw_baseline_results["f1"],
+            "precision": raw_baseline_results["precision"],
+            "recall": raw_baseline_results["recall"],
+        },
+        "cost_usd": raw_baseline_results["cost"],
+        "predictions": raw_baseline_results.get("predictions", {}),
+    }
+
+    baseline_time = time.time() - start_time
 
     # Register 3A baseline experiment
     registry.register_experiment(
@@ -787,7 +833,6 @@ async def run_complete_pipeline(
         },
         "Baseline test evaluation without rules, using dev stage parameters",
     )
-    baseline_time = time.time() - start_time
 
     print(
         f"✅ Baseline Results (no rules): F1={baseline_results['metrics']['f1']:.4f}, Cost=${baseline_results['cost_usd']:.3f}"
@@ -853,10 +898,10 @@ async def run_complete_pipeline(
             f"✅ Using Claude's optimized parameters: candidates={learned_max_candidates}, semantic={learned_semantic_weight:.3f}, trigram={learned_trigram_weight:.3f}, syntactic={learned_syntactic_weight:.3f}"
         )
 
-        # Get best Claude experiment config if available
-        best_claude_config = registry.get_best_claude_experiment()
-        if best_claude_config:
-            print(f"🏆 Using winning Claude experiment: {best_claude_config.experiment_id}")
+        # TEMPORARY: Skip all registry operations to avoid hanging - use file fallback
+        best_claude_config_for_3b = None
+        if best_claude_config_for_3b:
+            print(f"🏆 Using winning Claude experiment: {best_claude_config_for_3b.experiment_id}")
             # Create 3B config using Claude's winning settings but with same base settings as 3A
             enhanced_config = ExperimentConfig(
                 dataset=baseline_config.dataset,
@@ -864,11 +909,11 @@ async def run_complete_pipeline(
                 embedding_model=baseline_config.embedding_model,
                 embedding_base_url=baseline_config.embedding_base_url,
                 use_validation=False,  # Test data like 3A
-                max_candidates=best_claude_config.max_candidates,
-                semantic_weight=best_claude_config.semantic_weight,
-                trigram_weight=best_claude_config.trigram_weight,
-                syntactic_weight=best_claude_config.syntactic_weight,
-                prompt_data=best_claude_config.prompt_data,
+                max_candidates=max_candidates_needed,  # Use max for cache efficiency
+                semantic_weight=best_claude_config_for_3b.semantic_weight,
+                trigram_weight=best_claude_config_for_3b.trigram_weight,
+                syntactic_weight=best_claude_config_for_3b.syntactic_weight,
+                prompt_data=best_claude_config_for_3b.prompt_data,
                 concurrency=concurrency,
                 mode=baseline_config.mode,
                 no_cache=baseline_config.no_cache,
@@ -905,6 +950,9 @@ async def run_complete_pipeline(
             embedding_model=embedding_model,
         )
 
+        # Calculate enhanced processing time
+        enhanced_time = time.time() - start_time
+
         # Register 3B enhanced experiment
         registry.register_experiment(
             enhanced_config,
@@ -918,7 +966,6 @@ async def run_complete_pipeline(
             },
             f"Enhanced test evaluation with rules{' using winning Claude experiment' if best_claude_config else ' using file-based parameters'}",
         )
-        enhanced_time = time.time() - start_time
 
         print(
             f"✅ Enhanced Results (with rules): F1={enhanced_results['f1']:.4f}, Cost=${enhanced_results['cost']:.3f}"
@@ -1142,8 +1189,6 @@ async def run_complete_pipeline(
 
     # 1. Save current prompt structure (if modified)
     try:
-        from src.prompts.hybrid_matcher_prompt import get_prompt_data
-
         current_prompt = get_prompt_data()
         optimization_artifacts["reproduction_data"]["final_prompt_structure"] = current_prompt
     except Exception as e:

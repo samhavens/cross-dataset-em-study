@@ -475,6 +475,38 @@ async def run_complete_pipeline(
             print(
                 f"✅ Using cached dev predictions: F1={dev_results['metrics']['f1']:.4f}, {len(dev_results.get('predictions', {}))} predictions"
             )
+            
+            # Create dev experiment config for registry (needed for Step 3A)
+            current_prompt_data = get_prompt_data()
+            dev_config = ExperimentConfig(
+                dataset=dataset,
+                llm_model=model,
+                embedding_model=embedding_model,
+                embedding_base_url=embedding_base_url,
+                use_validation=True,  # Dev stage uses validation data
+                max_candidates=default_candidates,
+                semantic_weight=0.6,
+                trigram_weight=0.2,
+                syntactic_weight=0.2,
+                prompt_data=current_prompt_data,
+                concurrency=analysis_concurrency,
+                mode=mode,
+                no_cache=no_cache,
+            )
+
+            # Register cached dev experiment for Step 3A consistency
+            registry.register_experiment(
+                dev_config,
+                "dev",
+                {
+                    "f1": dev_results["metrics"]["f1"],
+                    "precision": dev_results["metrics"]["precision"],
+                    "recall": dev_results["metrics"]["recall"],
+                    "cost_usd": dev_results.get("cost_usd", 0),
+                    "processing_time": 0,  # Cached result
+                },
+                dev_results.get("predictions", {}),
+            )
         else:
             # Create dev experiment configuration for analysis-driven approach
             # Load current prompt data

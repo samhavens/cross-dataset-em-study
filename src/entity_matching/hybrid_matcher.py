@@ -1212,19 +1212,8 @@ async def run_matching(
     print(f"Processing time: {elapsed_time:.1f} seconds")
 
     # Evaluate predictions with content-based duplicate awareness
-    preds = []
-    labels = []
-
-    def records_have_same_content(record1, record2, ignore_fields=["id"]):
-        """Check if records have identical content (ignoring specified fields)"""
-        if record1 is None or record2 is None:
-            return False
-        filtered1 = {k: str(v).strip() if v is not None else None 
-                    for k, v in record1.items() if k not in ignore_fields}
-        filtered2 = {k: str(v).strip() if v is not None else None 
-                    for k, v in record2.items() if k not in ignore_fields}
-        return filtered1 == filtered2
-
+    from src.entity_matching.duplicate_aware_evaluation import duplicate_aware_evaluate
+    
     # B is already in the right format - either dict or list of dicts
     if isinstance(B, dict):
         # Dict case (ID -> record)
@@ -1233,34 +1222,11 @@ async def run_matching(
         # List of dicts case
         B_dict = {r['id']: r for r in B}
 
-    for _, rec in pairs.iterrows():
-        left_id = rec.ltable_id
-        right_id = rec.rtable_id
-        true_label = rec.label
-
-        # Check if we predicted a match and if it's correct
-        if left_id in all_predictions:
-            pred_right_id = all_predictions[left_id]
-            
-            # Standard exact ID match
-            if pred_right_id == right_id:
-                pred_label = 1
-            # Content-based duplicate-aware match
-            elif true_label == 1:  # Only check content for true positive cases
-                pred_record = B_dict.get(pred_right_id)
-                true_record = B_dict.get(right_id)
-                if records_have_same_content(pred_record, true_record):
-                    pred_label = 1  # Accept as correct match
-                    print(f"  ✅ Duplicate-aware match: predicted ID {pred_right_id} matches content of ground truth ID {right_id}")
-                else:
-                    pred_label = 0
-            else:
-                pred_label = 0
-        else:
-            pred_label = 0  # No match predicted
-
-        preds.append(pred_label)
-        labels.append(true_label)
+    # Prepare pairs data for evaluation
+    pairs_data = [(rec.ltable_id, rec.rtable_id, rec.label) for _, rec in pairs.iterrows()]
+    
+    # Use shared duplicate-aware evaluation
+    preds, labels = duplicate_aware_evaluate(all_predictions, pairs_data, B_dict, verbose=True)
 
     # Calculate metrics
     tp = sum(1 for p, l in zip(preds, labels) if p == 1 and l == 1)

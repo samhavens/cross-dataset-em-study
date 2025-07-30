@@ -35,10 +35,6 @@ import pandas as pd
 from run_enhanced_matching import run_enhanced_matching
 from src.entity_matching.candidate_optimization import get_optimal_candidates_for_dataset
 from src.entity_matching.experiment_registry import ExperimentRegistry
-from src.entity_matching.hybrid_matcher import run_matching
-from src.evaluation.duplicate_aware import compare_evaluations, load_duplicate_mapping
-
-# ClaudeSDKOptimizer removed - using new MCP-based SimplifiedAgenticGenerator instead
 from src.experiments.simplified_agentic_generator import generate_simplified_heuristics, get_leaderboard_target_f1
 from src.prompts.hybrid_matcher_prompt import get_prompt_data
 from src.utils.json_serializer import json_serialize
@@ -74,8 +70,6 @@ async def run_dev_only_analysis_with_params(
 
     # Call run_enhanced_matching directly on the original dataset
     # use_validation=True makes it automatically sample 200 records from validation data
-    from run_enhanced_matching import run_enhanced_matching
-
     raw_results = await run_enhanced_matching(
         dataset=dataset,  # Use original dataset name
         max_candidates=params.get("max_candidates", 150),
@@ -131,83 +125,6 @@ async def run_dev_only_analysis(dataset: str, model: str = "gpt-4.1-nano", concu
         model=model,
         concurrency=concurrency,
     )
-
-
-async def run_train_for_rule_data(
-    dataset: str, optimal_params: Dict[str, Any], model: str = "gpt-4.1-nano", concurrency: int = 3
-) -> Dict[str, Any]:
-    """Run on train set with optimal params to get more error examples for rule generation - NO FILE SWAPPING"""
-    data_root = pathlib.Path("data") / "raw" / dataset
-
-    if not (data_root / "train.csv").exists():
-        print("⚠️ No train.csv found - cannot use train set for rule data")
-        return None
-
-    print("🎯 Running on TRAIN SET with optimal params to get more error examples...")
-    print("   This gives Claude much better signal for rule generation")
-    print("   📁 NO FILE SWAPPING - using temporary dataset parameter")
-
-    # Load train data directly - NO FILE MANIPULATION
-    train_pairs = pd.read_csv(data_root / "train.csv")
-
-    # Use a reasonable subset for better error signal, but avoid timeouts
-    # Adjust size based on dataset - larger datasets need smaller samples
-    max_train_size = min(200 if len(train_pairs) > 1000 else 300, len(train_pairs))  # Smaller for large datasets
-    train_subset = train_pairs.head(max_train_size)
-
-    print(f"📊 Using {len(train_subset)} pairs from train set for error analysis")
-
-    # Create a temporary dataset file in results/temp
-    os.makedirs("results/temp", exist_ok=True)
-    temp_train_file = f"results/temp/{dataset}_train_subset.csv"
-    train_subset.to_csv(temp_train_file, index=False)
-
-    try:
-        # Run matching on the temporary train subset file by temporarily creating a mini-dataset
-        temp_dataset_dir = pathlib.Path("results/temp") / f"{dataset}_train_temp"
-        temp_dataset_dir.mkdir(exist_ok=True)
-
-        # Copy the essential files
-        import shutil
-
-        shutil.copy(data_root / "tableA.csv", temp_dataset_dir / "tableA.csv")
-        shutil.copy(data_root / "tableB.csv", temp_dataset_dir / "tableB.csv")
-        shutil.copy(temp_train_file, temp_dataset_dir / "test.csv")  # Use train subset as test for this run
-
-        # Run matching on temporary dataset
-        # Copy to expected data/raw location since run_matching expects that structure
-        expected_path = pathlib.Path("data/raw") / f"temp_{dataset}_train_temp"
-        if expected_path.exists():
-            shutil.rmtree(expected_path)
-        expected_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(temp_dataset_dir, expected_path)
-
-        try:
-            train_results = await run_matching(
-                dataset=f"temp_{dataset}_train_temp",
-                limit=None,
-                max_candidates=optimal_params["max_candidates"],
-                model=model,
-                semantic_weight=optimal_params["semantic_weight"],
-                use_semantic=optimal_params.get("use_semantic", True),
-                concurrency=concurrency,
-            )
-        finally:
-            # Clean up the expected path copy
-            if expected_path.exists():
-                shutil.rmtree(expected_path)
-
-        print(
-            f"✅ Train analysis: F1={train_results['metrics']['f1']:.4f}, {len(train_results.get('predictions', {}))} predictions"
-        )
-        return train_results
-
-    finally:
-        # Clean up temporary files
-        if os.path.exists(temp_train_file):
-            os.unlink(temp_train_file)
-        if temp_dataset_dir.exists():
-            shutil.rmtree(temp_dataset_dir)
 
 
 async def run_complete_pipeline(
@@ -751,12 +668,6 @@ async def run_complete_pipeline(
 
         return results
 
-    if mode == "prompt-modification":
-        print("\n🧠 PROMPT-MODIFICATION MODE: Running both 3A (before Claude) and 3B (after Claude)")
-        # Note: This mode needs both evaluations to show improvement from prompt optimization
-
-    else:  # mode == "heuristics"
-        print("\n🔧 HEURISTICS MODE: Running both 3A (baseline) and 3B (enhanced)")
 
     # STEP 3A: Test set evaluation WITHOUT rules (baseline with optimal params)
     # Always run 3A - prompt-modification mode needs it for before/after comparison
@@ -930,8 +841,6 @@ async def run_complete_pipeline(
             f"✅ Using Claude's optimized parameters: candidates={learned_max_candidates}, semantic={learned_semantic_weight:.3f}, trigram={learned_trigram_weight:.3f}, syntactic={learned_syntactic_weight:.3f}"
         )
 
-        # TEMPORARY: Skip all registry operations to avoid hanging - use file fallback
-        best_claude_config_for_3b = None
         if best_claude_config_for_3b:
             print(f"🏆 Using winning Claude experiment: {best_claude_config_for_3b.experiment_id}")
             # Create 3B config using Claude's winning settings but with same base settings as 3A
@@ -1003,13 +912,8 @@ async def run_complete_pipeline(
             f"✅ Enhanced Results (with rules): F1={enhanced_results['f1']:.4f}, Cost=${enhanced_results['cost']:.3f}"
         )
 
-    # Calculate improvement (handle cases where baseline_results might be None)
-    if baseline_results:
-        f1_improvement = enhanced_results["f1"] - baseline_results["metrics"]["f1"]
-        cost_change = enhanced_results["cost"] - baseline_results["cost_usd"]
-    else:
-        f1_improvement = 0.0  # No baseline comparison available
-        cost_change = enhanced_results["cost"]
+    f1_improvement = enhanced_results["f1"] - baseline_results["metrics"]["f1"]
+    cost_change = enhanced_results["cost"] - baseline_results["cost_usd"]
 
     print("\n📊 A/B COMPARISON:")
     print(
@@ -1020,24 +924,14 @@ async def run_complete_pipeline(
         f"Rules {'✅ HELPED' if f1_improvement > 0.01 else '❌ DID NOT HELP' if f1_improvement < -0.01 else '➡️ NEUTRAL'}"
     )
 
-    # Handle baseline results (might be None)
-    if baseline_results:
-        results["baseline_results"] = {
-            "f1": baseline_results["metrics"]["f1"],
-            "precision": baseline_results["metrics"]["precision"],
-            "recall": baseline_results["metrics"]["recall"],
-            "cost_usd": baseline_results["cost_usd"],
-            "processing_time": baseline_time,
-            "predictions": baseline_results.get("predictions", {}),  # Include predictions for duplicate-aware eval
-        }
-    else:
-        results["baseline_results"] = {
-            "f1": 0.0,
-            "precision": 0.0,
-            "recall": 0.0,
-            "cost_usd": 0.0,
-            "processing_time": 0,
-        }
+    results["baseline_results"] = {
+        "f1": baseline_results["metrics"]["f1"],
+        "precision": baseline_results["metrics"]["precision"],
+        "recall": baseline_results["metrics"]["recall"],
+        "cost_usd": baseline_results["cost_usd"],
+        "processing_time": baseline_time,
+        "predictions": baseline_results.get("predictions", {}),  # Include predictions for duplicate-aware eval
+    }
 
     results["enhanced_results"] = {
         "f1": enhanced_results["f1"],
@@ -1097,89 +991,6 @@ async def run_complete_pipeline(
         leaderboard_msg = f"📈 Still working on it (target: {target_f1:.1f})"
 
     print(f"Leaderboard: {leaderboard_msg}")
-
-    # DUPLICATE-AWARE EVALUATION
-    print("\n🔍 DUPLICATE-AWARE EVALUATION")
-    print("=" * 50)
-
-    try:
-        # Load duplicate mapping (generates on-demand if needed)
-        duplicate_mapping = load_duplicate_mapping(dataset)
-
-        # Check if duplicates were found
-        has_duplicates = bool(duplicate_mapping["tableA_mapping"] or duplicate_mapping["tableB_mapping"])
-
-        if has_duplicates:
-            print("✅ Found duplicates - performing duplicate-aware evaluation")
-
-            # Evaluate baseline with duplicate-awareness
-            if baseline_results and baseline_results.get("predictions"):
-                baseline_predictions = [(int(k), int(v)) for k, v in baseline_results["predictions"].items()]
-                # Load ground truth
-                data_root = pathlib.Path("data/raw") / dataset
-                test_pairs = pd.read_csv(data_root / "test.csv")
-                ground_truth = [
-                    (int(row.ltable_id), int(row.rtable_id)) for _, row in test_pairs.iterrows() if row.label == 1
-                ]
-
-                baseline_dup_comparison = compare_evaluations(baseline_predictions, ground_truth, duplicate_mapping)
-                baseline_dup_aware_f1 = baseline_dup_comparison["duplicate_aware_evaluation"]["f1"]
-                baseline_f1_gain = baseline_dup_comparison["improvement"]["f1_gain"]
-
-                print(f"📊 Baseline duplicate-aware F1: {baseline_dup_aware_f1:.4f} (gain: {baseline_f1_gain:+.4f})")
-            else:
-                baseline_dup_aware_f1 = None
-                baseline_f1_gain = 0
-
-            # Evaluate enhanced with duplicate-awareness
-            if enhanced_results.get("predictions"):
-                enhanced_predictions = [(int(k), int(v)) for k, v in enhanced_results["predictions"].items()]
-                enhanced_dup_comparison = compare_evaluations(enhanced_predictions, ground_truth, duplicate_mapping)
-                enhanced_dup_aware_f1 = enhanced_dup_comparison["duplicate_aware_evaluation"]["f1"]
-                enhanced_f1_gain = enhanced_dup_comparison["improvement"]["f1_gain"]
-
-                print(f"📊 Enhanced duplicate-aware F1: {enhanced_dup_aware_f1:.4f} (gain: {enhanced_f1_gain:+.4f})")
-            else:
-                enhanced_dup_aware_f1 = None
-                enhanced_f1_gain = 0
-
-            # Update leaderboard check with duplicate-aware results
-            best_dup_aware_f1 = max(baseline_dup_aware_f1 or 0, enhanced_dup_aware_f1 or 0)
-            dup_aware_beats_leaderboard = (
-                best_dup_aware_f1 > target_f1 / 100 if target_f1 > 10 else best_dup_aware_f1 > target_f1
-            )
-
-            if dup_aware_beats_leaderboard:
-                print(
-                    f"🎉 DUPLICATE-AWARE BEATS LEADERBOARD! {best_dup_aware_f1:.4f} > {target_f1 / 100 if target_f1 > 10 else target_f1:.4f}"
-                )
-
-        else:
-            print("i️  No duplicates found - standard evaluation is accurate")
-            baseline_dup_aware_f1 = baseline_results["metrics"]["f1"] if baseline_results else None
-            enhanced_dup_aware_f1 = enhanced_results["f1"]
-            baseline_f1_gain = 0
-            enhanced_f1_gain = 0
-            dup_aware_beats_leaderboard = beat_leaderboard
-
-    except Exception as e:
-        print(f"⚠️ Duplicate-aware evaluation failed: {e}")
-        baseline_dup_aware_f1 = baseline_results["metrics"]["f1"] if baseline_results else None
-        enhanced_dup_aware_f1 = enhanced_results["f1"]
-        baseline_f1_gain = 0
-        enhanced_f1_gain = 0
-        dup_aware_beats_leaderboard = beat_leaderboard
-
-    # Add recommendation
-    if baseline_beats_leaderboard and not enhanced_beats_leaderboard:
-        print("💡 RECOMMENDATION: Use baseline approach (no rules) for best performance!")
-    elif enhanced_beats_leaderboard and f1_improvement > 0.01:
-        print("💡 RECOMMENDATION: Use enhanced approach with rules for best performance!")
-    elif baseline_beats_leaderboard and enhanced_beats_leaderboard:
-        if f1_improvement > 0:
-            print("💡 RECOMMENDATION: Use enhanced approach with rules (slightly better)!")
-        else:
-            print("💡 RECOMMENDATION: Use baseline approach (simpler, similar performance)!")
 
     # ENHANCED: Save comprehensive optimization artifacts for reuse
     optimization_artifacts = {}
@@ -1322,12 +1133,6 @@ async def run_complete_pipeline(
         "beat_leaderboard": beat_leaderboard,
         "leaderboard_target": target_f1,
         "reusable_config_path": heuristics_file if heuristics_file and os.path.exists(heuristics_file) else None,
-        # Duplicate-aware evaluation results
-        "duplicate_aware_baseline_f1": baseline_dup_aware_f1,
-        "duplicate_aware_enhanced_f1": enhanced_dup_aware_f1,
-        "duplicate_aware_baseline_gain": baseline_f1_gain,
-        "duplicate_aware_enhanced_gain": enhanced_f1_gain,
-        "duplicate_aware_beats_leaderboard": dup_aware_beats_leaderboard,
         # Experiment reproducibility and registry
         "pipeline_registry_id": registry.pipeline_run_id,
         "registry_path": str(registry.save_registry()),
@@ -1391,22 +1196,34 @@ def extract_failure_records(dataset: str, results: Dict[str, Any]) -> Dict[str, 
 
         failures = []
 
-        for _, row in test_pairs.iterrows():
+        # Use duplicate-aware evaluation for failure analysis
+        from src.entity_matching.duplicate_aware_evaluation import duplicate_aware_evaluate
+
+        # Prepare pairs data for duplicate-aware evaluation
+        pairs_data = [(row.ltable_id, row.rtable_id, row.label) for _, row in test_pairs.iterrows()]
+        
+        # Get duplicate-aware predictions and labels
+        preds, labels = duplicate_aware_evaluate(
+            {int(k): int(v) for k, v in predictions.items()},  # Convert to int keys/values
+            pairs_data, 
+            B_records, 
+            verbose=False
+        )
+
+        # Identify failures using duplicate-aware evaluation results
+        for i, (_, row) in enumerate(test_pairs.iterrows()):
             left_id = row.ltable_id
             right_id = row.rtable_id
             true_label = row.label
+            predicted_label = preds[i]
 
-            if left_id in predictions:
-                predicted_right_id = predictions[left_id]
-                predicted_match = predicted_right_id == right_id
-                predicted_label = 1 if predicted_match else 0
+            # Check if this is a failure according to duplicate-aware evaluation
+            if true_label != predicted_label:
+                failure_type = "false_positive" if (true_label == 0 and predicted_label == 1) else "false_negative"
+                predicted_right_id = predictions.get(str(left_id))  # Get original prediction
 
-                # Check if this is a failure
-                if true_label != predicted_label:
-                    failure_type = "false_positive" if (true_label == 0 and predicted_label == 1) else "false_negative"
-
-                    failures.append(
-                        {
+                failures.append(
+                    {
                             "left_id": left_id,
                             "right_id": right_id,
                             "true_label": true_label,

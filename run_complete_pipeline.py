@@ -32,9 +32,9 @@ from typing import Any, Dict, Optional
 
 import pandas as pd
 
-from run_enhanced_matching import run_enhanced_matching
 from src.entity_matching.candidate_optimization import get_optimal_candidates_for_dataset
 from src.entity_matching.experiment_registry import ExperimentRegistry
+from src.entity_matching.hybrid_matcher import run_enhanced_matching
 from src.experiments.simplified_agentic_generator import generate_simplified_heuristics, get_leaderboard_target_f1
 from src.prompts.hybrid_matcher_prompt import get_prompt_data
 from src.utils.json_serializer import json_serialize

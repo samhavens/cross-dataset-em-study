@@ -52,9 +52,9 @@ class Config:
         self.trigram_weight = 0.4  # Weight for trigram similarity
         self.syntactic_weight = 0.3  # Weight for syntactic similarity
         self.semantic_weight = 0.3  # Weight for semantic similarity
-        # Legacy support for 2-weight system (deprecated)
-        self._legacy_semantic_weight = None
         self.semantic_model = None  # Will be initialized lazily
+        self.embedding_base_url = None  # If set, use API endpoint instead of local model
+        self.embedding_model_name = "all-MiniLM-L6-v2"  # Model name for local or API
         self.use_heuristics = False  # Enable heuristic rules
         self.heuristic_engine = None  # Will be initialized if enabled
         self.heuristic_file = None  # Path to heuristics file
@@ -77,31 +77,10 @@ class Config:
         self.trigram_weight = trigram_weight / total
         self.syntactic_weight = syntactic_weight / total
         self.semantic_weight = semantic_weight / total
-        self._legacy_semantic_weight = None  # Clear legacy mode
 
         # Inform user if normalization was applied
         if abs(total - 1.0) > 1e-6:
             print(f"ℹ️ Weights normalized from ({trigram_weight:.3f}, {syntactic_weight:.3f}, {semantic_weight:.3f}) to ({self.trigram_weight:.3f}, {self.syntactic_weight:.3f}, {self.semantic_weight:.3f})")
-
-    def set_legacy_semantic_weight(self, semantic_weight: float):
-        """Set legacy 2-weight system (semantic vs trigram)"""
-        if semantic_weight < 0:
-            raise ValueError(f"Semantic weight must be non-negative, got {semantic_weight}")
-
-        # Normalize semantic weight to [0, 1] range if needed
-        if semantic_weight > 1.0:
-            print(f"ℹ️ Semantic weight normalized from {semantic_weight:.3f} to 1.0")
-            semantic_weight = 1.0
-
-        self._legacy_semantic_weight = semantic_weight
-        # Convert to 3-weight system
-        self.trigram_weight = 1.0 - semantic_weight
-        self.syntactic_weight = 0.0  # Disable syntactic in legacy mode
-        self.semantic_weight = semantic_weight
-
-    def is_legacy_mode(self) -> bool:
-        """Check if we're in legacy 2-weight mode"""
-        return self._legacy_semantic_weight is not None
 
 
 # Token counting
@@ -128,6 +107,17 @@ def report_cost(cfg: Config):
     total_cost = input_cost + output_cost
 
     print(f"≈{cfg.total_input_tokens / 1000:.1f}K in, {cfg.total_output_tokens / 1000:.1f}K out → ${total_cost:.3f}")
+    
+    # Return detailed token and cost information for logging
+    return {
+        "input_tokens": cfg.total_input_tokens,
+        "output_tokens": cfg.total_output_tokens,
+        "total_tokens": cfg.total_input_tokens + cfg.total_output_tokens,
+        "input_cost_usd": input_cost,
+        "output_cost_usd": output_cost,
+        "total_cost_usd": total_cost,
+        "model": cfg.model
+    }
 
 
 MAX = 1_000_000  # token limit for the matching prompt
@@ -136,16 +126,16 @@ MAX = 1_000_000  # token limit for the matching prompt
 async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> str:
     """Make async call to OpenAI API with exponential backoff and retries"""
     import random
-    
+
     max_retries = 4
     base_delay = 2.0
     max_timeout = 300  # 5 minutes for complex entity matching prompts
-    
+
     for attempt in range(max_retries):
         try:
             # Increase timeout progressively: 120s -> 180s -> 240s -> 300s
             timeout = min(120 + (attempt * 60), max_timeout)
-            
+
             # o3/o4 models use max_completion_tokens instead of max_tokens and don't support temperature=0
             if cfg.model.startswith(("o3", "o4")):
                 response = await asyncio.wait_for(
@@ -166,7 +156,7 @@ async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> st
                     ),
                     timeout=timeout
                 )
-            
+
             # Success! Track usage and return
             usage = response.usage
             cfg.total_input_tokens += usage.prompt_tokens
@@ -191,7 +181,7 @@ async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> st
                 print(f"  Retrying in {delay:.1f}s with {timeout + 60}s timeout...")
                 await asyncio.sleep(delay)
             continue
-            
+
         except Exception as e:
             delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
             print(f"OpenAI API error (attempt {attempt + 1}/{max_retries}): {e}")
@@ -199,7 +189,7 @@ async def call_openai_async(prompt: str, cfg: Config, client: AsyncOpenAI) -> st
                 print(f"  Retrying in {delay:.1f}s...")
                 await asyncio.sleep(delay)
             continue
-    
+
     # All retries exhausted
     print(f"❌ OpenAI API failed after {max_retries} attempts for model {cfg.model}")
     return ""
@@ -235,7 +225,13 @@ def get_semantic_model(cfg: Config):
 
     if cfg.semantic_model is None:
         print("Loading semantic similarity model (first time only)...")
-        cfg.semantic_model = SentenceTransformer("all-MiniLM-L6-v2")
+        from .embedding_provider import EmbeddingProvider
+
+        # Use API endpoint if configured, otherwise fall back to local SentenceTransformer
+        if hasattr(cfg, 'embedding_base_url') and cfg.embedding_base_url:
+            cfg.semantic_model = EmbeddingProvider(cfg.embedding_model_name, base_url=cfg.embedding_base_url)
+        else:
+            cfg.semantic_model = EmbeddingProvider(cfg.embedding_model_name)
 
     return cfg.semantic_model
 
@@ -258,23 +254,42 @@ def get_heuristic_engine(cfg: Config, dataset: str):
     return cfg.heuristic_engine
 
 
-def get_embeddings_cache_path(dataset: str) -> pathlib.Path:
+def slugify_model_name(model_name: str) -> str:
+    """Convert model name to filesystem-safe slug"""
+    import re
+    # Replace problematic characters with underscores
+    slug = re.sub(r'[/\\:*?"<>|]', '_', model_name)
+    # Replace multiple underscores with single underscore
+    slug = re.sub(r'_+', '_', slug)
+    # Remove leading/trailing underscores
+    slug = slug.strip('_')
+    # Ensure it's not empty
+    if not slug:
+        slug = "default_model"
+    return slug
+
+
+def get_embeddings_cache_path(dataset: str, model_name: str) -> pathlib.Path:
     """Get path for embeddings cache file"""
     cache_dir = pathlib.Path(".embeddings_cache")
     cache_dir.mkdir(exist_ok=True)
-    return cache_dir / f"{dataset}_embeddings.pkl"
+    safe_model_name = slugify_model_name(model_name)
+    return cache_dir / f"{dataset}_{safe_model_name}_embeddings.pkl"
 
 
 def compute_dataset_embeddings(dataset: str, cfg: Config) -> Dict[str, np.ndarray]:
     """Compute and cache embeddings for entire dataset"""
-    cache_path = get_embeddings_cache_path(dataset)
+    cache_path = get_embeddings_cache_path(dataset, cfg.embedding_model_name)
+    print(f"🔍 Looking for embeddings cache: {cache_path} (exists: {cache_path.exists()})")
 
     # Check if cache exists
     if cache_path.exists():
         print(f"📁 Loading cached embeddings from {cache_path}")
         try:
             with open(cache_path, "rb") as f:
-                return pickle.load(f)
+                embeddings = pickle.load(f)
+                print(f"✅ Loaded {len(embeddings)} cached embeddings")
+                return embeddings
         except Exception as e:
             print(f"⚠️ Cache load failed: {e}, recomputing...")
 
@@ -404,7 +419,7 @@ class CandidateCache:
         else:
             self.right_records = right_records
             self.is_dict_access = isinstance(right_records, dict)
-            
+
         self.json_strings = {}  # id -> json string
         self.trigram_sets = {}  # id -> trigram set
         self.cache_file = cache_file
@@ -460,11 +475,11 @@ class CandidateCache:
         if not cache_path.exists():
             return False
 
-        # Check if cache is recent (less than 1 hour old)
+        # Check if cache is recent (less than 7 days old)
         try:
             file_age = time.time() - cache_path.stat().st_mtime
-            if file_age > 3600:  # 1 hour in seconds
-                print(f"⚠️ Cache file {cache_file} is {file_age/3600:.1f} hours old, rebuilding...")
+            if file_age > 604800:  # 7 days in seconds (7 * 24 * 3600)
+                print(f"⚠️ Cache file {cache_file} is {file_age/86400:.1f} days old, rebuilding...")
                 return False
         except Exception:
             return False
@@ -482,14 +497,13 @@ class CandidateCache:
                 self.json_strings = {int(k): v for k, v in self.json_strings.items()}
                 self.trigram_sets = {int(k): v for k, v in self.trigram_sets.items()}
             # For dict access with integer keys, convert string keys back to ints
-            else:
-                # Sample a key to determine the original type
-                if self.right_records:
-                    sample_key = next(iter(self.right_records.keys()))
-                    if isinstance(sample_key, int):
-                        # Convert all string keys back to integers
-                        self.json_strings = {int(k): v for k, v in self.json_strings.items()}
-                        self.trigram_sets = {int(k): v for k, v in self.trigram_sets.items()}
+            # Sample a key to determine the original type
+            elif self.right_records:
+                sample_key = next(iter(self.right_records.keys()))
+                if isinstance(sample_key, int):
+                    # Convert all string keys back to integers
+                    self.json_strings = {int(k): v for k, v in self.json_strings.items()}
+                    self.trigram_sets = {int(k): v for k, v in self.trigram_sets.items()}
 
             return True
         except Exception as e:
@@ -1078,13 +1092,14 @@ async def run_matching(
     cfg.use_heuristics = use_heuristics
     cfg.heuristic_file = heuristic_file
 
-    # Set weights based on system type
-    if trigram_weight is not None and syntactic_weight is not None:
-        # 3-weight system
-        cfg.set_weights(trigram_weight, syntactic_weight, semantic_weight)
-    else:
-        # Convert legacy semantic weight to 3-weight system
-        cfg.set_weights(1.0 - semantic_weight, 0.0, semantic_weight)
+    # Auto-fill missing weights with defaults for 3-weight system
+    if trigram_weight is None or syntactic_weight is None:
+        remaining_weight = 1.0 - semantic_weight
+        trigram_weight = remaining_weight * 0.6  # 60% of remaining to trigram
+        syntactic_weight = remaining_weight * 0.4  # 40% of remaining to syntactic
+
+    # Always use 3-weight system (legacy 2-weight system removed)
+    cfg.set_weights(trigram_weight, syntactic_weight, semantic_weight)
 
     # Check for API key
     if not os.getenv("OPENAI_API_KEY"):
@@ -1146,7 +1161,9 @@ async def run_matching(
 
     # Create candidate cache for massive speed improvement with persistent caching
     print("🔄 Creating candidate cache...")
-    cache_file = f".candidate_cache/{dataset}_candidates_{max_candidates}.json"
+    # Include model name in cache to avoid conflicts between different embedding models
+    safe_model_name = slugify_model_name(cfg.embedding_model_name)
+    cache_file = f".candidate_cache/{dataset}_{safe_model_name}_candidates_{max_candidates}.json"
     candidate_cache = CandidateCache(B, cache_file=cache_file)
     print(f"✅ Candidate cache created for {len(B)} records")
 
@@ -1194,9 +1211,27 @@ async def run_matching(
     print(f"\nCompleted! Found {matches_found} matches out of {len(pairs)} pairs")
     print(f"Processing time: {elapsed_time:.1f} seconds")
 
-    # Evaluate predictions
+    # Evaluate predictions with content-based duplicate awareness
     preds = []
     labels = []
+
+    def records_have_same_content(record1, record2, ignore_fields=["id"]):
+        """Check if records have identical content (ignoring specified fields)"""
+        if record1 is None or record2 is None:
+            return False
+        filtered1 = {k: str(v).strip() if v is not None else None 
+                    for k, v in record1.items() if k not in ignore_fields}
+        filtered2 = {k: str(v).strip() if v is not None else None 
+                    for k, v in record2.items() if k not in ignore_fields}
+        return filtered1 == filtered2
+
+    # B is already in the right format - either dict or list of dicts
+    if isinstance(B, dict):
+        # Dict case (ID -> record)
+        B_dict = B
+    else:
+        # List of dicts case
+        B_dict = {r['id']: r for r in B}
 
     for _, rec in pairs.iterrows():
         left_id = rec.ltable_id
@@ -1206,7 +1241,21 @@ async def run_matching(
         # Check if we predicted a match and if it's correct
         if left_id in all_predictions:
             pred_right_id = all_predictions[left_id]
-            pred_label = 1 if pred_right_id == right_id else 0
+            
+            # Standard exact ID match
+            if pred_right_id == right_id:
+                pred_label = 1
+            # Content-based duplicate-aware match
+            elif true_label == 1:  # Only check content for true positive cases
+                pred_record = B_dict.get(pred_right_id)
+                true_record = B_dict.get(right_id)
+                if records_have_same_content(pred_record, true_record):
+                    pred_label = 1  # Accept as correct match
+                    print(f"  ✅ Duplicate-aware match: predicted ID {pred_right_id} matches content of ground truth ID {right_id}")
+                else:
+                    pred_label = 0
+            else:
+                pred_label = 0
         else:
             pred_label = 0  # No match predicted
 
@@ -1247,7 +1296,8 @@ async def run_matching(
     print(f"Accuracy: {accuracy:.4f}")
     print(f"TP: {tp}, FP: {fp}, FN: {fn}, TN: {tn}")
 
-    report_cost(cfg)
+    # Get detailed token and cost information
+    cost_details = report_cost(cfg)
 
     # Create structured results
     results = {
@@ -1277,6 +1327,7 @@ async def run_matching(
             "output": cfg.total_output_tokens,
             "total": cfg.total_input_tokens + cfg.total_output_tokens,
         },
+        "cost_details": cost_details,  # Include detailed cost breakdown
         "table_sizes": {"table_a": len(A), "table_b": len(B)},
         "predictions": all_predictions,  # Include predictions for heuristic analysis
     }

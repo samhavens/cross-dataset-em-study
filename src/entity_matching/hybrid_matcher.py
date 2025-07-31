@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import argparse
 import asyncio
 import json
 import logging
@@ -862,7 +861,6 @@ async def run_enhanced_matching(
     prompt_data = None
     if heuristic_file and os.path.exists(heuristic_file):
         try:
-            import json
             with open(heuristic_file) as f:
                 heuristic_config = json.load(f)
 
@@ -951,10 +949,6 @@ async def run_enhanced_matching(
     early_decision_pairs = set()  # Track which pairs had early decisions
 
     # Process pairs with async concurrency
-    import asyncio
-
-    from tqdm import tqdm
-
     async def process_single_pair(row):
         """Process a single pair with enhanced matching"""
         left_id = row.ltable_id
@@ -1207,36 +1201,3 @@ async def run_enhanced_matching(
             }
         }
     }
-
-
-async def main():
-    """CLI entry point for enhanced matching"""
-    parser = argparse.ArgumentParser(description="Enhanced entity matching with sophisticated control logic")
-    parser.add_argument("--dataset", required=True, help="Dataset name")
-    # Note: limit parameter removed - always use full evaluation set for reliable results
-    parser.add_argument("--max-candidates", type=int, default=50, help="Max candidates per record")
-    parser.add_argument("--model", default="gpt-4.1-nano", help="Model to use")
-    parser.add_argument("--concurrency", type=int, default=10, help="Concurrency level")
-    parser.add_argument("--semantic-weight", type=float, default=0.5, help="Semantic weight (trigram/syntactic auto-calculated if not provided)")
-    parser.add_argument("--trigram-weight", type=float, help="Trigram weight (3-weight system)")
-    parser.add_argument("--syntactic-weight", type=float, help="Syntactic weight (3-weight system)")
-    parser.add_argument("--heuristic-file", help="Enhanced heuristics JSON file (optional for baseline testing)")
-    parser.add_argument("--use-validation", action="store_true", help="Use validation data instead of test data (prevents data leakage)")
-    parser.add_argument("--embedding-base-url", help="Base URL for embedding API (e.g., http://localhost:8080 for TEI)")
-    parser.add_argument("--embedding-model", default="all-MiniLM-L6-v2", help="Embedding model name")
-
-    args = parser.parse_args()
-
-    return await run_enhanced_matching(
-        dataset=args.dataset,
-        max_candidates=args.max_candidates,
-        model=args.model,
-        concurrency=args.concurrency,
-        semantic_weight=args.semantic_weight,
-        trigram_weight=args.trigram_weight,
-        syntactic_weight=args.syntactic_weight,
-        heuristic_file=args.heuristic_file,
-        use_validation=args.use_validation,
-        embedding_base_url=args.embedding_base_url,
-        embedding_model=args.embedding_model,
-    )

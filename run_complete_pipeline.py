@@ -32,6 +32,7 @@ from typing import Any, Dict, Optional
 
 import pandas as pd
 
+from src.entity_matching.analysis import analyze_dataset_for_claude
 from src.entity_matching.candidate_optimization import get_optimal_candidates_for_dataset
 from src.entity_matching.experiment_registry import ExperimentRegistry
 from src.entity_matching.hybrid_matcher import run_enhanced_matching
@@ -272,7 +273,6 @@ async def run_complete_pipeline(
         # Generate rules based on the dev results
         print("🤖 Generating rules based on known hyperparameters...", flush=True)
         print("    📡 Starting Claude optimization session (progress will be shown below)...", flush=True)
-        from src.entity_matching.analysis import analyze_dataset_for_claude
 
         analysis_file = f"results/{dataset}_claude_analysis.json"
         analysis_data = analyze_dataset_for_claude(

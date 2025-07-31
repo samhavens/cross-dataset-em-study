@@ -9,12 +9,13 @@ enabling proper linkage between development, Claude optimization, baseline, and 
 import json
 import uuid
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from .experiment_config import ExperimentConfig
+from src.entity_matching.experiment_config import ExperimentConfig
+from src.utils.json_serializer import json_serialize
 
 
 @dataclass
@@ -67,6 +68,9 @@ class ExperimentRegistry:
         self._registry_dir = Path("results/registries")
         self._registry_dir.mkdir(parents=True, exist_ok=True)
 
+        # Mark as active pipeline immediately upon creation
+        self._mark_as_active_pipeline()
+
     def register_experiment(
         self, experiment_config: ExperimentConfig, stage: str, results: Dict[str, Any] = None, notes: str = None
     ) -> str:
@@ -88,6 +92,12 @@ class ExperimentRegistry:
 
         # Auto-save registry after each registration
         self.save_registry()
+
+        # Mark this as the active pipeline registry for MCP server integration
+        self._mark_as_active_pipeline()
+
+        # Save individual experiment files
+        self.save_experiment_files(experiment_config, results)
 
         print(f"📋 Registered experiment {experiment_config.experiment_id} for stage '{stage}'")
         return experiment_config.experiment_id
@@ -177,8 +187,38 @@ class ExperimentRegistry:
                 return results[key]
         return None
 
+    def reload_from_disk(self) -> None:
+        """
+        Reload registry from disk to capture any experiments added by external processes (like MCP server).
+        This ensures we don't lose Claude experiments when the main pipeline saves the registry.
+        """
+        registry_path = self._registry_dir / f"pipeline_{self.pipeline_run_id}.json"
+        
+        if registry_path.exists():
+            try:
+                with open(registry_path) as f:
+                    data = json.load(f)
+                
+                # Reload experiments from disk, merging with existing ones
+                disk_experiments = [ExperimentEntry.from_dict(exp_data) for exp_data in data["experiments"]]
+                
+                # Create a set of existing experiment IDs to avoid duplicates
+                existing_ids = {exp.experiment_config.experiment_id for exp in self.experiments}
+                
+                # Add any experiments from disk that we don't already have
+                for disk_exp in disk_experiments:
+                    if disk_exp.experiment_config.experiment_id not in existing_ids:
+                        self.experiments.append(disk_exp)
+                        print(f"🔄 Reloaded experiment {disk_exp.experiment_config.experiment_id} from disk (stage: {disk_exp.stage})")
+                
+            except Exception as e:
+                print(f"⚠️ Warning: Could not reload registry from disk: {e}")
+
     def save_registry(self) -> Path:
         """Save complete registry to file"""
+        # First reload from disk to capture any experiments added by external processes
+        self.reload_from_disk()
+        
         registry_data = {
             "pipeline_run_id": self.pipeline_run_id,
             "created_at": self.created_at,
@@ -190,6 +230,55 @@ class ExperimentRegistry:
             json.dump(registry_data, f, indent=2)
 
         return registry_path
+
+    def save_experiment_files(self, experiment_config: ExperimentConfig, results: Dict[str, Any] = None) -> None:
+        """
+        Save individual experiment config and results files.
+
+        Args:
+            experiment_config: Experiment configuration to save
+            results: Optional results to save
+        """
+
+        experiment_dir = Path(f"results/experiments/exp_{experiment_config.experiment_id}")
+        experiment_dir.mkdir(parents=True, exist_ok=True)
+
+        # Save config.json
+        config_path = experiment_dir / "config.json"
+        config_data = asdict(experiment_config)
+        clean_config_data = json_serialize(config_data)
+        with open(config_path, "w") as f:
+            json.dump(clean_config_data, f, indent=2)
+
+        # Save results.json if provided
+        if results:
+            results_path = experiment_dir / "results.json"
+            results_data = {
+                "experiment_id": experiment_config.experiment_id,
+                "config_path": f"results/experiments/exp_{experiment_config.experiment_id}/config.json",
+                "results": results,
+                "summary": {
+                    "f1": results.get("f1", 0),
+                    "precision": results.get("precision", 0),
+                    "recall": results.get("recall", 0),
+                    "tp": results.get("tp", 0),
+                    "fp": results.get("fp", 0),
+                    "fn": results.get("fn", 0)
+                }
+            }
+            clean_results_data = json_serialize(results_data)
+            with open(results_path, "w") as f:
+                json.dump(clean_results_data, f, indent=2)
+
+        print(f"💾 Saved experiment files to {experiment_dir}")
+
+    def _mark_as_active_pipeline(self) -> None:
+        """Mark this registry as the active pipeline for MCP server integration"""
+        active_pipeline_file = Path("results/temp/active_pipeline_registry.txt")
+        active_pipeline_file.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(active_pipeline_file, "w") as f:
+            f.write(self.pipeline_run_id)
 
     @classmethod
     def load_registry(cls, pipeline_run_id: str) -> "ExperimentRegistry":
@@ -212,11 +301,25 @@ class ExperimentRegistry:
     @classmethod
     def find_active_pipeline_registry(cls) -> Optional["ExperimentRegistry"]:
         """
-        Find the most recently created registry, assuming it's the active pipeline.
+        Find the active pipeline registry. First tries to read from active pipeline marker,
+        then falls back to most recent registry.
 
         Returns:
-            Most recent registry, or None if no registries exist
+            Active pipeline registry, or None if no registries exist
         """
+        # First try to find the marked active pipeline
+        active_pipeline_file = Path("results/temp/active_pipeline_registry.txt")
+        if active_pipeline_file.exists():
+            try:
+                with open(active_pipeline_file) as f:
+                    active_pipeline_id = f.read().strip()
+
+                return cls.load_registry(active_pipeline_id)
+            except Exception:
+                # Fall through to backup method if active pipeline file is corrupted
+                pass
+
+        # Fallback: Get most recent registry file
         registry_dir = Path("results/registries")
         if not registry_dir.exists():
             return None
@@ -225,7 +328,6 @@ class ExperimentRegistry:
         if not registry_files:
             return None
 
-        # Get most recent registry file
         most_recent = max(registry_files, key=lambda p: p.stat().st_mtime)
         pipeline_id = most_recent.stem.replace("pipeline_", "")
 

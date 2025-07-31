@@ -101,7 +101,6 @@ class EnhancedHeuristicEngine:
         self.pipeline_rules: List[EnhancedRule] = []
         self.decision_rules: List[EnhancedRule] = []
         self.weight_rules: List[EnhancedRule] = []
-        self.prompt_rules: List[Dict[str, str]] = []  # Prompt rules don't need compilation
         self.compiled_rules: Dict[str, Callable] = {}
 
     @staticmethod
@@ -183,26 +182,10 @@ class EnhancedHeuristicEngine:
                             valid_stages = self.get_valid_stage_names()
                             print(f"     Valid stage names: {valid_stages}")
 
-            # Load prompt rules (simpler - no compilation needed)
-            prompt_rules_data = data.get("prompt_rules", [])
-            for rule_data in prompt_rules_data:
-                try:
-                    required_fields = ["rule_name", "condition", "prompt_addition"]
-                    if all(field in rule_data for field in required_fields):
-                        self.prompt_rules.append(rule_data)
-                        total_loaded += 1
-                        print(f"  ✅ Loaded prompt rule: {rule_data['rule_name']}")
-                    else:
-                        missing = [f for f in required_fields if f not in rule_data]
-                        failed_rules.append(f"{rule_data.get('rule_name', 'unknown')} (missing: {missing})")
-                except Exception as e:
-                    failed_rules.append(f"{rule_data.get('rule_name', 'unknown')} (error: {e})")
-
             print(
                 f"📋 Enhanced Rules Summary: "
                 f"{len(self.score_rules)} score, {len(self.pipeline_rules)} pipeline, "
-                f"{len(self.decision_rules)} decision, {len(self.weight_rules)} weight, "
-                f"{len(self.prompt_rules)} prompt"
+                f"{len(self.decision_rules)} decision, {len(self.weight_rules)} weight"
             )
             print(f"✅ Successfully loaded {total_loaded} rules")
 

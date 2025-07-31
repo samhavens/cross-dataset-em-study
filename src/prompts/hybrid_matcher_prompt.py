@@ -85,7 +85,7 @@ PROMPT_DATA = {
                 "If the candidate does NOT match the left record: respond with \"-1\"",
                 "DO NOT include any words, explanations, or other text",
                 "DO NOT include quotes, brackets, or punctuation",
-                "Examples of CORRECT responses: 0 or -1",
+                "Examples of CORRECT responses: `7` or `-1`",
                 "Examples of INCORRECT responses: \"no match\", \"the movie babel\", \"candidate 0\""
             ]
         }
@@ -102,7 +102,7 @@ def update_prompt_data(new_data: Dict[str, Any]) -> None:
     """Update the prompt data structure and persist to file."""
     global PROMPT_DATA
     PROMPT_DATA = new_data
-    
+
     # Persist to file for cross-process use
     prompt_file = "results/temp/prompt_data.json"
     os.makedirs(os.path.dirname(prompt_file), exist_ok=True)
@@ -114,6 +114,7 @@ def build_prompt(
     left_record: dict,
     candidates_text: str,
     best_idx: int,
+    prompt_data: Optional[Dict[str, Any]] = None,
     additional_guidance: Optional[List[str]] = None
 ) -> str:
     """
@@ -123,23 +124,26 @@ def build_prompt(
         left_record: The record to match
         candidates_text: Formatted candidate text
         best_idx: Index of the best candidate
+        prompt_data: Optional prompt data structure (if None, uses default + MCP file)
         additional_guidance: Optional list of additional guidance strings
 
     Returns:
         Complete formatted prompt
     """
-    # Load prompt data from file if it exists (for cross-process persistence)
-    prompt_data = PROMPT_DATA
-    prompt_file = "results/temp/prompt_data.json"
-    
-    if os.path.exists(prompt_file):
-        try:
-            with open(prompt_file, 'r') as f:
-                prompt_data = json.load(f)
-        except Exception:
-            # Fall back to default if file is corrupted
-            prompt_data = PROMPT_DATA
-    
+    # Use provided prompt_data or fall back to current behavior for backward compatibility
+    if prompt_data is None:
+        # Legacy behavior: Load prompt data from file if it exists (for cross-process persistence)
+        prompt_data = PROMPT_DATA
+        prompt_file = "results/temp/prompt_data.json"
+
+        if os.path.exists(prompt_file):
+            try:
+                with open(prompt_file) as f:
+                    prompt_data = json.load(f)
+            except Exception:
+                # Fall back to default if file is corrupted
+                prompt_data = PROMPT_DATA
+
     sections = []
 
     # Convert dict sections to PromptSection objects and add dynamic content

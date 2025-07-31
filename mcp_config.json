@@ -3,11 +3,9 @@
     "entity-matching": {
       "command": "python",
       "args": [
-        "src/mcp_servers/entity_matching_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "."
-      }
+        "-m",
+        "src.mcp_servers.entity_matching_server"
+      ]
     }
   }
 }

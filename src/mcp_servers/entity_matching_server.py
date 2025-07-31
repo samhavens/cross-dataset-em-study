@@ -7,23 +7,38 @@ This ensures Claude follows the correct workflow and format requirements.
 """
 
 import asyncio
+import difflib
 import json
 import logging
 import os
+import pathlib
 import sys
 
-from pathlib import Path
+from datetime import datetime
 from typing import Any, Dict, List
 
-# Add the src directory to Python path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from datetime import datetime
+# Third-party imports
+import pandas as pd
 
 from mcp.server import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
+from mcp.server.stdio import stdio_server
 from mcp.types import TextContent, Tool
 
-from utils.json_serializer import json_serialize
+# Local imports
+from src.entity_matching.candidate_optimization import find_recall_plateau
+from src.entity_matching.experiment_config import ExperimentConfig
+from src.entity_matching.experiment_registry import ExperimentRegistry
+from src.entity_matching.hybrid_matcher import (
+    CandidateCache,
+    get_top_candidates_cached,
+    semantic_similarity_cached,
+    trigram_similarity,
+)
+from src.experiments.simplified_agentic_generator import get_leaderboard_target_f1
+from src.prompts.hybrid_matcher_prompt import build_prompt, get_prompt_data, update_prompt_data
+from src.entity_matching.hybrid_matcher import run_enhanced_matching
+from src.utils.json_serializer import json_serialize
 
 # Set up logging
 os.makedirs('results/temp', exist_ok=True)  # Ensure log directory exists
@@ -491,10 +506,6 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[TextCon
             logger.error(f"🚨 CLAUDE REPORTED ISSUE: {issue_description}")
 
             # Also log to results file
-            import os
-
-            from datetime import datetime
-
             os.makedirs("results", exist_ok=True)
             issues_file = "results/claude_reported_issues.json"
 
@@ -556,17 +567,6 @@ async def generate_candidate_comparison(
 ) -> str:
     """Generate candidate comparison showing how weights affect candidate ranking."""
     try:
-        import pathlib
-
-        import pandas as pd
-
-        from src.entity_matching.hybrid_matcher import (
-            CandidateCache,
-            get_top_candidates_cached,
-            semantic_similarity,
-            trigram_similarity,
-        )
-
         # Load dataset
         root = pathlib.Path("data") / "raw" / dataset
         if not root.exists():
@@ -590,8 +590,6 @@ async def generate_candidate_comparison(
         left_record = A[record_id]
 
         # Load experiment configuration if provided
-        from src.entity_matching.experiment_config import ExperimentConfig
-
         if config_file and pathlib.Path(config_file).exists():
             exp_config = ExperimentConfig.from_file(config_file)
             logger.info(f"📄 Loaded experiment config: {exp_config}")
@@ -1001,11 +999,6 @@ async def run_experiment_tool(
     """Run complete experiment with full config, inherit from previous experiments when parameters not specified."""
 
     try:
-        import os
-        import pathlib
-
-        from src.entity_matching.experiment_config import ExperimentConfig
-
         # Step 1: Load base config if provided, otherwise create default
         if config_file and pathlib.Path(config_file).exists():
             base_config = ExperimentConfig.from_file(config_file)
@@ -1026,7 +1019,6 @@ async def run_experiment_tool(
         # If no prompt_data provided, use the current prompt data from WritePrompt updates
         if prompt_data is None:
             try:
-                from src.prompts.hybrid_matcher_prompt import get_prompt_data
                 final_prompt_data = get_prompt_data()
                 if final_prompt_data:
                     logger.info("📝 Using updated prompt data from WritePrompt")
@@ -1071,10 +1063,6 @@ async def run_experiment_tool(
             logger.info("💾 Saved custom prompt data")
 
         # Step 5: Run the experiment
-        import sys
-        sys.path.append(os.getcwd())
-        from run_enhanced_matching import run_enhanced_matching
-
         logger.info(f"🚀 Running experiment: {experiment_config}")
 
         # Call run_enhanced_matching with experiment config settings
@@ -1115,7 +1103,6 @@ async def run_experiment_tool(
 
         # Step 6: Register with active pipeline registry if available
         try:
-            from src.entity_matching.experiment_registry import ExperimentRegistry
             registry = ExperimentRegistry.find_active_pipeline_registry()
             if registry:
                 registry.register_experiment(
@@ -1371,7 +1358,6 @@ async def read_sample_data_tool(dataset: str) -> List[TextContent]:
 
                 # Use existing optimal candidate calculation function
                 try:
-                    from src.entity_matching.candidate_optimization import find_recall_plateau
                     optimal_candidates, optimal_recall = find_recall_plateau(candidate_analysis)
 
                     # Find max candidates for efficiency comparison
@@ -1589,7 +1575,6 @@ async def get_baseline_tool(dataset: str) -> List[TextContent]:
                 baseline += f"Source: {dev_file}\n"
 
                 # Get target and check if already close
-                from src.experiments.simplified_agentic_generator import get_leaderboard_target_f1
                 target_f1 = get_leaderboard_target_f1(dataset) / 100.0  # Convert to decimal
                 gap = target_f1 - f1
 
@@ -1621,8 +1606,6 @@ async def get_baseline_tool(dataset: str) -> List[TextContent]:
 async def read_prompt_tool() -> List[TextContent]:
     """Read the current prompt data structure."""
     try:
-        from src.prompts.hybrid_matcher_prompt import get_prompt_data
-
         prompt_data = get_prompt_data()
 
         response = "📄 **Current Entity Matching Prompt Structure**\n\n"
@@ -1658,10 +1641,6 @@ async def read_prompt_tool() -> List[TextContent]:
 async def write_prompt_tool(prompt_data: dict) -> List[TextContent]:
     """Write/update the prompt data structure with diff output."""
     try:
-        import difflib
-
-        from src.prompts.hybrid_matcher_prompt import build_prompt, get_prompt_data, update_prompt_data
-
         # Validate the structure
         if "sections" not in prompt_data:
             return [TextContent(type="text", text="❌ Missing 'sections' key in prompt_data")]
@@ -1786,7 +1765,6 @@ async def report_issue_tool(
 
 async def main():
     """Run the MCP server."""
-    from mcp.server.stdio import stdio_server
 
     async with stdio_server() as (read_stream, write_stream):
         await server.run(

@@ -1,15 +1,16 @@
 from __future__ import annotations
 
 import os
+
 from pathlib import Path
 from subprocess import PIPE
 
 import anyio
-from anyio.streams.text import TextReceiveStream, TextSendStream
 
+from anyio.streams.text import TextReceiveStream, TextSendStream
 from claude_code_sdk._errors import CLIConnectionError, CLINotFoundError
 from claude_code_sdk._internal.transport.subprocess_cli import (
-    SubprocessCLITransport as _T,
+    SubprocessCLITransport as _T,  # noqa: N814
 )
 
 
@@ -49,9 +50,8 @@ def apply_patch(redirect_stderr_to_parent: bool = True, remove_verbose_flag: boo
                     self._task_group = anyio.create_task_group()
                     await self._task_group.__aenter__()
                     self._task_group.start_soon(self._stream_to_stdin)
-            else:
-                if self._process.stdin:
-                    await self._process.stdin.aclose()
+            elif self._process.stdin:
+                await self._process.stdin.aclose()
         except FileNotFoundError as e:
             if self._cwd and not Path(self._cwd).exists():
                 raise CLIConnectionError(f"Working directory does not exist: {self._cwd}") from e

@@ -3,7 +3,6 @@
 Simplified agentic heuristic generator with only MCP tools + Read
 """
 
-import asyncio
 import json
 import os
 import re

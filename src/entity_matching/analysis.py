@@ -19,9 +19,11 @@ from .hybrid_matcher import (
     Config,
     compute_dataset_embeddings,
     get_top_candidates_cached,
-    semantic_similarity,
     syntactic_similarity,
     trigram_similarity,
+    semantic_similarity_cached,
+    get_embeddings_cache_path,
+    get_semantic_model,
 )
 
 
@@ -66,9 +68,26 @@ def calculate_similarity_stats(similarities: List[float]) -> Dict[str, float]:
 def get_semantic_similarity_for_records(left_record: dict, right_record: dict, cfg: Config) -> float:
     """Get semantic similarity between two records"""
     try:
-        left_str = json.dumps(left_record, ensure_ascii=False).lower()
-        right_str = json.dumps(right_record, ensure_ascii=False).lower()
-        return semantic_similarity(left_str, right_str, cfg)
+        # Use cached embeddings if available, otherwise fall back to direct computation
+        if cfg.embeddings is not None:
+            return semantic_similarity_cached(left_record, right_record, cfg.embeddings)
+        else:
+            # Fall back to direct computation using EmbeddingProvider
+            model = get_semantic_model(cfg)
+            if model is None:
+                return 0.0
+            
+            left_str = json.dumps(left_record, ensure_ascii=False).lower()
+            right_str = json.dumps(right_record, ensure_ascii=False).lower()
+            
+            # Compute embeddings directly
+            left_emb = model.encode([left_str])[0]
+            right_emb = model.encode([right_str])[0]
+            
+            # Calculate cosine similarity
+            import numpy as np
+            cos_sim = np.dot(left_emb, right_emb) / (np.linalg.norm(left_emb) * np.linalg.norm(right_emb))
+            return float(cos_sim)
     except Exception as e:
         print(f"Warning: Semantic similarity calculation failed: {e}")
         return 0.0
@@ -137,7 +156,7 @@ def generate_concrete_examples(
     for left_id in left_id_iterator:
         try:
             left_record = A_records[left_id]
-            candidates = get_top_candidates_cached(left_record, candidate_cache, max_candidates, cfg, dataset, intelligent_boost=False, fast_analysis=True)
+            candidates = get_top_candidates_cached(left_record, candidate_cache, max_candidates, cfg, dataset)
             candidate_ids = [c[0] for c in candidates]
             candidates_cache[left_id] = candidate_ids
         except Exception as e:
@@ -282,7 +301,6 @@ def analyze_candidate_recall(
     cfg: Config,
     dataset: str,
     max_candidates: int = 100,
-    max_analysis_pairs: int = None,
     test_higher_candidates: bool = True,
     verbose: bool = True,
 ) -> Dict[str, float]:
@@ -327,12 +345,6 @@ def analyze_candidate_recall(
 
     positive_pairs = pairs[pairs.label == 1]
 
-    # Limit analysis pairs for speed if requested
-    if max_analysis_pairs and len(positive_pairs) > max_analysis_pairs:
-        positive_pairs = positive_pairs.head(max_analysis_pairs)
-        if verbose:
-            print(f"ℹ️ Limiting analysis to first {max_analysis_pairs} positive pairs for speed")
-
     total_matches = len(positive_pairs)
 
     if total_matches == 0:
@@ -358,7 +370,7 @@ def analyze_candidate_recall(
 
         try:
             left_record = A_records[left_id]
-            candidates = get_top_candidates_cached(left_record, candidate_cache, max_threshold, cfg, dataset, intelligent_boost=False, fast_analysis=False)
+            candidates = get_top_candidates_cached(left_record, candidate_cache, max_threshold, cfg, dataset)
             candidate_ids = [c[0] for c in candidates]
             candidates_cache[left_id] = candidate_ids
         except Exception as e:
@@ -409,9 +421,10 @@ def analyze_dataset_for_claude(
     dataset: str,
     max_pairs: int = 200,
     max_candidates: int = 200,
-    max_analysis_pairs: int = 500,
     output_file: str = None,
     verbose: bool = True,
+    embedding_base_url: str = None,
+    embedding_model: str = "all-MiniLM-L6-v2",
 ) -> Dict[str, Any]:
     """
     Generate comprehensive analysis for Claude optimization.
@@ -422,6 +435,8 @@ def analyze_dataset_for_claude(
         max_candidates: Candidates threshold for analysis
         output_file: Optional output JSON file path
         verbose: Whether to print progress messages
+        embedding_base_url: Base URL for embedding API (e.g., http://localhost:8080 for TEI)
+        embedding_model: Embedding model name
 
     Returns:
         Dictionary containing analysis results
@@ -485,15 +500,50 @@ def analyze_dataset_for_claude(
     cfg.use_semantic = True  # Keep semantic similarity for analysis results
     cfg.use_heuristics = False  # Disable heuristics during analysis for speed
 
+    # Set embedding configuration
+    if embedding_base_url:
+        cfg.embedding_base_url = embedding_base_url
+        cfg.embedding_model_name = embedding_model
+        if verbose:
+            print(f"🤖 Analysis using embedding API: {embedding_base_url} with model {embedding_model}")
+    else:
+        cfg.embedding_model_name = embedding_model
+        if verbose:
+            print(f"🤖 Analysis using local embedding model: {embedding_model}")
+
     # Try to load embeddings for semantic similarity
     semantic_available = False
     try:
         if verbose:
             print("🧮 Loading/computing embeddings for semantic similarity...")
-        cfg.embeddings = compute_dataset_embeddings(dataset, cfg)
-        if verbose:
-            print("✅ Embeddings ready")
-        semantic_available = True
+            print(f"   📝 Analysis config: model={cfg.embedding_model_name}, base_url={getattr(cfg, 'embedding_base_url', 'None')}")
+        
+        # Check cache first - if it exists, we don't need to create a provider
+        cache_path = get_embeddings_cache_path(dataset, cfg.embedding_model_name)
+        if cache_path.exists():
+            if verbose:
+                print(f"🔍 Found embeddings cache: {cache_path}")
+                print(f"📁 Loading cached embeddings from {cache_path}")
+            try:
+                import pickle
+                with open(cache_path, "rb") as f:
+                    cfg.embeddings = pickle.load(f)
+                    if verbose:
+                        print(f"✅ Loaded {len(cfg.embeddings)} cached embeddings")
+                    semantic_available = True
+            except Exception as e:
+                if verbose:
+                    print(f"⚠️ Cache load failed: {e}, falling back to compute_dataset_embeddings...")
+                cfg.embeddings = compute_dataset_embeddings(dataset, cfg)
+                if verbose:
+                    print("✅ Embeddings ready")
+                semantic_available = True
+        else:
+            # No cache, use the full computation path
+            cfg.embeddings = compute_dataset_embeddings(dataset, cfg)
+            if verbose:
+                print("✅ Embeddings ready")
+            semantic_available = True
     except Exception as e:
         if verbose:
             print(f"⚠️ Could not load embeddings: {e}")
@@ -559,7 +609,7 @@ def analyze_dataset_for_claude(
 
     # Analyze candidate recall
     candidate_analysis = analyze_candidate_recall(
-        pairs, A_records, B_records, candidate_cache, cfg, dataset, max_candidates, max_analysis_pairs, True, verbose
+        pairs, A_records, B_records, candidate_cache, cfg, dataset, max_candidates, True, verbose
     )
 
     # Generate concrete examples

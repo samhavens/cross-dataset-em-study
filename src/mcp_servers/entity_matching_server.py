@@ -17,27 +17,31 @@ from typing import Any, Dict, List
 
 # Add the src directory to Python path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
-
 from datetime import datetime
 
 from mcp.server import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 from mcp.types import TextContent, Tool
 
+from utils.json_serializer import json_serialize
+
 # Set up logging
 os.makedirs('results/temp', exist_ok=True)  # Ensure log directory exists
 
 # Get mode from environment variable
 SERVER_MODE = os.getenv("MCP_SERVER_MODE", "full")  # full, weights-only, prompt-only, heuristics-only
+# Enhanced logging configuration for chained command visibility
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.FileHandler('results/temp/mcp_server.log'),
-        logging.StreamHandler(sys.stderr)  # Also log to stderr so it shows up in Claude Code SDK logs
-    ]
+        logging.StreamHandler(sys.stderr)
+    ],
+    force=True  # Force reconfiguration to ensure visibility in chained commands
 )
+
+# Ensure stdout is line-buffered for immediate output
 logger = logging.getLogger("entity-matching-server")
 
 # Log server startup
@@ -127,6 +131,72 @@ def get_tools_for_mode(mode: str) -> List[Tool]:
                     }
                 },
                 "required": []
+            }
+        ),
+        "WriteWeights": Tool(
+            name="WriteWeights",
+            description="""Write only similarity weights to rules file (weights-only mode).
+
+            RETURNS: Success message with weight verification and optional candidate comparison.
+
+            WEIGHT OPTIMIZATION:
+            - Updates semantic_weight, trigram_weight, syntactic_weight (must sum to ~1.0)
+            - Preserves existing rules from file
+            - Automatically saves to results/temp/generated_rules.json
+            - Optional candidate comparison shows how weights affect ranking
+
+            Example: {"semantic_weight": 0.6, "trigram_weight": 0.3, "syntactic_weight": 0.1, "max_candidates": 50}""",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "semantic_weight": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "maximum": 1.0,
+                        "description": "Weight for semantic similarity (required)"
+                    },
+                    "trigram_weight": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "maximum": 1.0,
+                        "description": "Weight for trigram similarity (required)"
+                    },
+                    "syntactic_weight": {
+                        "type": "number",
+                        "minimum": 0.0,
+                        "maximum": 1.0,
+                        "description": "Weight for syntactic similarity (required)"
+                    },
+                    "max_candidates": {
+                        "type": "integer",
+                        "minimum": 10,
+                        "maximum": 500,
+                        "default": 50,
+                        "description": "Maximum candidates to consider"
+                    },
+                    "show_candidate_comparison": {
+                        "type": "boolean",
+                        "default": False,
+                        "description": "Show candidate ranking comparison with old weights"
+                    },
+                    "dataset": {
+                        "type": "string",
+                        "description": "Dataset name for candidate comparison (optional)"
+                    },
+                    "record_id": {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Record ID for candidate comparison (optional)"
+                    },
+                    "top_n": {
+                        "type": "integer",
+                        "minimum": 5,
+                        "maximum": 25,
+                        "default": 10,
+                        "description": "Number of top candidates to show in comparison"
+                    }
+                },
+                "required": ["semantic_weight", "trigram_weight", "syntactic_weight"]
             }
         ),
         "TestWeights": Tool(
@@ -368,12 +438,12 @@ def get_tools_for_mode(mode: str) -> List[Tool]:
     if mode == "weights-only":
         selected_tools = ["WriteWeights", "RunExperiment", "GetBaseline", "ReadSampleData", "ReadInstructions", "ReportIssue"]
         logger.info("🎯 Mode: weights-only - showing only weight optimization tools")
-    elif mode == "prompt-only":
+    elif mode == "prompt-modification":
         selected_tools = ["WriteWeights", "WritePrompt", "ReadPrompt", "RunExperiment", "GetBaseline", "ReadSampleData", "ReadInstructions", "ReportIssue"]
-        logger.info("📝 Mode: prompt-only - showing weight optimization AND prompt modification tools")
-    elif mode == "heuristics-only":
+        logger.info("📝 Mode: prompt-modification - showing weight optimization AND prompt modification tools")
+    elif mode == "heuristics":
         selected_tools = ["WriteRules", "RunExperiment", "GetBaseline", "ReadSampleData", "ReadInstructions", "ReportIssue"]
-        logger.info("🔧 Mode: heuristics-only - showing only traditional rule tools")
+        logger.info("🔧 Mode: heuristics - showing only traditional rule tools")
     else:  # mode == "full"
         selected_tools = list(all_tools.keys())
         logger.info("🌟 Mode: full - showing all available tools")
@@ -397,6 +467,8 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[TextCon
     try:
         if name == "WriteRules":
             result = await write_rules_tool(**arguments)
+        elif name == "WriteWeights":
+            result = await write_weights_tool(**arguments)
         elif name == "TestWeights":
             result = await test_weights_tool(**arguments)
         elif name == "RunExperiment":
@@ -416,7 +488,7 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[TextCon
 
             # Log to console and logger
             logger.error(f"🚨 CLAUDE REPORTED ISSUE: {issue_description}")
-            print(f"🚨 CLAUDE REPORTED ISSUE: {issue_description}")
+            logger.error(f"🚨 CLAUDE REPORTED ISSUE: {issue_description}")
 
             # Also log to results file
             import os
@@ -449,9 +521,9 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> List[TextCon
             try:
                 with open(issues_file, 'w') as f:
                     json.dump(issues, f, indent=2)
-                print(f"📝 Issue logged to: {issues_file}")
+                logger.info(f"📝 Issue logged to: {issues_file}")
             except Exception as e:
-                print(f"⚠️ Failed to log issue to file: {e}")
+                logger.warning(f"⚠️ Failed to log issue to file: {e}")
 
             result = [TextContent(type="text", text=f"✅ Issue reported and logged to {issues_file}: {issue_description}")]
         else:
@@ -522,14 +594,14 @@ async def generate_candidate_comparison(
 
         if config_file and pathlib.Path(config_file).exists():
             exp_config = ExperimentConfig.from_file(config_file)
-            print(f"📄 Loaded experiment config: {exp_config}")
+            logger.info(f"📄 Loaded experiment config: {exp_config}")
         else:
             # Create default config for this dataset
             exp_config = ExperimentConfig(
                 dataset=dataset,
                 max_candidates=max_candidates
             )
-            print(f"📄 Using default config: {exp_config}")
+            logger.info(f"📄 Using default config: {exp_config}")
 
         # Create candidate cache with model-specific path
         cache_key = exp_config.get_cache_key()
@@ -741,7 +813,7 @@ async def write_weights_tool(
                         old_semantic, old_trigram, old_syntactic,
                         semantic_weight, trigram_weight, syntactic_weight,
                         max_candidates,
-                        config_file=arguments.get("config_file")
+                        config_file=None
                     )
                 except Exception as e:
                     comparison_text = f"\n⚠️ Could not generate candidate comparison: {e}\n"
@@ -817,7 +889,7 @@ async def write_rules_tool(
         weight_sum = semantic_weight + trigram_weight + syntactic_weight
 
         # Validate rule implementations contain Python code, not English
-        def validate_rule_implementation(rules, rule_type):
+        def validate_rule_implementation(rules, _rule_type):
             if not rules:
                 return
             for rule in rules:
@@ -918,15 +990,15 @@ async def write_rules_tool(
 
 async def run_experiment_tool(
     dataset: str,
-    semantic_weight: float = 0.5,
+    semantic_weight: float = None,  # Changed to None so we can detect unspecified
     trigram_weight: float = None,
     syntactic_weight: float = None,
-    max_candidates: int = 50,
+    max_candidates: int = None,  # Changed to None so we can detect unspecified
     config_file: str = None,
     prompt_data: dict = None,
     max_examples: int = 20
 ) -> List[TextContent]:
-    """Run complete experiment with full config, inherit embedding settings, save experiment."""
+    """Run complete experiment with full config, inherit from previous experiments when parameters not specified."""
 
     try:
         import os
@@ -939,11 +1011,37 @@ async def run_experiment_tool(
             base_config = ExperimentConfig.from_file(config_file)
             logger.info(f"📄 Loaded base config: {base_config}")
         else:
-            # Create default config
-            base_config = ExperimentConfig(dataset=dataset)
-            logger.info(f"📄 Using default config: {base_config}")
+            # Create default config with environment-provided embedding settings
+            embedding_model = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+            embedding_base_url = os.getenv("EMBEDDING_BASE_URL", None)
+            base_config = ExperimentConfig(dataset=dataset, embedding_model=embedding_model, embedding_base_url=embedding_base_url)
+            logger.info(f"📄 Using default config with env settings: {base_config}")
 
-        # Step 2: Override with Claude's specifications
+        # Step 2: Simple parameter resolution with basic inheritance
+        # Use provided values or fall back to base config defaults
+        final_semantic_weight = semantic_weight if semantic_weight is not None else base_config.semantic_weight
+        final_trigram_weight = trigram_weight if trigram_weight is not None else base_config.trigram_weight
+        final_syntactic_weight = syntactic_weight if syntactic_weight is not None else base_config.syntactic_weight
+        final_max_candidates = max_candidates if max_candidates is not None else base_config.max_candidates
+        # If no prompt_data provided, use the current prompt data from WritePrompt updates
+        if prompt_data is None:
+            try:
+                from src.prompts.hybrid_matcher_prompt import get_prompt_data
+                final_prompt_data = get_prompt_data()
+                if final_prompt_data:
+                    logger.info("📝 Using updated prompt data from WritePrompt")
+                else:
+                    final_prompt_data = None
+                    logger.info("📝 No custom prompt data available, using default")
+            except Exception as e:
+                logger.warning(f"⚠️ Could not get prompt data: {e}")
+                final_prompt_data = None
+        else:
+            final_prompt_data = prompt_data
+
+        logger.info(f"🔧 Resolved parameters: semantic={final_semantic_weight}, trigram={final_trigram_weight}, syntactic={final_syntactic_weight}, candidates={final_max_candidates}")
+
+        # Step 4: Create experiment config with resolved values
         experiment_config = ExperimentConfig(
             # Inherit from base config
             dataset=base_config.dataset,
@@ -953,12 +1051,12 @@ async def run_experiment_tool(
             concurrency=base_config.concurrency,
             mode=base_config.mode,
 
-            # Claude's specifications override
-            semantic_weight=semantic_weight,
-            trigram_weight=trigram_weight,
-            syntactic_weight=syntactic_weight,
-            max_candidates=max_candidates,
-            prompt_data=prompt_data,
+            # Use resolved values (inheritance chain applied)
+            semantic_weight=final_semantic_weight,
+            trigram_weight=final_trigram_weight,
+            syntactic_weight=final_syntactic_weight,
+            max_candidates=final_max_candidates,
+            prompt_data=final_prompt_data,
         )
 
         # Step 3: Save experiment config
@@ -1055,11 +1153,12 @@ async def run_experiment_tool(
             }
         }
 
-        # Save to experiment directory
+        # Save to experiment directory using proper JSON serialization
         results_file = experiment_config.get_experiment_dir() / "results.json"
         with open(results_file, "w") as f:
-            import json
-            json.dump(experiment_results, f, indent=2, default=str)
+            # Use json_serialize to handle pandas/numpy types properly
+            clean_results = json_serialize(experiment_results)
+            json.dump(clean_results, f, indent=2)
 
         # Log complete experiment results
         logger.info(f"🧪 EXPERIMENT {experiment_config.experiment_id} COMPLETE")
@@ -1090,16 +1189,22 @@ async def run_experiment_tool(
             logger.info("   ✅ Perfect results - no errors!")
 
         eval_data = "FULL validation set"
-        result_text = f"🧪 Enhanced Test Results for {dataset} ({eval_data}) [Experiment {experiment_id}]:\n"
+        result_text = f"🧪 Enhanced Test Results for {dataset} ({eval_data}) [Experiment {experiment_config.experiment_id}]:\n"
 
         # Show weight verification - compare requested vs actual
         try:
-            with open(rules_file) as f:
-                rules_config = json.load(f)
-            requested_weights = rules_config.get("hyperparameters", {})
-            req_sem = requested_weights.get("semantic_weight")
-            req_tri = requested_weights.get("trigram_weight")
-            req_syn = requested_weights.get("syntactic_weight")
+            if config_file:
+                with open(config_file) as f:
+                    rules_config = json.load(f)
+                requested_weights = rules_config.get("hyperparameters", {})
+                req_sem = requested_weights.get("semantic_weight")
+                req_tri = requested_weights.get("trigram_weight")
+                req_syn = requested_weights.get("syntactic_weight")
+            else:
+                # No config file provided, use the actual weights as requested weights
+                req_sem = actual_weights['semantic']
+                req_tri = actual_weights['trigram']
+                req_syn = actual_weights['syntactic']
 
             result_text += "\n🎯 WEIGHT VERIFICATION:\n"
             result_text += f"   Requested: semantic={req_sem}, trigram={req_tri}, syntactic={req_syn}\n"
@@ -1350,26 +1455,57 @@ async def read_instructions_tool(dataset: str) -> List[TextContent]:
     }
 
     target_f1 = leaderboard_targets.get(dataset, 85.0)
+    
+    # Get current server mode to show appropriate tools
+    server_mode = os.getenv("MCP_SERVER_MODE", "full")
+    
+    # Define tool instructions based on mode
+    if server_mode == "prompt-only":
+        tools_section = """🔧 **AVAILABLE TOOLS**:
+1. **ReadSampleData** - Examine error patterns and current performance
+2. **GetBaseline** - Check current baseline metrics  
+3. **WriteWeights** - Adjust similarity weights (semantic, trigram, syntactic)
+4. **WritePrompt** - Modify the entity matching prompt structure
+5. **ReadPrompt** - View current prompt structure
+6. **RunExperiment** - Test your changes on validation data
+
+📊 **WORKFLOW**:
+1. ReadSampleData → GetBaseline → identify issues
+2. WriteWeights and/or WritePrompt to address issues
+3. RunExperiment to test improvements
+4. Iterate until F1 > {target_f1}"""
+    elif server_mode == "weights-only":
+        tools_section = """🔧 **AVAILABLE TOOLS**:
+1. **ReadSampleData** - Examine error patterns and current performance
+2. **GetBaseline** - Check current baseline metrics
+3. **WriteWeights** - Adjust similarity weights (semantic, trigram, syntactic)
+4. **RunExperiment** - Test your changes on validation data
+
+📊 **WORKFLOW**:
+1. ReadSampleData → GetBaseline → identify issues
+2. WriteWeights to optimize similarity weighting
+3. RunExperiment to test improvements
+4. Iterate until F1 > {target_f1}"""
+    else:  # full or heuristics-only
+        tools_section = """🔧 **AVAILABLE TOOLS**:
+1. **ReadSampleData** - Examine error patterns and current performance
+2. **GetBaseline** - Check current baseline metrics
+3. **WriteRules** - Create rules (ENFORCES correct format with 3 weights)
+4. **TestWeights** - Test weight combinations
+5. **RunExperiment** - Test your changes on validation data
+
+📊 **WORKFLOW**:
+1. ReadSampleData → GetBaseline → identify issues
+2. WriteRules to create matching heuristics
+3. RunExperiment to test improvements
+4. Iterate until F1 > {target_f1}"""
 
     instructions = f"""🎯 Entity Matching Task for {dataset}
 
 📋 **OBJECTIVE**: Optimize entity matching rules to achieve F1 > {target_f1}
    ⚠️ **If baseline already exceeds target**: Goal is to MAINTAIN performance, not improve it
 
-🔧 **AVAILABLE TOOLS**:
-1. **ReadSampleData** - Examine error patterns and current performance
-2. **GetBaseline** - Check current baseline metrics
-3. **WriteRules** - Create rules (ENFORCES correct format with 3 weights)
-4. **TestRules** - Test your rules on validation data
-
-📊 **WORKFLOW**:
-1. Use ReadSampleData to understand current errors
-2. Use GetBaseline to see current performance and baseline strategy
-3. Create rules with WriteRules (must include semantic_weight, trigram_weight, syntactic_weight)
-4. Test with TestRules
-5. Iterate until F1 > {target_f1}
-
-⚠️ **ONE CHANGE AT A TIME**: Either adjust weights OR add prompt rules, not both in same iteration
+{tools_section}
 
 🎯 **OPTIMIZATION STRATEGY**:
 - **If baseline EXCEEDS target**: Make minimal/no changes, maintain performance
@@ -1379,14 +1515,24 @@ async def read_instructions_tool(dataset: str) -> List[TextContent]:
 
 ⚠️ **CRITICAL REQUIREMENTS**:
 - ALL 3 WEIGHTS REQUIRED: semantic_weight, trigram_weight, syntactic_weight must sum to ~1.0
-- CORRECT FORMAT: Tools enforce "candidate_rules", "score_rules", "decision_rules" format
-- VALIDATION ONLY: Always use validation data to prevent test leakage
-- PROMPT CONDITIONS: In prompt-modification mode, condition field must be valid Python expressions like:
+- VALIDATION ONLY: Always use validation data to prevent test leakage"""
+
+    # Add mode-specific requirements
+    if server_mode == "prompt-only":
+        instructions += """
+- PROMPT CONDITIONS: condition field must be valid Python expressions like:
   * "True" (always apply)
   * "'brand' in left_record" (check if brand field exists)
   * "left_record.get('name', '').lower().startswith('sony')" (Sony products)
   * "left_record.get('price', 0) > 100" (expensive items)
 - PROMPT LOGIC: Low recall means missing matches → prompt should help find MORE matches, not fewer
+
+🎯 **SUCCESS CRITERIA**:
+- F1 > {target_f1} on validation set
+- Weights and/or prompt optimized via WriteWeights/WritePrompt tools"""
+    else:
+        instructions += """
+- CORRECT FORMAT: Tools enforce "candidate_rules", "score_rules", "decision_rules" format
 
 🎯 **SUCCESS CRITERIA**:
 - F1 > {target_f1} on validation set
@@ -1396,42 +1542,6 @@ async def read_instructions_tool(dataset: str) -> List[TextContent]:
 
     return [TextContent(type="text", text=instructions)]
 
-async def analyze_performance_tool(current_f1: float, target_f1: float, dataset: str) -> List[TextContent]:
-    """Analyze performance gap and suggest improvements."""
-
-    gap = target_f1 - current_f1
-
-    analysis = f"📊 Performance Analysis for {dataset}:\n\n"
-    analysis += f"Current F1: {current_f1:.4f}\n"
-    analysis += f"Target F1: {target_f1:.1f}\n"
-    analysis += f"Gap: {gap:.3f} ({gap/target_f1*100:.1f}%)\n\n"
-
-    if gap <= 0:
-        analysis += "🎉 **SUCCESS!** Target achieved! Use WriteRules to save your final configuration."
-    elif gap < 0.05:
-        analysis += "🔧 **SMALL GAP**: Try hyperparameter tuning:\n"
-        analysis += "- Adjust max_candidates (50, 100, 150, 250)\n"
-        analysis += "- Fine-tune weight balance (semantic vs trigram vs syntactic)\n"
-        analysis += "- Consider simple decision rules (auto-accept/reject thresholds)"
-    elif gap < 0.15:
-        analysis += "⚙️ **MEDIUM GAP**: Need targeted rules:\n"
-        analysis += "- Add candidate_rules to capture missed matches\n"
-        analysis += "- Add score_rules to boost/penalize specific patterns\n"
-        analysis += "- Use ReadSampleData to identify error patterns"
-    else:
-        analysis += "🛠️ **LARGE GAP**: Need comprehensive rule engineering:\n"
-        analysis += "- Extensive candidate_rules for recall improvement\n"
-        analysis += "- Multiple score_rules for precision/ranking\n"
-        analysis += "- Decision_rules for early termination\n"
-        analysis += "- Analyze false negatives and false positives systematically"
-
-    analysis += "\n\n💡 **NEXT STEPS**:\n"
-    analysis += "1. Use ReadSampleData to understand error patterns\n"
-    analysis += "2. Create targeted rules with WriteRules\n"
-    analysis += "3. Test with TestRules\n"
-    analysis += "4. Iterate until gap is closed"
-
-    return [TextContent(type="text", text=analysis)]
 
 async def get_baseline_tool(dataset: str) -> List[TextContent]:
     """Get baseline performance for the dataset."""

@@ -1,0 +1,2189 @@
+{
+  "dataset": "dblp_scholar",
+  "analysis_type": "validation",
+  "metadata": {
+    "total_pairs_analyzed": 5742,
+    "positive_pairs": 1070,
+    "negative_pairs_sampled": 30,
+    "semantic_available": true
+  },
+  "similarity_analysis": {
+    "true_matches": {
+      "syntactic": {
+        "mean": 0.9296308410848401,
+        "std": 0.10591392464973227,
+        "median": 0.9906542056074766,
+        "min": 0.43636363636363634,
+        "max": 1.0
+      },
+      "trigram": {
+        "mean": 0.8653645682979993,
+        "std": 0.17235867215376835,
+        "median": 0.9593814432989691,
+        "min": 0.32,
+        "max": 1.0
+      },
+      "semantic": {
+        "mean": 0.9113313370218901,
+        "std": 0.06418428641218361,
+        "median": 0.9215210378170013,
+        "min": 0.47010987997055054,
+        "max": 0.9971269965171814
+      }
+    },
+    "false_positives": {
+      "syntactic": {
+        "mean": 0.6001758738475952,
+        "std": 0.14257785301334858,
+        "median": 0.5906954887218046,
+        "min": 0.3333333333333333,
+        "max": 1.0
+      },
+      "trigram": {
+        "mean": 0.39895685924879454,
+        "std": 0.15199785163850246,
+        "median": 0.35429852320675104,
+        "min": 0.3,
+        "max": 1.0
+      },
+      "semantic": {
+        "mean": 0.728939472635587,
+        "std": 0.1057507564935353,
+        "median": 0.7455846667289734,
+        "min": 0.42454907298088074,
+        "max": 0.8696619272232056
+      }
+    }
+  },
+  "candidate_analysis": {
+    "recall_at_1": 0.416,
+    "recall_at_5": 0.764,
+    "recall_at_10": 0.812,
+    "recall_at_25": 0.83,
+    "recall_at_50": 0.844,
+    "recall_at_100": 0.854,
+    "recall_at_150": 0.864,
+    "recall_at_200": 0.868,
+    "recall_at_300": 0.87,
+    "recall_at_500": 0.872
+  },
+  "concrete_examples": {
+    "true_matches": [
+      {
+        "left_record": {
+          "id": 292,
+          "title": "generating dynamic content at database-backed web servers : cgi-bin vs. mod_perl",
+          "authors": "a labrinidis , n roussopoulos",
+          "venue": "sigmod record",
+          "year": 2000
+        },
+        "right_record": {
+          "id": 34718,
+          "title": "generating dynamic content at database-backed web servers : cgi-bin vs. mod_perl .",
+          "authors": "acms anthology",
+          "venue": "sigmod record ,",
+          "year": 2000.0
+        },
+        "similarities": {
+          "syntactic": 0.988,
+          "trigram": 0.975,
+          "semantic": 0.946
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1615,
+          "title": "the spiffi scalable video-on-demand system",
+          "authors": "c freedman , d dewitt",
+          "venue": "sigmod conference",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 49276,
+          "title": "the spiffi scalable video-on-demand system",
+          "authors": "cs freedman , dj dewitt",
+          "venue": "proceedings of the 1995 acm sigmod international conference & hellip ; ,",
+          "year": 1995.0
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.94
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 16,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1534,
+          "title": "implementing data cubes efficiently",
+          "authors": "v harinarayan , a rajaraman , j ullman",
+          "venue": "sigmod conference",
+          "year": 1996
+        },
+        "right_record": {
+          "id": 6711,
+          "title": "implementing data cubes efficiently . acm sigmod proceedings 1996 , and via ftp db",
+          "authors": "v harinarayan , r rajaraman , jd ullman",
+          "venue": "stanford . edu as",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.598,
+          "trigram": 0.41,
+          "semantic": 0.855
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 18,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1984,
+          "title": "acm tods in this internet age",
+          "authors": "r snodgrass",
+          "venue": "sigmod record",
+          "year": 2003
+        },
+        "right_record": {
+          "id": 48841,
+          "title": "acm tods in this internet age",
+          "authors": "rt snodgrass",
+          "venue": "sigmod record ,",
+          "year": 2003.0
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.96
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1699,
+          "title": "data modeling of time-based media",
+          "authors": "s gibbs , c breiteneder , d tsichritzis",
+          "venue": "sigmod conference",
+          "year": 1994
+        },
+        "right_record": {
+          "id": 59573,
+          "title": "data modeling of time-based media . in : proceedings of the 1994 acm sigmod international conference",
+          "authors": "s gibbs , c breiteneder , d tsichritzis",
+          "venue": "",
+          "year": 1994.0
+        },
+        "similarities": {
+          "syntactic": 0.496,
+          "trigram": 0.341,
+          "semantic": 0.877
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1410,
+          "title": "performance tradeoffs for client-server query processing",
+          "authors": "m franklin , b j\u0453nsson , d kossmann",
+          "venue": "sigmod conference",
+          "year": 1996
+        },
+        "right_record": {
+          "id": 17345,
+          "title": "andd . kossmann . performance tradeoffs for client-server queryprocessing . inproc",
+          "authors": "mj franklin , bt jonsson",
+          "venue": "acm sigmod",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.797,
+          "trigram": 0.649,
+          "semantic": 0.876
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 75,
+          "title": "fast incremental indexing for full-text information retrieval",
+          "authors": "e brown , j callan , w croft",
+          "venue": "vldb",
+          "year": 1994
+        },
+        "right_record": {
+          "id": 62801,
+          "title": "fast incremental indexing for full-text ir",
+          "authors": "e brown , j callan , w croft",
+          "venue": "proc . vldb ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.816,
+          "trigram": 0.661,
+          "semantic": 0.924
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1090,
+          "title": "catching the boat with strudel : experiences with a web-site management system",
+          "authors": "m fernandez , d florescu , j kang , a levy , d suciu",
+          "venue": "sigmod conference",
+          "year": 1998
+        },
+        "right_record": {
+          "id": 44119,
+          "title": "catching the boat with strudel : experience with a web-site management system",
+          "authors": "d florescu , m fernandez , j kang , a levy , d suciu",
+          "venue": "proceedings of acm sigmod conference on management of",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.994,
+          "trigram": 0.932,
+          "semantic": 0.912
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1392,
+          "title": "on-line warehouse view maintenance",
+          "authors": "d quass , j widom",
+          "venue": "sigmod conference",
+          "year": 1997
+        },
+        "right_record": {
+          "id": 61305,
+          "title": "j. ( 1997 ) : on-line view maintenance",
+          "authors": "d quass , w idom",
+          "venue": "acm sigmod conference ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.667,
+          "trigram": 0.478,
+          "semantic": 0.864
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 5,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1550,
+          "title": "balancing histogram optimality and practicality for query result size estimation",
+          "authors": "y ioannidis , v poosala",
+          "venue": "sigmod conference",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 30160,
+          "title": "balancing histogram optimality and practicality for query result size estimation",
+          "authors": "v poosala",
+          "venue": "",
+          "year": 1995.0
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.926
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1828,
+          "title": "optimization of queries with user-defined predicates",
+          "authors": "s chaudhuri , k shim",
+          "venue": "vldb",
+          "year": 1996
+        },
+        "right_record": {
+          "id": 52858,
+          "title": "optimization of predicates with user-defined predicates",
+          "authors": "s chaudhuri , k shim",
+          "venue": "proceedings of 23rd international conference on very large & hellip ; ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.916,
+          "trigram": 0.843,
+          "semantic": 0.9
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 5,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1386,
+          "title": "template-based wrappers in the tsimmis system",
+          "authors": "j hammer , h garcia-molina , s nestorov , r yerneni , m breunig , v vassalos",
+          "venue": "sigmod conference",
+          "year": 1997
+        },
+        "right_record": {
+          "id": 56687,
+          "title": "template-based wrappers in the tsimmis system - group of 14 & raquo ;",
+          "authors": "j hammer , h garcia-molina , s nestorov , r yerneni ,",
+          "venue": "proceedings of the 1997 acm sigmod international conference & hellip ; ,",
+          "year": 1997.0
+        },
+        "similarities": {
+          "syntactic": 0.789,
+          "trigram": 0.636,
+          "semantic": 0.897
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1410,
+          "title": "performance tradeoffs for client-server query processing",
+          "authors": "m franklin , b j\u0453nsson , d kossmann",
+          "venue": "sigmod conference",
+          "year": 1996
+        },
+        "right_record": {
+          "id": 34988,
+          "title": "onsson , and donald kossmann . performance tradeoffs for client-serverquery processing",
+          "authors": "mj franklin , tj bjorn",
+          "venue": "proceedings of the acm sigmod conference on management of & hellip ; ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.775,
+          "trigram": 0.588,
+          "semantic": 0.799
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 5,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1580,
+          "title": "nd-sql : a multi-dimensional language for interoperability and olap",
+          "authors": "f gingras , l lakshmanan",
+          "venue": "vldb",
+          "year": 1998
+        },
+        "right_record": {
+          "id": 1739,
+          "title": "nd-sql : a multi-dimensional language for interoperability and olap . 134-145",
+          "authors": "f gingras , lvs lakshmanan",
+          "venue": "electronic",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.931,
+          "trigram": 0.867,
+          "semantic": 0.961
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1670,
+          "title": "design and implementation of advanced knowledge processing in the kdms krisys ( demonstration description )",
+          "authors": "j thomas , s de\u043floch , n mattos",
+          "venue": "sigmod conference",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 12211,
+          "title": "design and implementation of advanced knowledge processing in the kbms krisys , mj carey , da",
+          "authors": "j thomas , s de\u00e3?loch , nm mattos",
+          "venue": "proc . acm sigmod , exhibits program , san jose , ca , sigmod & hellip ; ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.8,
+          "trigram": 0.646,
+          "semantic": 0.749
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2375,
+          "title": "specification and implementation of exceptions in workflow management systems",
+          "authors": "f casati , s ceri , s paraboschi , g pozzi",
+          "venue": "acm trans . database syst .",
+          "year": 1999
+        },
+        "right_record": {
+          "id": 54093,
+          "title": "specification and implementation of exceptions in workflow management systems",
+          "authors": "f casati , s ceri , s paraboschi , g pozzi",
+          "venue": "acm transactions on database systems ,",
+          "year": 1999.0
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.976
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 511,
+          "title": "sqlj-part 1 : sql routines using the java programming language",
+          "authors": "a eisenberg , j melton",
+          "venue": "sigmod record",
+          "year": 1999
+        },
+        "right_record": {
+          "id": 2121,
+          "title": "sqlj part 1 : sql routines using the java tm programming language",
+          "authors": "a eisenberg , j melton",
+          "venue": "sigmod record ,",
+          "year": 1999.0
+        },
+        "similarities": {
+          "syntactic": 0.961,
+          "trigram": 0.828,
+          "semantic": 0.964
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 237,
+          "title": "semantic b2b integration : issues in ontology-based applications",
+          "authors": "z cui , d jones , p o'brien",
+          "venue": "sigmod record",
+          "year": 2002
+        },
+        "right_record": {
+          "id": 3615,
+          "title": "issues in ontology-based applications [ j ]",
+          "authors": "c zhan , dm jones , po ` bfien",
+          "venue": "sigmod record ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.692,
+          "trigram": 0.547,
+          "semantic": 0.825
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1298,
+          "title": "improved query performance with variant indexes",
+          "authors": "p o'neil , d quass",
+          "venue": "sigmod conference",
+          "year": 1997
+        },
+        "right_record": {
+          "id": 57661,
+          "title": "improved query performance with variant indexes",
+          "authors": "d quass",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.94
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 760,
+          "title": "domains , relations and religious wars",
+          "authors": "r camps",
+          "venue": "sigmod record",
+          "year": 1996
+        },
+        "right_record": {
+          "id": 27778,
+          "title": "domains , relations and religious wars",
+          "authors": "s rcamp , i ls",
+          "venue": "sigmod record ,",
+          "year": 1996.0
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.902
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1954,
+          "title": "discovery of multiple-level association rules from large databases",
+          "authors": "j han , y fu",
+          "venue": "vldb",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 61955,
+          "title": "discovery of multiple-level association rules from large databases",
+          "authors": "h jiawei , f yong-jian",
+          "venue": "proc of ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.941
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 19,
+          "title": "mining generalized association rules",
+          "authors": "r srikant , r agrawal",
+          "venue": "vldb",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 47851,
+          "title": "mining generalized association rules . in : proc of 21th int ' l conf very large data bases",
+          "authors": "r srikant , r agrawal",
+          "venue": "",
+          "year": 1995.0
+        },
+        "similarities": {
+          "syntactic": 0.567,
+          "trigram": 0.386,
+          "semantic": 0.922
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2296,
+          "title": "charter and scope",
+          "authors": "w kim",
+          "venue": "acm trans . database syst .",
+          "year": 1994
+        },
+        "right_record": {
+          "id": 64252,
+          "title": "editorial : charter and scope",
+          "authors": "w kim",
+          "venue": "acm transactions on database systems ( tods ) ,",
+          "year": 1995.0
+        },
+        "similarities": {
+          "syntactic": 0.739,
+          "trigram": 0.556,
+          "semantic": 0.91
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1313,
+          "title": "association rules over interval data",
+          "authors": "r miller , y yang",
+          "venue": "sigmod conference",
+          "year": 1997
+        },
+        "right_record": {
+          "id": 42336,
+          "title": "association rule mining over interval data",
+          "authors": "r miller , y yang",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.897,
+          "trigram": 0.721,
+          "semantic": 0.913
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1360,
+          "title": "the distributed information search component ( disco ) and the world wide web",
+          "authors": "a tomasic , r amouroux , p bonnet , o kapitskaia , h naacke , l raschid",
+          "venue": "sigmod conference",
+          "year": 1997
+        },
+        "right_record": {
+          "id": 4405,
+          "title": "n. , h. , and raschid , l. ( 1997a ) . the distributed information search component ( disco ) and the world",
+          "authors": "a tomasic , r amouroux , p bonnet , o kapitskaia",
+          "venue": "sigmod",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.739,
+          "trigram": 0.62,
+          "semantic": 0.905
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 57,
+          "title": "a brief survey of web data extraction tools",
+          "authors": "a laender , b ribeiro-neto , a silva , j teixeira",
+          "venue": "sigmod record",
+          "year": 2002
+        },
+        "right_record": {
+          "id": 20120,
+          "title": "a brief survey of web data extraction tools",
+          "authors": "ahf laender , ba ribeiro-neto , js teixeira",
+          "venue": "sigmod record ,",
+          "year": 2002.0
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.989
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2119,
+          "title": "staircase join : teach a relational dbms to watch its ( axis ) steps",
+          "authors": "t grust , m keulen , j teubner",
+          "venue": "vldb",
+          "year": 2003
+        },
+        "right_record": {
+          "id": 40502,
+          "title": "staircase join : teach a rdbms to watch its",
+          "authors": "t grust",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.775,
+          "trigram": 0.567,
+          "semantic": 0.876
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 391,
+          "title": "component-based e-commerce : assesment of current practices and future directions",
+          "authors": "m bichler , a segev , j zhao",
+          "venue": "sigmod record",
+          "year": 1998
+        },
+        "right_record": {
+          "id": 16055,
+          "title": "component-based e-commerce : assesment of current practices and future directions .",
+          "authors": "acms anthology",
+          "venue": "sigmod record ,",
+          "year": 1998.0
+        },
+        "similarities": {
+          "syntactic": 0.988,
+          "trigram": 0.974,
+          "semantic": 0.878
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1708,
+          "title": "geo/environmental and medical data management in the rasdaman system",
+          "authors": "p baumann , p furtado , r ritsch , n widmann",
+          "venue": "vldb",
+          "year": 1997
+        },
+        "right_record": {
+          "id": 44720,
+          "title": "geo/environmental and medical data management in the rasdaman system",
+          "authors": "p baumann , p furtado , r ritsch , n widmann",
+          "venue": "proceedings of the international conference on very large & hellip ; ,",
+          "year": 1997.0
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.947
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2565,
+          "title": "an introduction to deductive database languages and systems",
+          "authors": "k ramamohanarao , j harland",
+          "venue": "vldb j.",
+          "year": 1994
+        },
+        "right_record": {
+          "id": 54174,
+          "title": "an introduction to deductive database languages and systems",
+          "authors": "r kotagiri , j harland",
+          "venue": "vldb journal ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.947
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1055,
+          "title": "supporting incremental join queries on ranked inputs",
+          "authors": "a natsev , y chang , j smith , c li , j vitter",
+          "venue": "vldb",
+          "year": 2001
+        },
+        "right_record": {
+          "id": 12697,
+          "title": "and vitter , j. supporting incremental join queries on ranked inputs",
+          "authors": "a natsev , yc chang , j smith , cs li",
+          "venue": "",
+          "year": 2001.0
+        },
+        "similarities": {
+          "syntactic": 0.867,
+          "trigram": 0.754,
+          "semantic": 0.976
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1609,
+          "title": "industrial panel on data warehousing technologies : experiences , challenges , and directions",
+          "authors": "u dayal",
+          "venue": "vldb",
+          "year": 1999
+        },
+        "right_record": {
+          "id": 38377,
+          "title": "industrial panel on data warehousing technologies : experiences , challenges , and directions",
+          "authors": "t zurek , m sinnwell , sap business",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.91
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1487,
+          "title": "metu interoperable database system",
+          "authors": "a dogac , u halici , e kilic , g \u0436zhan , f ozcan , s nural , c dengi , s mancuhan , i arpinar , p koksal , c evrendilek",
+          "venue": "sigmod conference",
+          "year": 1996
+        },
+        "right_record": {
+          "id": 40895,
+          "title": "metu interoperable database system",
+          "authors": "ce koksal , s mancuhan",
+          "venue": "demo description , in proc . of acm",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.817
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 536,
+          "title": "partial results for online query processing",
+          "authors": "v raman , j hellerstein",
+          "venue": "sigmod conference",
+          "year": 2002
+        },
+        "right_record": {
+          "id": 33915,
+          "title": "partial results for online query processing",
+          "authors": "v raman , jm hellerstein",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.94
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1123,
+          "title": "xml-based information mediation with mix",
+          "authors": "c baru , a gupta , b lud\u0444scher , r marciano , y papakonstantinou , p velikhov , v chu",
+          "venue": "sigmod conference",
+          "year": 1999
+        },
+        "right_record": {
+          "id": 7993,
+          "title": "xml-based information mediation with mix",
+          "authors": "cbagb ludascher",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.865
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 8,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2480,
+          "title": "optimizing database architecture for the new bottleneck : memory access",
+          "authors": "s manegold , p boncz , m kersten",
+          "venue": "vldb j.",
+          "year": 2000
+        },
+        "right_record": {
+          "id": 18973,
+          "title": "optimizing database architecture for the new bottleneck : memory access ( extended paper published for",
+          "authors": "p boncz , s manegold , m kersten",
+          "venue": "the vldb journal ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.821,
+          "trigram": 0.711,
+          "semantic": 0.911
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1601,
+          "title": "mindreader : querying databases through multiple examples",
+          "authors": "y ishikawa , r subramanya , c faloutsos",
+          "venue": "vldb",
+          "year": 1998
+        },
+        "right_record": {
+          "id": 5714,
+          "title": "mindreader : querying databases through",
+          "authors": "y ishikawa , r subramanya , ps center , c faloutsos",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.812,
+          "trigram": 0.685,
+          "semantic": 0.955
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1988,
+          "title": "modeling skewed distribution using multifractals and the ` 80-20 ' law",
+          "authors": "c faloutsos , y matias , a silberschatz",
+          "venue": "vldb",
+          "year": 1996
+        },
+        "right_record": {
+          "id": 16146,
+          "title": "modeling skewed distributions using multifractals and the w-20 law\u00e2 ??",
+          "authors": "c faloutsos , y matias , a silberschatz",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.914,
+          "trigram": 0.714,
+          "semantic": 0.963
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1982,
+          "title": "estimating the selectivity of spatial queries using the ` correlation ' fractal dimension",
+          "authors": "a belussi , c faloutsos",
+          "venue": "vldb",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 10337,
+          "title": "estimating the selectivity of spatial queries using the",
+          "authors": "a belussi , c faloutsos",
+          "venue": "correlation '' fractal dimension , '' proc . 21st vldb conf ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.764,
+          "trigram": 0.61,
+          "semantic": 0.936
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1061,
+          "title": "walrus : a similarity retrieval algorithm for image databases",
+          "authors": "a natsev , r rastogi , k shim",
+          "venue": "sigmod conference",
+          "year": 1999
+        },
+        "right_record": {
+          "id": 49441,
+          "title": "walrus : a similarity retrieval algorithm for image databases",
+          "authors": "n apostol , r rajeev , s kyuseok",
+          "venue": "& hellip ; of the acm sigmod international conference on management of & hellip ; ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.947
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1681,
+          "title": "describing and using query capabilities of heterogeneous sources",
+          "authors": "v vassalos , y papakonstantinou",
+          "venue": "vldb",
+          "year": 1997
+        },
+        "right_record": {
+          "id": 48750,
+          "title": "describing andusingquerycapabilities ofheterogeneous sources",
+          "authors": "v vassalosandyannispapakonstantinou",
+          "venue": "very large data bases vldb conference , pages256265 ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.968,
+          "trigram": 0.721,
+          "semantic": 0.795
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 336,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 919,
+          "title": "towards an infrastructure for temporal databases : report of an invitational arpa/nsf workshop",
+          "authors": "",
+          "venue": "",
+          "year": 1994
+        },
+        "right_record": {
+          "id": 20607,
+          "title": "towards an infrastructure for temporal databases-a workshop report",
+          "authors": "n pissinoti",
+          "venue": "sigmod record ,",
+          "year": 1994.0
+        },
+        "similarities": {
+          "syntactic": 0.725,
+          "trigram": 0.62,
+          "semantic": 0.856
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 798,
+          "title": "metu interoperable database system",
+          "authors": "a dogac , c dengi , e kilic , g \u0436zhan , f ozcan , s nural , c evrendilek , u halici , i arpinar , p koksal , n kesim , s mancuhan",
+          "venue": "sigmod record",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 40895,
+          "title": "metu interoperable database system",
+          "authors": "ce koksal , s mancuhan",
+          "venue": "demo description , in proc . of acm",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.826
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 266,
+          "title": "vist : a dynamic index method for querying xml data by tree structures",
+          "authors": "h wang , s park , w fan , p yu",
+          "venue": "sigmod conference",
+          "year": 2003
+        },
+        "right_record": {
+          "id": 32065,
+          "title": "vist : a dynamic index method for querying xml data by tree structures",
+          "authors": "hwspw fan , ps yu",
+          "venue": "proceedings of the acm sigmod international conference on & hellip ; ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.955
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 45,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 367,
+          "title": "the design of an acquisitional query processor for sensor networks",
+          "authors": "s madden , m franklin , j hellerstein , w hong",
+          "venue": "sigmod conference",
+          "year": 2003
+        },
+        "right_record": {
+          "id": 21336,
+          "title": "the design of an acquisitional query processor for sensor networks",
+          "authors": "s madden , mj franklin , jm hellerstein , w hong",
+          "venue": "sigmod conference ,",
+          "year": 2003.0
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.996
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1328,
+          "title": "focused crawling using context graphs",
+          "authors": "m diligenti , f coetzee , s lawrence , c giles , m gori",
+          "venue": "vldb",
+          "year": 2000
+        },
+        "right_record": {
+          "id": 55529,
+          "title": "focused crawling using context graphs",
+          "authors": "m diligenti , f coetzee , s lawrence , cl giles , m",
+          "venue": "vldb ,",
+          "year": 2000.0
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.993
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1859,
+          "title": "using probabilistic information in data integration",
+          "authors": "d florescu , d koller , a levy",
+          "venue": "vldb",
+          "year": 1997
+        },
+        "right_record": {
+          "id": 49284,
+          "title": "using probabilistic information in data integration",
+          "authors": "d florescu , d koller , a levy\u00e2 ? \u00a6",
+          "venue": "proceedings of the international conference on very large & hellip ; ,",
+          "year": 1997.0
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.925
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1597,
+          "title": "the handwritten trie : indexing electronic ink",
+          "authors": "w aref , d barbar\u0441 , p vallabhaneni",
+          "venue": "sigmod conference",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 47893,
+          "title": "and p. vallabhaneni . the handwritten trie : indexing electronic ink",
+          "authors": "w aref , d barbar",
+          "venue": "technical report , mitl , october",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.807,
+          "trigram": 0.683,
+          "semantic": 0.947
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 836,
+          "title": "parallelism and its price : a case study of nonstop sql/mp",
+          "authors": "s englert , r glasstone , w hasan",
+          "venue": "sigmod record",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 36246,
+          "title": "parallelism and its price : a case study of nonstop sql/mp",
+          "authors": "s englert , r glasstone , w hasan",
+          "venue": "sigmod record ,",
+          "year": 1995.0
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.997
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2149,
+          "title": "obk - an online high energy physics ' meta-data repository",
+          "authors": "i alexandrov , a amorim , e badescu , m barczyk , d burckhart-chromek , m caprini , m dobson , j flammer , r hart , r jones , a kazarov , s kolos , v kotov , d liko , l lucio , l mapelli , m mineev , l moneta , i papadopoulos , m nassiakou , n parrington , l pedro , a ribeiro ,",
+          "venue": "vldb",
+          "year": 2002
+        },
+        "right_record": {
+          "id": 49672,
+          "title": "obk-an online high energy physics\u00e2 ?? meta data repository",
+          "authors": "a amorim , a ribeiro , l lucio , l pedro",
+          "venue": "proceedings of the 28th vldb",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.931,
+          "trigram": 0.657,
+          "semantic": 0.88
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      }
+    ],
+    "confusing_non_matches": [
+      {
+        "left_record": {
+          "id": 1114,
+          "title": "discovering web services : an overview",
+          "authors": "v draluk",
+          "venue": "vldb",
+          "year": 2001
+        },
+        "right_record": {
+          "id": 31109,
+          "title": "on automating web services discovery",
+          "authors": "b benatallah , ms hacid , a leger , c rey , f toumani",
+          "venue": "the vldb journal the international journal on very large & hellip ; ,",
+          "year": 2005.0
+        },
+        "similarities": {
+          "syntactic": 0.595,
+          "trigram": 0.467,
+          "semantic": 0.87
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2432,
+          "title": "exact : an extensible approach to active object-oriented databases",
+          "authors": "o d\u044daz , a jaime",
+          "venue": "vldb j.",
+          "year": 1997
+        },
+        "right_record": {
+          "id": 49648,
+          "title": "introduction to object-oriented databases",
+          "authors": "ma garvey , ms jackson",
+          "venue": "information and software technology ,",
+          "year": 1989.0
+        },
+        "similarities": {
+          "syntactic": 0.598,
+          "trigram": 0.36,
+          "semantic": 0.848
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 32,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 321,
+          "title": "chair 's message",
+          "authors": "",
+          "venue": "",
+          "year": 2000
+        },
+        "right_record": {
+          "id": 339,
+          "title": "sigcas chair 's message",
+          "authors": "cd martin",
+          "venue": "computers and society ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.821,
+          "trigram": 0.667,
+          "semantic": 0.859
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 10,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2552,
+          "title": "the glue-nail deductive database system : design , implementation , and evaluation",
+          "authors": "m derr , s morishita , g phipps",
+          "venue": "vldb j.",
+          "year": 1994
+        },
+        "right_record": {
+          "id": 31820,
+          "title": "survivable distributed systems : design and implementation",
+          "authors": "kp kihlstrom",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.586,
+          "trigram": 0.3,
+          "semantic": 0.678
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 205,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 632,
+          "title": "repositories and object oriented databases",
+          "authors": "p bernstein",
+          "venue": "sigmod record",
+          "year": 1998
+        },
+        "right_record": {
+          "id": 22256,
+          "title": "views , objects , and databases",
+          "authors": "g wiederhold",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.658,
+          "trigram": 0.354,
+          "semantic": 0.793
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 209,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2418,
+          "title": "parametric query optimization",
+          "authors": "y ioannidis , r ng , k shim , t sellis",
+          "venue": "vldb j.",
+          "year": 1997
+        },
+        "right_record": {
+          "id": 45884,
+          "title": "on global multidatabase query optimization",
+          "authors": "h lu , bc ooi , ch goh",
+          "venue": "sigmod record ,",
+          "year": 1992.0
+        },
+        "similarities": {
+          "syntactic": 0.62,
+          "trigram": 0.34,
+          "semantic": 0.781
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 53,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2101,
+          "title": "aquery : query language for ordered data , optimization techniques , and experiments",
+          "authors": "a lerner , d shasha",
+          "venue": "vldb",
+          "year": 2003
+        },
+        "right_record": {
+          "id": 6494,
+          "title": "optimization techniques for queries with expensive methods",
+          "authors": "jm hellerstein",
+          "venue": "acm transactions on database systems ,",
+          "year": 1998.0
+        },
+        "similarities": {
+          "syntactic": 0.493,
+          "trigram": 0.313,
+          "semantic": 0.785
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 22,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2554,
+          "title": "the aditi deductive database system",
+          "authors": "j vaghani , k ramamohanarao , d kemp , z somogyi , p stuckey , t leask , j harland",
+          "venue": "vldb j.",
+          "year": 1994
+        },
+        "right_record": {
+          "id": 38339,
+          "title": "a structured specification of an active database system",
+          "authors": "j campin , nw paton , mh williams",
+          "venue": "information and software technology ,",
+          "year": 1995.0
+        },
+        "similarities": {
+          "syntactic": 0.578,
+          "trigram": 0.303,
+          "semantic": 0.868
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 29,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2064,
+          "title": "integrating information for on demand computing",
+          "authors": "n mattos",
+          "venue": "vldb",
+          "year": 2003
+        },
+        "right_record": {
+          "id": 23390,
+          "title": "image computing for visual information systems",
+          "authors": "ik sethi",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.452,
+          "trigram": 0.361,
+          "semantic": 0.735
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 103,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 703,
+          "title": "query optimization in compressed database systems",
+          "authors": "z chen , j gehrke , f korn",
+          "venue": "sigmod conference",
+          "year": 2001
+        },
+        "right_record": {
+          "id": 25619,
+          "title": "optimization of storage structures of complex types in object-relational database systems",
+          "authors": "s skatulla , s dorendorf",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.536,
+          "trigram": 0.344,
+          "semantic": 0.714
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 274,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2249,
+          "title": "declarative updates of relational databases",
+          "authors": "w chen",
+          "venue": "acm trans . database syst .",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 32041,
+          "title": "a system for watermarking relational databases",
+          "authors": "r agrawal , pj haas , j kiernan",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.607,
+          "trigram": 0.317,
+          "semantic": 0.731
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 986,
+          "title": "clustering methods for large databases : from the past to the future",
+          "authors": "a hinneburg , d keim",
+          "venue": "sigmod conference",
+          "year": 1999
+        },
+        "right_record": {
+          "id": 42678,
+          "title": "an efficient data clustering method for very large databases",
+          "authors": "t zhang , r ramakrishnan , mb livny",
+          "venue": "proc . acm sigmod ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.578,
+          "trigram": 0.372,
+          "semantic": 0.905
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 8,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1541,
+          "title": "broadcast disks : data management for asymmetric communications environments",
+          "authors": "s acharya , r alonso , m franklin , s zdonik",
+          "venue": "sigmod conference",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 20538,
+          "title": "adaptive dissemination of data in real-time asymmetric communication environments",
+          "authors": "j fernanadez , k ramamritham",
+          "venue": "technical report , computer science dept. , university of",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.726,
+          "trigram": 0.374,
+          "semantic": 0.649
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 177,
+          "title": "challenges for global information systems",
+          "authors": "a levy , a silberschatz , d srivastava , m zemankova",
+          "venue": "vldb",
+          "year": 1994
+        },
+        "right_record": {
+          "id": 50858,
+          "title": "information systems management issues for the 1990s",
+          "authors": "f niederman , jc brancheau , jc wetherbe",
+          "venue": "mis quarterly ,",
+          "year": 1991.0
+        },
+        "similarities": {
+          "syntactic": 0.413,
+          "trigram": 0.323,
+          "semantic": 0.81
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 29,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1875,
+          "title": "distributed deviation detection in sensor networks",
+          "authors": "t palpanas , d papadopoulos , v kalogeraki , d gunopulos",
+          "venue": "sigmod record",
+          "year": 2003
+        },
+        "right_record": {
+          "id": 17523,
+          "title": "optimal allocation of resources in distributed information networks",
+          "authors": "s mahmoud , js riordon",
+          "venue": "acm transactions on database systems ,",
+          "year": 1976.0
+        },
+        "similarities": {
+          "syntactic": 0.462,
+          "trigram": 0.3,
+          "semantic": 0.425
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1830,
+          "title": "incremental maintenance of externally materialized views",
+          "authors": "m staudt , m jarke",
+          "venue": "vldb",
+          "year": 1996
+        },
+        "right_record": {
+          "id": 14780,
+          "title": "\u00e3 cents \u00e2 ? \u00ac \u00e5?incremental maintenance for materialized views over semistructured data\u00e3 cents \u00e2 ? \u00ac \u00e2 ?",
+          "authors": "s abiteboul , j mchugh , m rys , v vassalos , jl",
+          "venue": "proc . of the 24th vldb",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.562,
+          "trigram": 0.384,
+          "semantic": 0.788
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 452,
+          "title": "efficient materialization and use of views in data warehouses",
+          "authors": "m souza , m sampaio",
+          "venue": "sigmod record",
+          "year": 1999
+        },
+        "right_record": {
+          "id": 31133,
+          "title": "design and selection of materialized views in a data warehousing environment : a case study",
+          "authors": "gky chan , q li , l feng",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.513,
+          "trigram": 0.394,
+          "semantic": 0.789
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 118,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2538,
+          "title": "an introduction to spatial database systems",
+          "authors": "r g\u045cting",
+          "venue": "vldb j.",
+          "year": 1994
+        },
+        "right_record": {
+          "id": 34826,
+          "title": "fluting . an introduction to spatial database systems",
+          "authors": "o g\u00e3 ?",
+          "venue": "the vldb",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.896,
+          "trigram": 0.804,
+          "semantic": 0.904
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1511,
+          "title": "a scalable and highly available networked database architecture",
+          "authors": "r bamford , r ahad , a pruscino",
+          "venue": "vldb",
+          "year": 1999
+        },
+        "right_record": {
+          "id": 52277,
+          "title": "dbcache : middle-tier database caching for highly scalable e-business architectures",
+          "authors": "c bornh\u00e3 \u00b6 vd , m altinel , s krishnamurthy , c mohan ,",
+          "venue": "proceedings of the 2003 acm sigmod international conference & hellip ; ,",
+          "year": 2003.0
+        },
+        "similarities": {
+          "syntactic": 0.384,
+          "trigram": 0.327,
+          "semantic": 0.634
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2396,
+          "title": "view management in multimedia databases",
+          "authors": "k candan , e lemar , v subrahmanian",
+          "venue": "vldb j.",
+          "year": 2000
+        },
+        "right_record": {
+          "id": 11991,
+          "title": "reliable transaction management in a multidatabase system",
+          "authors": "y breitbart , a silberschatz , gr thompson",
+          "venue": "proceedings of the 1990 acm sigmod international conference & hellip ; ,",
+          "year": 1990.0
+        },
+        "similarities": {
+          "syntactic": 0.646,
+          "trigram": 0.353,
+          "semantic": 0.548
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 910,
+          "title": "spire : a progressive content-based spatial image retrieval engine",
+          "authors": "c li , l bergman , v castelli , j smith",
+          "venue": "sigmod conference",
+          "year": 2000
+        },
+        "right_record": {
+          "id": 47849,
+          "title": "keyblock : an approach for content-based image retrieval",
+          "authors": "l zhu",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.656,
+          "trigram": 0.345,
+          "semantic": 0.793
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2006,
+          "title": "the tpr * - tree : an optimized spatio-temporal access method for predictive queries",
+          "authors": "y tao , d papadias , j sun",
+          "venue": "vldb",
+          "year": 2003
+        },
+        "right_record": {
+          "id": 42636,
+          "title": "selectivity estimation for predictive spatio-temporal queries",
+          "authors": "y tao , j sun , d papadias",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.441,
+          "trigram": 0.356,
+          "semantic": 0.798
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 325,
+          "title": "building notification services with microsoft sqlserver",
+          "authors": "p seshadri",
+          "venue": "sigmod conference",
+          "year": 2003
+        },
+        "right_record": {
+          "id": 6894,
+          "title": "building applications with microsoft outlook version 2002",
+          "authors": "r byrne",
+          "venue": "",
+          "year": 2001.0
+        },
+        "similarities": {
+          "syntactic": 0.661,
+          "trigram": 0.382,
+          "semantic": 0.63
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1981,
+          "title": "a cost model for clustered object-oriented databases",
+          "authors": "g gardarin , j gruser , z tang",
+          "venue": "vldb",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 28437,
+          "title": "a taxonomy for secure object-oriented databases",
+          "authors": "ms olivier , sh von solms",
+          "venue": "acm transactions on database systems ,",
+          "year": 1994.0
+        },
+        "similarities": {
+          "syntactic": 0.788,
+          "trigram": 0.403,
+          "semantic": 0.681
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 48,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1735,
+          "title": "wavecluster : a multi-resolution clustering approach for very large spatial databases",
+          "authors": "g sheikholeslami , s chatterjee , a zhang",
+          "venue": "vldb",
+          "year": 1998
+        },
+        "right_record": {
+          "id": 63302,
+          "title": "birch : an efficient data clustering methodfor very large databases",
+          "authors": "t zhang , r ramakrishnan , m livny",
+          "venue": "proc . acm sigmod intl. conf . on managementof data , pages103 & hellip ; ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.592,
+          "trigram": 0.321,
+          "semantic": 0.666
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1154,
+          "title": "similarity query processing using disk arrays",
+          "authors": "a papadopoulos , y manolopoulos",
+          "venue": "sigmod conference",
+          "year": 1998
+        },
+        "right_record": {
+          "id": 50474,
+          "title": "approximate query processing using wavelets",
+          "authors": "kc cgrs , mn garofalakis , r rastogi , k shim",
+          "venue": "proceedings of the international conference on very large",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.659,
+          "trigram": 0.328,
+          "semantic": 0.661
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1856,
+          "title": "power efficient data gathering and aggregation in wireless sensor networks",
+          "authors": "h tan , i korpeoglu",
+          "venue": "sigmod record",
+          "year": 2003
+        },
+        "right_record": {
+          "id": 14192,
+          "title": "relay sensor placement in wireless sensor networks",
+          "authors": "x cheng , dz du , l wang , b xu",
+          "venue": "submitted for publication ,",
+          "year": 2003.0
+        },
+        "similarities": {
+          "syntactic": 0.565,
+          "trigram": 0.333,
+          "semantic": 0.653
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 58,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 3,
+          "title": "editor 's notes",
+          "authors": "l liu",
+          "venue": "sigmod record",
+          "year": 2002
+        },
+        "right_record": {
+          "id": 50887,
+          "title": "editor 's notes",
+          "authors": "rh silkman",
+          "venue": "new directions for program evaluation ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.85
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 129,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 779,
+          "title": "congressional samples for approximate answering of group-by queries",
+          "authors": "s acharya , p gibbons , v poosala",
+          "venue": "sigmod conference",
+          "year": 2000
+        },
+        "right_record": {
+          "id": 31614,
+          "title": "join synopses for approximate query answering",
+          "authors": "sapbg viswanath , ps ramaswamy",
+          "venue": "",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.589,
+          "trigram": 0.354,
+          "semantic": 0.712
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 27,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1954,
+          "title": "discovery of multiple-level association rules from large databases",
+          "authors": "j han , y fu",
+          "venue": "vldb",
+          "year": 1995
+        },
+        "right_record": {
+          "id": 17171,
+          "title": "sampling large databases for finding association rules",
+          "authors": "h toivonen",
+          "venue": "proceedings of the 22nd international conference on very & hellip ; ,",
+          "year": ""
+        },
+        "similarities": {
+          "syntactic": 0.333,
+          "trigram": 0.39,
+          "semantic": 0.866
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      }
+    ]
+  },
+  "dataset_characteristics": {
+    "table_a_size": 2616,
+    "table_b_size": 64263,
+    "field_names": [
+      "title",
+      "authors",
+      "venue",
+      "year"
+    ],
+    "sample_records": [
+      {
+        "id": 0,
+        "title": "towards a cooperative transaction model - the cooperative activity model",
+        "authors": "m rusinkiewicz , w klas , t tesch , j w\u0444sch , p muth",
+        "venue": "vldb",
+        "year": 1995
+      },
+      {
+        "id": 1,
+        "title": "sql/xml is making good progress",
+        "authors": "a eisenberg , j melton",
+        "venue": "sigmod record",
+        "year": 2002
+      },
+      {
+        "id": 2,
+        "title": "using formal methods to reason about semantics-based decompositions of transactions",
+        "authors": "p ammann , s jajodia , i ray",
+        "venue": "vldb",
+        "year": 1995
+      }
+    ]
+  }
+}

@@ -1,0 +1,2129 @@
+{
+  "dataset": "rotten_imdb",
+  "analysis_type": "validation",
+  "metadata": {
+    "total_pairs_analyzed": 120,
+    "positive_pairs": 42,
+    "negative_pairs_sampled": 30,
+    "semantic_available": true
+  },
+  "similarity_analysis": {
+    "true_matches": {
+      "syntactic": {
+        "mean": 1.0,
+        "std": 0.0,
+        "median": 1.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "trigram": {
+        "mean": 1.0,
+        "std": 0.0,
+        "median": 1.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "semantic": {
+        "mean": 0.9481693534624009,
+        "std": 0.019738759948685687,
+        "median": 0.950793594121933,
+        "min": 0.8872108459472656,
+        "max": 0.9758166074752808
+      }
+    },
+    "false_positives": {
+      "syntactic": {
+        "mean": 0.5764517413636505,
+        "std": 0.2230570393510543,
+        "median": 0.6073781291172595,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "trigram": {
+        "mean": 0.28689955344927964,
+        "std": 0.2092838819265015,
+        "median": 0.23363095238095238,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "semantic": {
+        "mean": 0.7968565781911214,
+        "std": 0.07659747825070902,
+        "median": 0.7914031147956848,
+        "min": 0.5984748005867004,
+        "max": 0.9330024123191833
+      }
+    }
+  },
+  "candidate_analysis": {
+    "recall_at_1": 0.0,
+    "recall_at_5": 0.0,
+    "recall_at_10": 0.0,
+    "recall_at_25": 0.0,
+    "recall_at_50": 0.0,
+    "recall_at_100": 0.0,
+    "recall_at_150": 0.0,
+    "recall_at_200": 0.0,
+    "recall_at_300": 0.0,
+    "recall_at_500": 0.0
+  },
+  "concrete_examples": {
+    "true_matches": [
+      {
+        "left_record": {
+          "id": "tt0119670",
+          "name": "The Mighty",
+          "release date": "9 October 1998 (USA)",
+          "director": "Peter Chelsom",
+          "duration": "100 min",
+          "genre": "Comedy,Drama"
+        },
+        "right_record": {
+          "id": "mighty",
+          "name": "The Mighty",
+          "release date": "Oct 9, 1998 Wide",
+          "director": "Peter Chelsom",
+          "duration": "1 hr. 39 min.",
+          "genre": "Drama"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.969
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0099528",
+          "name": "The Exorcist III",
+          "release date": "17 August 1990 (USA)",
+          "director": "William Peter Blatty",
+          "duration": "110 min",
+          "genre": "Drama,Horror,Mystery"
+        },
+        "right_record": {
+          "id": "exorcist_3",
+          "name": "The Exorcist III",
+          "release date": "Aug 17, 1990 Wide",
+          "director": "William Peter Blatty",
+          "duration": "1 hr. 49 min.",
+          "genre": "Horror"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.976
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0053054",
+          "name": "The Mating Game",
+          "release date": "October 1959 (Austria)",
+          "director": "George Marshall",
+          "duration": "96 min",
+          "genre": "Comedy,Romance"
+        },
+        "right_record": {
+          "id": "mating_game",
+          "name": "The Mating Game",
+          "release date": "Apr 29, 1959 Wide",
+          "director": "George Marshall",
+          "duration": "1 hr. 36 min.",
+          "genre": "Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.936
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0103893",
+          "name": "Buffy the Vampire Slayer",
+          "release date": "31 July 1992 (USA)",
+          "director": "Fran Rubel Kuzui",
+          "duration": "86 min",
+          "genre": "Action,Comedy,Fantasy"
+        },
+        "right_record": {
+          "id": "buffy_the_vampire_slayer",
+          "name": "Buffy the Vampire Slayer",
+          "release date": "Jul 31, 1992 Wide",
+          "director": "Fran Rubel Kuzui",
+          "duration": "1 hr. 38 min.",
+          "genre": "Action & Adventure,Horror,Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.974
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1852028",
+          "name": "Minds in the Water",
+          "release date": "April 2012 (USA)",
+          "director": "Justin Krumb",
+          "duration": "90 min",
+          "genre": "Documentary,Action,Adventure"
+        },
+        "right_record": {
+          "id": "minds_in_the_water_2011",
+          "name": "Minds In The Water",
+          "release date": "Nov 13, 2012 Wide",
+          "director": "Justin Krumb",
+          "duration": "",
+          "genre": "Documentary,Action & Adventure,Sports & Fitness"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.93
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0415306",
+          "name": "Talladega Nights: The Ballad of Ricky Bobby",
+          "release date": "4 August 2006 (USA)",
+          "director": "Adam McKay",
+          "duration": "108 min",
+          "genre": "Action,Comedy,Sport"
+        },
+        "right_record": {
+          "id": "talladega_nights_the_ballad_of_ricky_bobby",
+          "name": "Talladega Nights: The Ballad of Ricky Bobby",
+          "release date": "Aug 4, 2006 Wide",
+          "director": "Adam McKay",
+          "duration": "",
+          "genre": "Action & Adventure,Sports & Fitness,Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.969
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1674771",
+          "name": "Entourage",
+          "release date": "3 June 2015 (USA)",
+          "director": "Doug Ellin",
+          "duration": "104 min",
+          "genre": "Comedy"
+        },
+        "right_record": {
+          "id": "entourage",
+          "name": "Entourage",
+          "release date": "Jun 3, 2015 Limited",
+          "director": "Doug Ellin",
+          "duration": "",
+          "genre": "Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.977
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0093349",
+          "name": "King Lear",
+          "release date": "3 April 2002 (France)",
+          "director": "Jean-Luc Godard",
+          "duration": "90 min",
+          "genre": "Comedy,Drama,Sci-Fi"
+        },
+        "right_record": {
+          "id": "1039810-king_lear",
+          "name": "King Lear",
+          "release date": "Sep 15, 1987 Wide",
+          "director": "Jean-Luc Godard",
+          "duration": "",
+          "genre": "Drama,Art House & International,Science Fiction & Fantasy,Special Interest"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.947
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1954811",
+          "name": "See Girl Run",
+          "release date": "April 2013 (USA)",
+          "director": "Nate Meyer",
+          "duration": "89 min",
+          "genre": "Drama,Romance"
+        },
+        "right_record": {
+          "id": "see_girl_run_2012",
+          "name": "See Girl Run",
+          "release date": "Apr 26, 2013 Limited",
+          "director": "Nate Meyer",
+          "duration": "",
+          "genre": "Drama,Romance,Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.949
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0110955",
+          "name": "The Ref",
+          "release date": "9 March 1994 (USA)",
+          "director": "Ted Demme",
+          "duration": "93 min",
+          "genre": "Comedy,Crime,Drama"
+        },
+        "right_record": {
+          "id": "ref",
+          "name": "The Ref",
+          "release date": "Mar 9, 1994 Wide",
+          "director": "Ted Demme",
+          "duration": "1 hr. 33 min.",
+          "genre": "Drama,Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.974
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0058530",
+          "name": "Robinson Crusoe on Mars",
+          "release date": "June 1964 (USA)",
+          "director": "Byron Haskin",
+          "duration": "110 min",
+          "genre": "Adventure,Sci-Fi"
+        },
+        "right_record": {
+          "id": "robinson_crusoe_on_mars",
+          "name": "Robinson Crusoe on Mars",
+          "release date": "Jul 17, 1964 Wide",
+          "director": "Byron Haskin",
+          "duration": "1 hr. 49 min.",
+          "genre": "Action & Adventure,Classics,Science Fiction & Fantasy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.971
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0422774",
+          "name": "Are We Done Yet?",
+          "release date": "4 April 2007 (USA)",
+          "director": "Steve Carr",
+          "duration": "92 min",
+          "genre": "Comedy,Drama,Family"
+        },
+        "right_record": {
+          "id": "are_we_done_yet",
+          "name": "Are We Done Yet?",
+          "release date": "Apr 4, 2007 Wide",
+          "director": "Steve Carr",
+          "duration": "",
+          "genre": "Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.937
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0381707",
+          "name": "White Chicks",
+          "release date": "23 June 2004 (USA)",
+          "director": "Keenen Ivory Wayans",
+          "duration": "109 min",
+          "genre": "Crime,Comedy"
+        },
+        "right_record": {
+          "id": "white_chicks",
+          "name": "White Chicks",
+          "release date": "Jun 23, 2004 Wide",
+          "director": "Keenen Ivory Wayans",
+          "duration": "",
+          "genre": "Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.974
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1815862",
+          "name": "After Earth",
+          "release date": "31 May 2013 (USA)",
+          "director": "M. Night Shyamalan",
+          "duration": "100 min",
+          "genre": "Action,Adventure,Sci-Fi"
+        },
+        "right_record": {
+          "id": "after_earth",
+          "name": "After Earth",
+          "release date": "May 31, 2013 Wide",
+          "director": "M. Night Shyamalan",
+          "duration": "",
+          "genre": "Action & Adventure,Science Fiction & Fantasy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.97
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0221027",
+          "name": "Blow",
+          "release date": "6 April 2001 (USA)",
+          "director": "Ted Demme",
+          "duration": "124 min",
+          "genre": "Biography,Crime,Drama"
+        },
+        "right_record": {
+          "id": "blow",
+          "name": "Blow",
+          "release date": "Apr 6, 2001 Wide",
+          "director": "Ted Demme",
+          "duration": "",
+          "genre": "Drama"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.945
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0340163",
+          "name": "Hostage",
+          "release date": "11 March 2005 (USA)",
+          "director": "Florent-Emilio Siri",
+          "duration": "113 min",
+          "genre": "Crime,Drama,Mystery"
+        },
+        "right_record": {
+          "id": "1141099-hostage",
+          "name": "Hostage",
+          "release date": "Mar 11, 2005 Wide",
+          "director": "Florent Emilio Siri",
+          "duration": "",
+          "genre": "Mystery & Suspense,Drama"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.973
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0042250",
+          "name": "Highway 301",
+          "release date": "1 December 1950 (USA)",
+          "director": "Andrew L. Stone",
+          "duration": "83 min",
+          "genre": "Crime,Drama,Film-Noir"
+        },
+        "right_record": {
+          "id": "highway-301-1950",
+          "name": "Highway 301",
+          "release date": "Dec 1, 1950 Wide",
+          "director": "Andrew L. Stone",
+          "duration": "",
+          "genre": "Drama"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.936
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0449467",
+          "name": "Babel",
+          "release date": "10 November 2006 (USA)",
+          "director": "Alejandro Gonz\u00e1lez I\u00f1\u00e1rritu",
+          "duration": "143 min",
+          "genre": "Drama"
+        },
+        "right_record": {
+          "id": "babel",
+          "name": "Babel",
+          "release date": "Oct 27, 2006 Wide",
+          "director": "Alejandro Gonz\u00e1lez I\u00f1\u00e1rritu",
+          "duration": "",
+          "genre": "Drama"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.965
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0101812",
+          "name": "The End of Innocence",
+          "release date": "5 September 1991 (Australia)",
+          "director": "Dyan Cannon",
+          "duration": "102 min",
+          "genre": "Drama"
+        },
+        "right_record": {
+          "id": "end_of_innocence",
+          "name": "The End of Innocence",
+          "release date": "Dec 6, 1990 Wide",
+          "director": "Dyan Cannon",
+          "duration": "1 hr. 42 min.",
+          "genre": "Drama"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.944
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt3567288",
+          "name": "The Visit",
+          "release date": "11 September 2015 (USA)",
+          "director": "M. Night Shyamalan",
+          "duration": "94 min",
+          "genre": "Horror,Thriller"
+        },
+        "right_record": {
+          "id": "the_visit_2015",
+          "name": "The Visit",
+          "release date": "Sep 11, 2015 Wide",
+          "director": "M. Night Shyamalan",
+          "duration": "1 hr. 34 min.",
+          "genre": "Mystery & Suspense,Horror"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.961
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0113613",
+          "name": "The Last Supper",
+          "release date": "5 April 1996 (USA)",
+          "director": "Stacy Title",
+          "duration": "92 min",
+          "genre": "Comedy,Crime,Drama"
+        },
+        "right_record": {
+          "id": "1071464-last_supper",
+          "name": "The Last Supper",
+          "release date": "Apr 5, 1996 Wide",
+          "director": "Stacy Title",
+          "duration": "1 hr. 32 min.",
+          "genre": "Drama,Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.968
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0433362",
+          "name": "Daybreakers",
+          "release date": "8 January 2010 (USA)",
+          "director": "Michael Spierig,Peter Spierig",
+          "duration": "98 min",
+          "genre": "Action,Horror,Sci-Fi"
+        },
+        "right_record": {
+          "id": "daybreakers",
+          "name": "Daybreakers",
+          "release date": "Jan 8, 2010 Wide",
+          "director": "Peter Spierig,Michael Spierig",
+          "duration": "",
+          "genre": "Drama,Action & Adventure,Horror,Mystery & Suspense"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.936
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1798684",
+          "name": "Southpaw",
+          "release date": "24 July 2015 (USA)",
+          "director": "Antoine Fuqua",
+          "duration": "124 min",
+          "genre": "Action,Drama,Sport"
+        },
+        "right_record": {
+          "id": "southpaw_2015",
+          "name": "Southpaw",
+          "release date": "Jul 24, 2015 Wide",
+          "director": "Antoine Fuqua",
+          "duration": "",
+          "genre": "Drama"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.953
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0031750",
+          "name": "The Old Maid",
+          "release date": "2 September 1939 (USA)",
+          "director": "Edmund Goulding",
+          "duration": "95 min",
+          "genre": "Drama"
+        },
+        "right_record": {
+          "id": "old_maid",
+          "name": "The Old Maid",
+          "release date": "Sep 2, 1939 Limited",
+          "director": "Edmund Goulding",
+          "duration": "1 hr. 36 min.",
+          "genre": "Drama,Classics"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.965
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt3698558",
+          "name": "Some Kind of Hate",
+          "release date": "18 September 2015 (USA)",
+          "director": "Adam Egypt Mortimer",
+          "duration": "82 min",
+          "genre": "Horror"
+        },
+        "right_record": {
+          "id": "some_kind_of_hate",
+          "name": "Some Kind of Hate",
+          "release date": "Sep 18, 2015 Limited",
+          "director": "Adam Egypt Mortimer",
+          "duration": "",
+          "genre": "Horror"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.934
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0048261",
+          "name": "Kiss Me Deadly",
+          "release date": "18 May 1955 (USA)",
+          "director": "Robert Aldrich",
+          "duration": "106 min",
+          "genre": "Crime,Film-Noir,Mystery"
+        },
+        "right_record": {
+          "id": "kiss_me_deadly",
+          "name": "Kiss Me Deadly",
+          "release date": "Apr 23, 1955 Limited",
+          "director": "Robert Aldrich",
+          "duration": "1 hr. 45 min.",
+          "genre": "Drama,Mystery & Suspense,Classics"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.952
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0445990",
+          "name": "Invincible",
+          "release date": "25 August 2006 (USA)",
+          "director": "Ericson Core",
+          "duration": "105 min",
+          "genre": "Biography,Drama,Sport"
+        },
+        "right_record": {
+          "id": "invincible",
+          "name": "Invincible",
+          "release date": "Aug 25, 2006 Wide",
+          "director": "Ericson Core",
+          "duration": "",
+          "genre": "Sports & Fitness,Drama"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.944
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0122933",
+          "name": "Analyze This",
+          "release date": "5 March 1999 (USA)",
+          "director": "Harold Ramis",
+          "duration": "103 min",
+          "genre": "Comedy,Crime"
+        },
+        "right_record": {
+          "id": "analyze_this",
+          "name": "Analyze This",
+          "release date": "Mar 5, 1999 Wide",
+          "director": "Harold Ramis",
+          "duration": "1 hr. 50 min.",
+          "genre": "Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.941
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0080130",
+          "name": "When a Stranger Calls",
+          "release date": "26 October 1979 (USA)",
+          "director": "Fred Walton",
+          "duration": "97 min",
+          "genre": "Horror,Thriller"
+        },
+        "right_record": {
+          "id": "1023461-when_a_stranger_calls",
+          "name": "When a Stranger Calls",
+          "release date": "Sep 28, 1979 Wide",
+          "director": "Fred Walton",
+          "duration": "1 hr. 37 min.",
+          "genre": "Mystery & Suspense,Horror"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.968
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt2005185",
+          "name": "Concrete Blondes",
+          "release date": "2 May 2013 (USA)",
+          "director": "Nicholas Kalikow",
+          "duration": "92 min",
+          "genre": "Action,Comedy,Crime"
+        },
+        "right_record": {
+          "id": "concrete_blondes_2012",
+          "name": "Concrete Blondes",
+          "release date": "May 2, 2013 Wide",
+          "director": "Nicholas Kalikow",
+          "duration": "",
+          "genre": "Action & Adventure,Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.943
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0055633",
+          "name": "The Young Savages",
+          "release date": "24 May 1961 (USA)",
+          "director": "John Frankenheimer",
+          "duration": "103 min",
+          "genre": "Action,Crime,Drama"
+        },
+        "right_record": {
+          "id": "young_savages",
+          "name": "The Young Savages",
+          "release date": "May 24, 1961 Wide",
+          "director": "John Frankenheimer",
+          "duration": "1 hr. 50 min.",
+          "genre": "Drama,Classics"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.968
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt2262227",
+          "name": "The Book of Life",
+          "release date": "17 October 2014 (USA)",
+          "director": "Jorge R. Guti\u00e9rrez",
+          "duration": "95 min",
+          "genre": "Animation,Adventure,Comedy"
+        },
+        "right_record": {
+          "id": "the_book_of_life_2014",
+          "name": "The Book of Life",
+          "release date": "Oct 17, 2014 Wide",
+          "director": "Jorge R. Gutierrez",
+          "duration": "1 hr. 35 min.",
+          "genre": "Animation,Romance"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.958
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0443456",
+          "name": "Breaking and Entering",
+          "release date": "10 November 2006 (UK)",
+          "director": "Anthony Minghella",
+          "duration": "120 min",
+          "genre": "Drama,Romance"
+        },
+        "right_record": {
+          "id": "breaking_and_entering",
+          "name": "Breaking and Entering",
+          "release date": "Feb 16, 2007 Wide",
+          "director": "Anthony Minghella",
+          "duration": "",
+          "genre": "Drama"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.915
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0822854",
+          "name": "Shooter",
+          "release date": "23 March 2007 (USA)",
+          "director": "Antoine Fuqua",
+          "duration": "124 min",
+          "genre": "Action,Crime,Drama"
+        },
+        "right_record": {
+          "id": "shooter",
+          "name": "Shooter",
+          "release date": "Mar 23, 2007 Wide",
+          "director": "Antoine Fuqua",
+          "duration": "",
+          "genre": "Drama,Action & Adventure,Mystery & Suspense"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.948
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0095270",
+          "name": "Hairspray",
+          "release date": "26 February 1988 (USA)",
+          "director": "John Waters",
+          "duration": "92 min",
+          "genre": "Comedy,Music,Romance"
+        },
+        "right_record": {
+          "id": "1009096-hairspray",
+          "name": "Hairspray",
+          "release date": "Feb 26, 1988 Wide",
+          "director": "John Waters",
+          "duration": "1 hr. 32 min.",
+          "genre": "Drama,Musical & Performing Arts,Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.974
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0052655",
+          "name": "A Bucket of Blood",
+          "release date": "21 October 1959 (USA)",
+          "director": "Roger Corman",
+          "duration": "66 min",
+          "genre": "Comedy,Horror"
+        },
+        "right_record": {
+          "id": "bucket_of_blood",
+          "name": "A Bucket of Blood",
+          "release date": "Oct 21, 1959 Wide",
+          "director": "Roger Corman",
+          "duration": "1 hr. 6 min.",
+          "genre": "Horror,Mystery & Suspense,Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.952
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0079082",
+          "name": "The Driller Killer",
+          "release date": "15 June 1979 (USA)",
+          "director": "Abel Ferrara",
+          "duration": "96 min",
+          "genre": "Horror,Thriller"
+        },
+        "right_record": {
+          "id": "the_driller_killer",
+          "name": "The Driller Killer",
+          "release date": "Jan 1, 1979 Wide",
+          "director": "Abel Ferrara,Sean Weathers",
+          "duration": "1 hr. 30 min.",
+          "genre": "Drama,Horror,Mystery & Suspense"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.964
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0082146",
+          "name": "Caveman",
+          "release date": "17 April 1981 (USA)",
+          "director": "Carl Gottlieb",
+          "duration": "91 min",
+          "genre": "Comedy,Sci-Fi"
+        },
+        "right_record": {
+          "id": "caveman",
+          "name": "Caveman",
+          "release date": "Apr 17, 1981 Limited",
+          "director": "Carl Gottlieb",
+          "duration": "1 hr. 31 min.",
+          "genre": "Action & Adventure,Musical & Performing Arts,Science Fiction & Fantasy,Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.95
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0089424",
+          "name": "Kiss of the Spider Woman",
+          "release date": "26 July 1985 (USA)",
+          "director": "Hector Babenco",
+          "duration": "120 min",
+          "genre": "Drama"
+        },
+        "right_record": {
+          "id": "kiss_of_the_spider_woman",
+          "name": "Kiss of the Spider Woman",
+          "release date": "Aug 1, 1985 Wide",
+          "director": "Hector Babenco",
+          "duration": "1 hr. 59 min.",
+          "genre": "Art House & International,Drama"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.959
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0255819",
+          "name": "Baby Boy",
+          "release date": "27 June 2001 (USA)",
+          "director": "John Singleton",
+          "duration": "130 min",
+          "genre": "Comedy,Crime,Drama"
+        },
+        "right_record": {
+          "id": "baby_boy",
+          "name": "Baby Boy",
+          "release date": "Jun 27, 2001 Wide",
+          "director": "John Singleton",
+          "duration": "",
+          "genre": "Drama"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.951
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0278823",
+          "name": "Hollywood Ending",
+          "release date": "3 May 2002 (USA)",
+          "director": "Woody Allen",
+          "duration": "112 min",
+          "genre": "Comedy,Romance"
+        },
+        "right_record": {
+          "id": "hollywood_ending",
+          "name": "Hollywood Ending",
+          "release date": "May 3, 2002 Wide",
+          "director": "Woody Allen",
+          "duration": "",
+          "genre": "Comedy"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.961
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0038776",
+          "name": "Night and Day",
+          "release date": "3 August 1946 (USA)",
+          "director": "Michael Curtiz",
+          "duration": "128 min",
+          "genre": "Biography,Drama,Musical"
+        },
+        "right_record": {
+          "id": "1015000-night_and_day",
+          "name": "Night and Day",
+          "release date": "Aug 3, 1946 Wide",
+          "director": "Michael Curtiz",
+          "duration": "2 hr. 8 min.",
+          "genre": "Drama,Musical & Performing Arts,Classics"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.957
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      }
+    ],
+    "confusing_non_matches": [
+      {
+        "left_record": {
+          "id": "tt0146984",
+          "name": "The Legend of Bagger Vance",
+          "release date": "3 November 2000 (USA)",
+          "director": "Robert Redford",
+          "duration": "126 min",
+          "genre": "Drama,Fantasy,Sport"
+        },
+        "right_record": {
+          "id": "1097308-legend_of_sleepy_hollow",
+          "name": "The Legend of Sleepy Hollow",
+          "release date": "Oct 23, 1999 Wide",
+          "director": "Jim Ormond,Pierre Gang",
+          "duration": "1 hr. 31 min.",
+          "genre": "Drama,Horror"
+        },
+        "similarities": {
+          "syntactic": 0.604,
+          "trigram": 0.324,
+          "semantic": 0.755
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1085779",
+          "name": "The Hole",
+          "release date": "11 June 2010 (Italy)",
+          "director": "Joe Dante",
+          "duration": "92 min",
+          "genre": "Adventure,Fantasy,Thriller"
+        },
+        "right_record": {
+          "id": "1208882-cove",
+          "name": "The Cove",
+          "release date": "Apr 25, 2009 Wide",
+          "director": "Louie Psihoyos",
+          "duration": "",
+          "genre": "Documentary"
+        },
+        "similarities": {
+          "syntactic": 0.75,
+          "trigram": 0.2,
+          "semantic": 0.813
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0048960",
+          "name": "Around the World in Eighty Days",
+          "release date": "1958 (USA)",
+          "director": "Michael Anderson,John Farrow",
+          "duration": "175 min",
+          "genre": "Adventure,Comedy,Family"
+        },
+        "right_record": {
+          "id": "1209731-1984",
+          "name": "1984",
+          "release date": "Sep 1, 1956 Wide",
+          "director": "Michael Anderson",
+          "duration": "",
+          "genre": "Science Fiction & Fantasy"
+        },
+        "similarities": {
+          "syntactic": 0.0,
+          "trigram": 0.0,
+          "semantic": 0.887
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0451079",
+          "name": "Horton Hears a Who!",
+          "release date": "14 March 2008 (USA)",
+          "director": "Jimmy Hayward,Steve Martino",
+          "duration": "86 min",
+          "genre": "Animation,Adventure,Comedy"
+        },
+        "right_record": {
+          "id": "horton-hears-a-who2008",
+          "name": "Dr. Seuss' Horton Hears a Who!",
+          "release date": "Mar 3, 2008 Wide",
+          "director": "Steve Martino,Jimmy Hayward",
+          "duration": "",
+          "genre": "Action & Adventure,Animation,Kids & Family"
+        },
+        "similarities": {
+          "syntactic": 0.776,
+          "trigram": 0.607,
+          "semantic": 0.892
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0067454",
+          "name": "Multiple Maniacs",
+          "release date": "10 April 1970 (USA)",
+          "director": "John Waters",
+          "duration": "91 min",
+          "genre": "Comedy,Crime,Horror"
+        },
+        "right_record": {
+          "id": "blood_mania",
+          "name": "Blood Mania",
+          "release date": "Oct 28, 1970 Wide",
+          "director": "Robert Vincent O'Neill,Robert Vincent O'Neil",
+          "duration": "1 hr. 30 min.",
+          "genre": "Mystery & Suspense,Horror"
+        },
+        "similarities": {
+          "syntactic": 0.519,
+          "trigram": 0.211,
+          "semantic": 0.791
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0200472",
+          "name": "Beautiful Joe",
+          "release date": "9 June 2000 (Poland)",
+          "director": "Stephen Metcalfe",
+          "duration": "98 min",
+          "genre": "Comedy,Drama"
+        },
+        "right_record": {
+          "id": "beautiful_creatures",
+          "name": "Beautiful Creatures",
+          "release date": "Apr 6, 2001 Limited",
+          "director": "Bill Eagles",
+          "duration": "1 hr. 40 min.",
+          "genre": "Drama,Mystery & Suspense,Comedy"
+        },
+        "similarities": {
+          "syntactic": 0.688,
+          "trigram": 0.4,
+          "semantic": 0.834
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0098621",
+          "name": "The War of the Roses",
+          "release date": "8 December 1989 (USA)",
+          "director": "Danny DeVito",
+          "duration": "116 min",
+          "genre": "Comedy,Romance"
+        },
+        "right_record": {
+          "id": "1016239-phantom_of_the_opera",
+          "name": "The Phantom of the Opera",
+          "release date": "Jun 1, 1989 Wide",
+          "director": "Dwight H. Little,Dwight Little",
+          "duration": "1 hr. 33 min.",
+          "genre": "Horror"
+        },
+        "similarities": {
+          "syntactic": 0.636,
+          "trigram": 0.2,
+          "semantic": 0.701
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0964517",
+          "name": "The Fighter",
+          "release date": "17 December 2010 (USA)",
+          "director": "David O. Russell",
+          "duration": "116 min",
+          "genre": "Biography,Drama,Sport"
+        },
+        "right_record": {
+          "id": "fighter-2009",
+          "name": "The Fighter",
+          "release date": "Sep 21, 2009 Wide",
+          "director": "Javier Barbera",
+          "duration": "1 hr. 30 min.",
+          "genre": "Action & Adventure"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.933
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0318974",
+          "name": "The Alamo",
+          "release date": "9 April 2004 (USA)",
+          "director": "John Lee Hancock",
+          "duration": "137 min",
+          "genre": "Drama,History,War"
+        },
+        "right_record": {
+          "id": "animatrix",
+          "name": "The Animatrix",
+          "release date": "Jun 3, 2003 Wide",
+          "director": "Peter Chung,Andy Jones,Yoshiaki Kawajiri,Takeshi Koike,Mahiro Maeda,K\u00f4ji Morimoto,Shinichir\u00f4 Watanabe",
+          "duration": "1 hr. 42 min.",
+          "genre": "Drama,Action & Adventure,Animation,Science Fiction & Fantasy,Special Interest"
+        },
+        "similarities": {
+          "syntactic": 0.545,
+          "trigram": 0.2,
+          "semantic": 0.598
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1632708",
+          "name": "Friends with Benefits",
+          "release date": "22 July 2011 (USA)",
+          "director": "Will Gluck",
+          "duration": "109 min",
+          "genre": "Comedy,Romance"
+        },
+        "right_record": {
+          "id": "friends_with_kids",
+          "name": "Friends With Kids",
+          "release date": "Mar 9, 2012 Limited",
+          "director": "Jennifer Westfeldt",
+          "duration": "",
+          "genre": "Drama,Comedy"
+        },
+        "similarities": {
+          "syntactic": 0.789,
+          "trigram": 0.478,
+          "semantic": 0.863
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0110475",
+          "name": "The Mask",
+          "release date": "29 July 1994 (USA)",
+          "director": "Chuck Russell",
+          "duration": "101 min",
+          "genre": "Comedy,Fantasy"
+        },
+        "right_record": {
+          "id": "ref",
+          "name": "The Ref",
+          "release date": "Mar 9, 1994 Wide",
+          "director": "Ted Demme",
+          "duration": "1 hr. 33 min.",
+          "genre": "Drama,Comedy"
+        },
+        "similarities": {
+          "syntactic": 0.533,
+          "trigram": 0.222,
+          "semantic": 0.831
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt4562728",
+          "name": "MF",
+          "release date": "",
+          "director": "Robert Schwartzman",
+          "duration": "",
+          "genre": ""
+        },
+        "right_record": {
+          "id": "the_divergent_series_allegiant",
+          "name": "The Divergent Series: Allegiant",
+          "release date": "Mar 18, 2016 Wide",
+          "director": "Robert Schwentke",
+          "duration": "",
+          "genre": "Action & Adventure,Romance,Science Fiction & Fantasy"
+        },
+        "similarities": {
+          "syntactic": 0.0,
+          "trigram": 0.0,
+          "semantic": 0.754
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt3630104",
+          "name": "The Gable 5",
+          "release date": "27 March 2014 (USA)",
+          "director": "Kevin Tancharoen",
+          "duration": "",
+          "genre": "Short,Action"
+        },
+        "right_record": {
+          "id": "the_unspeakable_act_2012",
+          "name": "The Unspeakable Act",
+          "release date": "Mar 1, 2013 Limited",
+          "director": "Dan Sallitt",
+          "duration": "1 hr. 31 min.",
+          "genre": "Drama"
+        },
+        "similarities": {
+          "syntactic": 0.6,
+          "trigram": 0.238,
+          "semantic": 0.764
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0363547",
+          "name": "Dawn of the Dead",
+          "release date": "19 March 2004 (USA)",
+          "director": "Zack Snyder",
+          "duration": "101 min",
+          "genre": "Action,Horror,Sci-Fi"
+        },
+        "right_record": {
+          "id": "war_of_the_worlds",
+          "name": "War of the Worlds",
+          "release date": "Jun 29, 2005 Wide",
+          "director": "Steven Spielberg",
+          "duration": "",
+          "genre": "Action & Adventure,Science Fiction & Fantasy"
+        },
+        "similarities": {
+          "syntactic": 0.606,
+          "trigram": 0.261,
+          "semantic": 0.776
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0118972",
+          "name": "The Devil's Own",
+          "release date": "26 March 1997 (USA)",
+          "director": "Alan J. Pakula",
+          "duration": "107 min",
+          "genre": "Action,Crime,Drama"
+        },
+        "right_record": {
+          "id": "devils_advocate",
+          "name": "The Devil's Advocate",
+          "release date": "Oct 17, 1997 Wide",
+          "director": "Taylor Hackford",
+          "duration": "2 hr. 10 min.",
+          "genre": "Drama,Action & Adventure,Horror,Mystery & Suspense"
+        },
+        "similarities": {
+          "syntactic": 0.743,
+          "trigram": 0.476,
+          "semantic": 0.871
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0199753",
+          "name": "Red Planet",
+          "release date": "10 November 2000 (USA)",
+          "director": "Antony Hoffman",
+          "duration": "106 min",
+          "genre": "Action,Sci-Fi,Thriller"
+        },
+        "right_record": {
+          "id": "1108704-planet_of_the_apes",
+          "name": "Planet of the Apes",
+          "release date": "Jul 27, 2001 Wide",
+          "director": "Tim Burton",
+          "duration": "",
+          "genre": "Drama,Action & Adventure,Science Fiction & Fantasy"
+        },
+        "similarities": {
+          "syntactic": 0.429,
+          "trigram": 0.2,
+          "semantic": 0.756
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0124014",
+          "name": "The Mutilator",
+          "release date": "4 January 1985 (USA)",
+          "director": "Buddy Cooper,John Douglass",
+          "duration": "86 min",
+          "genre": "Horror"
+        },
+        "right_record": {
+          "id": "terminator",
+          "name": "The Terminator",
+          "release date": "Oct 26, 1984 Wide",
+          "director": "James Cameron",
+          "duration": "1 hr. 48 min.",
+          "genre": "Action & Adventure,Science Fiction & Fantasy"
+        },
+        "similarities": {
+          "syntactic": 0.741,
+          "trigram": 0.211,
+          "semantic": 0.724
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1549920",
+          "name": "The Last Stand",
+          "release date": "18 January 2013 (USA)",
+          "director": "Jee-woon Kim",
+          "duration": "107 min",
+          "genre": "Action,Crime,Thriller"
+        },
+        "right_record": {
+          "id": "771402205",
+          "name": "The Last Straw",
+          "release date": "Nov 8, 2014 Wide",
+          "director": "Rob Diamond",
+          "duration": "",
+          "genre": "Kids & Family"
+        },
+        "similarities": {
+          "syntactic": 0.857,
+          "trigram": 0.6,
+          "semantic": 0.881
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0318850",
+          "name": "The Young Black Stallion",
+          "release date": "25 December 2003 (USA)",
+          "director": "Simon Wincer",
+          "duration": "99 min",
+          "genre": "Adventure,Family,Drama"
+        },
+        "right_record": {
+          "id": "1122674-monte_walsh",
+          "name": "Monte Walsh",
+          "release date": "Jan 17, 2003 Wide",
+          "director": "Simon Wincer",
+          "duration": "1 hr. 35 min.",
+          "genre": "Western,Action & Adventure"
+        },
+        "similarities": {
+          "syntactic": 0.286,
+          "trigram": 0.0,
+          "semantic": 0.824
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0037303",
+          "name": "The Spider Woman",
+          "release date": "21 January 1944 (USA)",
+          "director": "Roy William Neill",
+          "duration": "63 min",
+          "genre": "Mystery,Thriller"
+        },
+        "right_record": {
+          "id": "sherlock_holmes_and_the_spider_woman",
+          "name": "Sherlock Holmes and the Spider Woman",
+          "release date": "Jan 1, 1944 Wide",
+          "director": "Roy William Neill",
+          "duration": "1 hr. 2 min.",
+          "genre": "Horror,Mystery & Suspense,Classics"
+        },
+        "similarities": {
+          "syntactic": 0.615,
+          "trigram": 0.412,
+          "semantic": 0.914
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1905041",
+          "name": "Furious 6",
+          "release date": "24 May 2013 (USA)",
+          "director": "Justin Lin",
+          "duration": "130 min",
+          "genre": "Action,Crime,Thriller"
+        },
+        "right_record": {
+          "id": "fast_and_furious_6",
+          "name": "Fast & Furious 6",
+          "release date": "May 24, 2013 Wide",
+          "director": "Justin Lin",
+          "duration": "",
+          "genre": "Action & Adventure"
+        },
+        "similarities": {
+          "syntactic": 0.72,
+          "trigram": 0.5,
+          "semantic": 0.934
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0450345",
+          "name": "The Wicker Man",
+          "release date": "1 September 2006 (USA)",
+          "director": "Neil LaBute",
+          "duration": "102 min",
+          "genre": "Horror,Mystery,Thriller"
+        },
+        "right_record": {
+          "id": "the-mangler-reborn",
+          "name": "The Mangler Reborn",
+          "release date": "Nov 29, 2005 Wide",
+          "director": "Matt Cunningham,Erik Gardner",
+          "duration": "1 hr. 30 min.",
+          "genre": "Horror"
+        },
+        "similarities": {
+          "syntactic": 0.5,
+          "trigram": 0.217,
+          "semantic": 0.701
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0418819",
+          "name": "Land of the Dead",
+          "release date": "24 June 2005 (USA)",
+          "director": "George A. Romero",
+          "duration": "93 min",
+          "genre": "Horror"
+        },
+        "right_record": {
+          "id": "man_of_the_year",
+          "name": "Man of the Year",
+          "release date": "Oct 13, 2006 Wide",
+          "director": "Barry Levinson",
+          "duration": "",
+          "genre": "Television,Comedy"
+        },
+        "similarities": {
+          "syntactic": 0.774,
+          "trigram": 0.286,
+          "semantic": 0.711
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt4172430",
+          "name": "13 Hours: The Secret Soldiers of Benghazi",
+          "release date": "15 January 2016 (USA)",
+          "director": "Michael Bay",
+          "duration": "",
+          "genre": "Action,Drama,Thriller"
+        },
+        "right_record": {
+          "id": "the_martial_arts_kid",
+          "name": "The Martial Arts Kid",
+          "release date": "Sep 18, 2015 Limited",
+          "director": "Michael Baumgarten",
+          "duration": "",
+          "genre": "Action & Adventure,Kids & Family"
+        },
+        "similarities": {
+          "syntactic": 0.361,
+          "trigram": 0.037,
+          "semantic": 0.738
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0259182",
+          "name": "The American Nightmare",
+          "release date": "20 July 2003 (Austria)",
+          "director": "Adam Simon",
+          "duration": "73 min",
+          "genre": "Documentary,Horror"
+        },
+        "right_record": {
+          "id": "american_pie",
+          "name": "American Pie",
+          "release date": "Jul 9, 1999 Wide",
+          "director": "Chris Weitz,Paul Weitz",
+          "duration": "1 hr. 36 min.",
+          "genre": "Comedy"
+        },
+        "similarities": {
+          "syntactic": 0.647,
+          "trigram": 0.304,
+          "semantic": 0.727
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0452608",
+          "name": "Death Race",
+          "release date": "22 August 2008 (USA)",
+          "director": "Paul W.S. Anderson",
+          "duration": "105 min",
+          "genre": "Action,Sci-Fi,Thriller"
+        },
+        "right_record": {
+          "id": "death_proof",
+          "name": "Death Proof",
+          "release date": "Apr 5, 2007 Wide",
+          "director": "Robert Rodriguez,Quentin Tarantino",
+          "duration": "1 hr. 54 min.",
+          "genre": "Action & Adventure,Horror,Mystery & Suspense"
+        },
+        "similarities": {
+          "syntactic": 0.667,
+          "trigram": 0.308,
+          "semantic": 0.883
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1024255",
+          "name": "Wild Child",
+          "release date": "15 August 2008 (UK)",
+          "director": "Nick Moore",
+          "duration": "124 min",
+          "genre": "Comedy,Drama,Romance"
+        },
+        "right_record": {
+          "id": "martian_child",
+          "name": "Martian Child",
+          "release date": "Nov 2, 2007 Wide",
+          "director": "Menno Meyjes",
+          "duration": "",
+          "genre": "Drama,Comedy"
+        },
+        "similarities": {
+          "syntactic": 0.609,
+          "trigram": 0.286,
+          "semantic": 0.833
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1582507",
+          "name": "House at the End of the Street",
+          "release date": "21 September 2012 (USA)",
+          "director": "Mark Tonderai",
+          "duration": "101 min",
+          "genre": "Horror,Mystery,Thriller"
+        },
+        "right_record": {
+          "id": "seeking_a_friend_for_the_end_of_the_world",
+          "name": "Seeking a Friend for the End of the World",
+          "release date": "Jun 22, 2012 Wide",
+          "director": "Lorene Scafaria",
+          "duration": "",
+          "genre": "Comedy"
+        },
+        "similarities": {
+          "syntactic": 0.592,
+          "trigram": 0.229,
+          "semantic": 0.745
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt1517489",
+          "name": "Spy Kids: All the Time in the World in 4D",
+          "release date": "19 August 2011 (USA)",
+          "director": "Robert Rodriguez",
+          "duration": "89 min",
+          "genre": "Action,Adventure,Comedy"
+        },
+        "right_record": {
+          "id": "machete",
+          "name": "Machete",
+          "release date": "Sep 3, 2010 Wide",
+          "director": "Ethan Maniquis,Robert Rodriguez",
+          "duration": "",
+          "genre": "Mystery & Suspense,Action & Adventure"
+        },
+        "similarities": {
+          "syntactic": 0.208,
+          "trigram": 0.0,
+          "semantic": 0.778
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": "tt0816442",
+          "name": "The Book Thief",
+          "release date": "27 November 2013 (USA)",
+          "director": "Brian Percival",
+          "duration": "131 min",
+          "genre": "Drama,War"
+        },
+        "right_record": {
+          "id": "identity_thief",
+          "name": "Identity Thief",
+          "release date": "Feb 7, 2013 Wide",
+          "director": "Seth Gordon",
+          "duration": "",
+          "genre": "Comedy"
+        },
+        "similarities": {
+          "syntactic": 0.5,
+          "trigram": 0.2,
+          "semantic": 0.837
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      }
+    ]
+  },
+  "dataset_characteristics": {
+    "table_a_size": 7390,
+    "table_b_size": 6407,
+    "field_names": [
+      "name",
+      "release date",
+      "director",
+      "duration",
+      "genre"
+    ],
+    "sample_records": [
+      {
+        "id": "tt0054215",
+        "name": "Psycho",
+        "release date": "8 September 1960 (USA)",
+        "director": "Alfred Hitchcock",
+        "duration": "109 min",
+        "genre": "Horror,Mystery,Thriller"
+      },
+      {
+        "id": "tt0088993",
+        "name": "Day of the Dead",
+        "release date": "19 July 1985 (USA)",
+        "director": "George A. Romero",
+        "duration": "96 min",
+        "genre": "Action,Drama,Horror"
+      },
+      {
+        "id": "tt0032484",
+        "name": "Foreign Correspondent",
+        "release date": "16 August 1940 (USA)",
+        "director": "Alfred Hitchcock",
+        "duration": "120 min",
+        "genre": "Romance,Thriller,War"
+      }
+    ]
+  }
+}

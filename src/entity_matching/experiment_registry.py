@@ -71,6 +71,13 @@ class ExperimentRegistry:
         # Mark as active pipeline immediately upon creation
         self._mark_as_active_pipeline()
 
+    @property
+    def dataset(self) -> Optional[str]:
+        """Get the dataset for this pipeline (should be consistent across all experiments)"""
+        if not self.experiments:
+            return None
+        return self.experiments[0].experiment_config.dataset
+
     def register_experiment(
         self, experiment_config: ExperimentConfig, stage: str, results: Dict[str, Any] = None, notes: str = None
     ) -> str:

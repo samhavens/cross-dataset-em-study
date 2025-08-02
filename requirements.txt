@@ -1,3 +1,4 @@
+aiofiles
 # Core dependencies for cross-dataset entity matching study
 pandas>=2.0.0
 numpy>=1.21.0

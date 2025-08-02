@@ -1,0 +1,1401 @@
+{
+  "dataset": "zomato_yelp",
+  "analysis_type": "validation",
+  "metadata": {
+    "total_pairs_analyzed": 89,
+    "positive_pairs": 10,
+    "negative_pairs_sampled": 30,
+    "semantic_available": true
+  },
+  "similarity_analysis": {
+    "true_matches": {
+      "syntactic": {
+        "mean": 0.9536188669015994,
+        "std": 0.08470245356014543,
+        "median": 1.0,
+        "min": 0.7450980392156863,
+        "max": 1.0
+      },
+      "trigram": {
+        "mean": 0.8632196326593611,
+        "std": 0.22110194701362607,
+        "median": 1.0,
+        "min": 0.42105263157894735,
+        "max": 1.0
+      },
+      "semantic": {
+        "mean": 0.9678641438484192,
+        "std": 0.017215018443251257,
+        "median": 0.9696033000946045,
+        "min": 0.9327242970466614,
+        "max": 0.9921302199363708
+      }
+    },
+    "false_positives": {
+      "syntactic": {
+        "mean": 0.33150095128119816,
+        "std": 0.15877175417893913,
+        "median": 0.30090497737556565,
+        "min": 0.07407407407407407,
+        "max": 0.6086956521739131
+      },
+      "trigram": {
+        "mean": 0.08209415606288223,
+        "std": 0.09857991632851092,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.2727272727272727
+      },
+      "semantic": {
+        "mean": 0.8823989828427633,
+        "std": 0.04626716230583706,
+        "median": 0.8861029744148254,
+        "min": 0.7481264472007751,
+        "max": 0.9557275176048279
+      }
+    }
+  },
+  "candidate_analysis": {
+    "recall_at_1": 0.1,
+    "recall_at_5": 0.1,
+    "recall_at_10": 0.1,
+    "recall_at_25": 0.1,
+    "recall_at_50": 0.1,
+    "recall_at_100": 0.1,
+    "recall_at_150": 0.1,
+    "recall_at_200": 0.1,
+    "recall_at_300": 0.1,
+    "recall_at_500": 0.5
+  },
+  "concrete_examples": {
+    "true_matches": [
+      {
+        "left_record": {
+          "id": 1515,
+          "name": "Tony's Pizza & Pasta",
+          "votes": 875,
+          "rating": 4.1,
+          "phone": "(214) 503-0388",
+          "address": "10233 E Northwest Highway, Dallas",
+          "zip": 75238,
+          "cuisine": "Italian,Pizza"
+        },
+        "right_record": {
+          "id": 1182,
+          "name": "Tony\u2019s Pizza & Pasta Restaurant",
+          "votes": 145,
+          "rating": 4.0,
+          "phone": "(214) 503-0388",
+          "address": "10233 E NW HwySte 504",
+          "zip": 75238,
+          "cuisine": "Pizza"
+        },
+        "similarities": {
+          "syntactic": 0.745,
+          "trigram": 0.484,
+          "semantic": 0.952
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 370,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 6170,
+          "name": "Robataya NY",
+          "votes": 62,
+          "rating": 3.7,
+          "phone": "(212) 979-9674",
+          "address": "231 E 9th Street, New York",
+          "zip": 10003,
+          "cuisine": "Japanese"
+        },
+        "right_record": {
+          "id": 3873,
+          "name": "Robataya NY",
+          "votes": 429,
+          "rating": 4.0,
+          "phone": "(212) 979-9674",
+          "address": "231 E 9th St",
+          "zip": 10003,
+          "cuisine": "Japanese"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.986
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 221,
+          "name": "Pequod's Pizza",
+          "votes": 908,
+          "rating": 4.5,
+          "phone": "(773) 327-1512",
+          "address": "2207 N. Clybourn Avenue, Chicago",
+          "zip": 60614,
+          "cuisine": "Pizza,Italian,Sandwich"
+        },
+        "right_record": {
+          "id": 142,
+          "name": "Pequod\u2019s Pizzeria",
+          "votes": 2482,
+          "rating": 4.0,
+          "phone": "(773) 327-1512",
+          "address": "2207 N Clybourn Ave",
+          "zip": 60614,
+          "cuisine": "Pizza"
+        },
+        "similarities": {
+          "syntactic": 0.839,
+          "trigram": 0.421,
+          "semantic": 0.958
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 337,
+          "name": "Ara On",
+          "votes": 67,
+          "rating": 3.7,
+          "phone": "(312) 781-7300",
+          "address": "160 W. Adams Street, Chicago",
+          "zip": 60603,
+          "cuisine": "French,Asian,Sushi"
+        },
+        "right_record": {
+          "id": 237,
+          "name": "Ara On",
+          "votes": 171,
+          "rating": 4.0,
+          "phone": "(312) 781-7300",
+          "address": "160 W Adams St",
+          "zip": 60603,
+          "cuisine": "Asian Fusion"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.968
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 393,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 6240,
+          "name": "Hometown Bar-B-Que",
+          "votes": 23,
+          "rating": 3.3,
+          "phone": "(347) 294-4644",
+          "address": "454 Van Brunt Street, Brooklyn",
+          "zip": 11231,
+          "cuisine": "BBQ"
+        },
+        "right_record": {
+          "id": 3361,
+          "name": "Hometown Bar-B-Que",
+          "votes": 395,
+          "rating": 4.0,
+          "phone": "(347) 294-4644",
+          "address": "454 Van Brunt St",
+          "zip": 11231,
+          "cuisine": "Barbeque"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.976
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 5163,
+          "name": "Oliver's Public House",
+          "votes": 20,
+          "rating": 3.2,
+          "phone": "(608) 819-8555",
+          "address": "2540 University Ave, Madison",
+          "zip": 53705,
+          "cuisine": "American"
+        },
+        "right_record": {
+          "id": 2683,
+          "name": "Oliver\u2019s Public House",
+          "votes": 88,
+          "rating": 3.5,
+          "phone": "(608) 819-8555",
+          "address": "2540 University Ave",
+          "zip": 53705,
+          "cuisine": "American (New)"
+        },
+        "similarities": {
+          "syntactic": 0.952,
+          "trigram": 0.727,
+          "semantic": 0.985
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 4962,
+          "name": "El Pastor",
+          "votes": 52,
+          "rating": 3.6,
+          "phone": "(608) 280-8898",
+          "address": "2010 S Park St, Madison",
+          "zip": 53713,
+          "cuisine": "Mexican"
+        },
+        "right_record": {
+          "id": 2493,
+          "name": "El Pastor",
+          "votes": 59,
+          "rating": 3.5,
+          "phone": "(608) 280-8898",
+          "address": "2010 S Park St",
+          "zip": 53713,
+          "cuisine": "Mexican"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.992
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 401,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 6906,
+          "name": "Five Leaves",
+          "votes": 317,
+          "rating": 3.9,
+          "phone": "(718) 383-5345",
+          "address": "18 Bedford Avenue, Brooklyn",
+          "zip": 11222,
+          "cuisine": "New American,Australian"
+        },
+        "right_record": {
+          "id": 3319,
+          "name": "Five Leaves",
+          "votes": 1015,
+          "rating": 4.0,
+          "phone": "(718) 383-5345",
+          "address": "18 Bedford Ave",
+          "zip": 11222,
+          "cuisine": "Breakfast & Brunch,Bars"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.958
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1511,
+          "name": "Taco Diner",
+          "votes": 261,
+          "rating": 3.4,
+          "phone": "(214) 521-3669",
+          "address": "3699 McKinney Avenue, Dallas",
+          "zip": 75204,
+          "cuisine": "Tex-Mex"
+        },
+        "right_record": {
+          "id": 1297,
+          "name": "Taco Diner",
+          "votes": 283,
+          "rating": 3.5,
+          "phone": "(214) 521-3669",
+          "address": "3699 McKinney Ave",
+          "zip": 75204,
+          "cuisine": "Mexican"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.933
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 419,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 4440,
+          "name": "Natt Spil",
+          "votes": 265,
+          "rating": 3.9,
+          "phone": "Not Available",
+          "address": "211 King St, Madison",
+          "zip": 53703,
+          "cuisine": "Dim Sum,Pizza"
+        },
+        "right_record": {
+          "id": 3200,
+          "name": "Natt Spil",
+          "votes": 142,
+          "rating": 4.0,
+          "phone": "(608) 258-8787",
+          "address": "211 King St",
+          "zip": 53703,
+          "cuisine": "Pizza"
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.971
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      }
+    ],
+    "confusing_non_matches": [
+      {
+        "left_record": {
+          "id": 5260,
+          "name": "World Buffet",
+          "votes": 29,
+          "rating": 2.9,
+          "phone": "(608) 222-2962",
+          "address": "2451 W Broadway",
+          "zip": 53713,
+          "cuisine": "Chinese"
+        },
+        "right_record": {
+          "id": 3762,
+          "name": "Saleya",
+          "votes": 127,
+          "rating": 4.0,
+          "phone": "(212) 510-7390",
+          "address": "65 W Broadway",
+          "zip": 10007,
+          "cuisine": "American (New)"
+        },
+        "similarities": {
+          "syntactic": 0.222,
+          "trigram": 0.0,
+          "semantic": 0.945
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 3714,
+          "name": "Chin Chin",
+          "votes": 143,
+          "rating": 3.5,
+          "phone": "(310) 652-1818",
+          "address": "8618 W Sunset Blvd",
+          "zip": 90069,
+          "cuisine": "Asian,Chinese,Dim Sum"
+        },
+        "right_record": {
+          "id": 1863,
+          "name": "Sopressata At Black Hogg",
+          "votes": 73,
+          "rating": 4.5,
+          "phone": "(323) 953-2820",
+          "address": "2852 Sunset Blvd",
+          "zip": 90026,
+          "cuisine": "Sandwiches"
+        },
+        "similarities": {
+          "syntactic": 0.121,
+          "trigram": 0.0,
+          "semantic": 0.885
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 252,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 4427,
+          "name": "Nature's Bakery Cooperative",
+          "votes": 6,
+          "rating": 3.0,
+          "phone": "(608) 257-3649",
+          "address": "1019 Williamson St, Madison",
+          "zip": 53703,
+          "cuisine": ""
+        },
+        "right_record": {
+          "id": 3105,
+          "name": "Sophia\u2019s Bakery & Cafe",
+          "votes": 156,
+          "rating": 4.5,
+          "phone": "(608) 259-1506",
+          "address": "831 E Johnson StSte 4",
+          "zip": 53703,
+          "cuisine": "Breakfast & Brunch"
+        },
+        "similarities": {
+          "syntactic": 0.49,
+          "trigram": 0.184,
+          "semantic": 0.901
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 5408,
+          "name": "Itzza Pizza",
+          "votes": 9,
+          "rating": 3.0,
+          "phone": "(608) 233-3500",
+          "address": "2825 University Ave, Madison",
+          "zip": 53705,
+          "cuisine": "Italian,Pizza,Sandwich"
+        },
+        "right_record": {
+          "id": 2689,
+          "name": "IHOP",
+          "votes": 20,
+          "rating": 2.5,
+          "phone": "(608) 236-4200",
+          "address": "2825 University AveSte 1",
+          "zip": 53705,
+          "cuisine": "Breakfast & Brunch"
+        },
+        "similarities": {
+          "syntactic": 0.267,
+          "trigram": 0.0,
+          "semantic": 0.902
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 5706,
+          "name": "Jim's Burger Corner",
+          "votes": 14,
+          "rating": 3.2,
+          "phone": "(920) 674-4033",
+          "address": "726 S Main St",
+          "zip": 53549,
+          "cuisine": "Burger,Desserts"
+        },
+        "right_record": {
+          "id": 2136,
+          "name": "Natural Selection",
+          "votes": 38,
+          "rating": 4.5,
+          "phone": "(213) 265-7470",
+          "address": "646 S Main St",
+          "zip": 90014,
+          "cuisine": "Vegetarian"
+        },
+        "similarities": {
+          "syntactic": 0.333,
+          "trigram": 0.0,
+          "semantic": 0.889
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 5296,
+          "name": "Middleton Sport Bowl",
+          "votes": 22,
+          "rating": 3.3,
+          "phone": "(608) 831-5238",
+          "address": "6815 University Avenue",
+          "zip": 53562,
+          "cuisine": "American,Burger,Bar Food"
+        },
+        "right_record": {
+          "id": 2959,
+          "name": "Qdoba Mexican Grill",
+          "votes": 7,
+          "rating": 2.5,
+          "phone": "(608) 218-9670",
+          "address": "2741 University Ave",
+          "zip": 53705,
+          "cuisine": "Mexican"
+        },
+        "similarities": {
+          "syntactic": 0.308,
+          "trigram": 0.0,
+          "semantic": 0.779
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 611,
+          "name": "Cy's King Crab Oyster Bar & Grill",
+          "votes": 56,
+          "rating": 3.1,
+          "phone": "(312) 280-8990",
+          "address": "695 N. Milwaukee Avenue",
+          "zip": 60642,
+          "cuisine": "Seafood"
+        },
+        "right_record": {
+          "id": 620,
+          "name": "Black Iron Tavern",
+          "votes": 25,
+          "rating": 4.0,
+          "phone": "(312) 690-4000",
+          "address": "401 N. Milwaukee Ave",
+          "zip": 60654,
+          "cuisine": "Bars"
+        },
+        "similarities": {
+          "syntactic": 0.32,
+          "trigram": 0.0,
+          "semantic": 0.864
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 12,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 3722,
+          "name": "Crossroads at The House of Blues",
+          "votes": 43,
+          "rating": 3.4,
+          "phone": "(323) 848-5100",
+          "address": "8430 Sunset Blvd",
+          "zip": 90069,
+          "cuisine": "American,Southern"
+        },
+        "right_record": {
+          "id": 2154,
+          "name": "El Cochinito Restaurant",
+          "votes": 390,
+          "rating": 4.0,
+          "phone": "(323) 668-0737",
+          "address": "3508 W Sunset Blvd",
+          "zip": 90026,
+          "cuisine": "Cuban,Bakeries,Seafood,American (New),American (New),Seafood"
+        },
+        "similarities": {
+          "syntactic": 0.145,
+          "trigram": 0.0,
+          "semantic": 0.748
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 4867,
+          "name": "Pizza DI Roma",
+          "votes": 72,
+          "rating": 3.5,
+          "phone": "(608) 268-0900",
+          "address": "313 State St, Madison",
+          "zip": 53703,
+          "cuisine": "Italian,Pizza,Sandwich"
+        },
+        "right_record": {
+          "id": 2570,
+          "name": "Roman Candle Pizzeria",
+          "votes": 84,
+          "rating": 3.5,
+          "phone": "(608) 258-2000",
+          "address": "1054 Williamson St",
+          "zip": 53703,
+          "cuisine": "Pizza"
+        },
+        "similarities": {
+          "syntactic": 0.294,
+          "trigram": 0.154,
+          "semantic": 0.928
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 163,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2526,
+          "name": "Den on Sunset",
+          "votes": 55,
+          "rating": 4.0,
+          "phone": "(323) 656-0336",
+          "address": "8226 Sunset Blvd",
+          "zip": 90046,
+          "cuisine": "American,Burger"
+        },
+        "right_record": {
+          "id": 1923,
+          "name": "Samosa House Silverlake",
+          "votes": 165,
+          "rating": 4.0,
+          "phone": "(323) 913-0015",
+          "address": "3200 W Sunset Blvd",
+          "zip": 90026,
+          "cuisine": "Indian"
+        },
+        "similarities": {
+          "syntactic": 0.222,
+          "trigram": 0.0,
+          "semantic": 0.856
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 3631,
+          "name": "FoodLab",
+          "votes": 51,
+          "rating": 4.7,
+          "phone": "(323) 851-7120",
+          "address": "7253 Santa Monica Blvd",
+          "zip": 90046,
+          "cuisine": "Breakfast,Sandwich,Healthy Food"
+        },
+        "right_record": {
+          "id": 1607,
+          "name": "Eat This Cafe",
+          "votes": 415,
+          "rating": 4.0,
+          "phone": "(323) 999-2003",
+          "address": "6547 Santa Monica Blvd",
+          "zip": 90038,
+          "cuisine": "Breakfast & Brunch,Performing Arts"
+        },
+        "similarities": {
+          "syntactic": 0.1,
+          "trigram": 0.0,
+          "semantic": 0.956
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 6601,
+          "name": "Schiller's Liquor Bar",
+          "votes": 393,
+          "rating": 3.7,
+          "phone": "(212) 260-4555",
+          "address": "131 Rivington Street, New York",
+          "zip": 10002,
+          "cuisine": "American,Bar Food"
+        },
+        "right_record": {
+          "id": 3493,
+          "name": "Miller\u2019s Near & Far",
+          "votes": 75,
+          "rating": 4.5,
+          "phone": "(646) 559-1210",
+          "address": "65 Rivington St",
+          "zip": 10002,
+          "cuisine": "American (New)"
+        },
+        "similarities": {
+          "syntactic": 0.55,
+          "trigram": 0.091,
+          "semantic": 0.897
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1923,
+          "name": "Pappas Bar-B-Q",
+          "votes": 93,
+          "rating": 3.3,
+          "phone": "(214) 956-9038",
+          "address": "2231 W NW Highway, Dallas",
+          "zip": 75220,
+          "cuisine": "American,BBQ"
+        },
+        "right_record": {
+          "id": 786,
+          "name": "Pappas Bros Steakhouse",
+          "votes": 480,
+          "rating": 4.5,
+          "phone": "(214) 366-2000",
+          "address": "10477 Lombardy Ln",
+          "zip": 75220,
+          "cuisine": "Steakhouses"
+        },
+        "similarities": {
+          "syntactic": 0.5,
+          "trigram": 0.231,
+          "semantic": 0.882
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 122,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 5202,
+          "name": "Lao Laan Xang Restaurant",
+          "votes": 243,
+          "rating": 4.0,
+          "phone": "(608) 819-0140",
+          "address": "2098 Atwood Ave, Madison",
+          "zip": 53704,
+          "cuisine": "Asian,Thai,Vegetarian"
+        },
+        "right_record": {
+          "id": 2848,
+          "name": "Plata\u2019s Restaurant at Bridges Golf Course",
+          "votes": 1,
+          "rating": 4.0,
+          "phone": "(608) 244-1822",
+          "address": "2702 Shopko Dr",
+          "zip": 53704,
+          "cuisine": "Bars"
+        },
+        "similarities": {
+          "syntactic": 0.431,
+          "trigram": 0.173,
+          "semantic": 0.795
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 405,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 5059,
+          "name": "Sir Hobo's",
+          "votes": 73,
+          "rating": 3.4,
+          "phone": "(608) 837-1044",
+          "address": "710 W Main St",
+          "zip": 53590,
+          "cuisine": "American,Breakfast,Coffee and Tea"
+        },
+        "right_record": {
+          "id": 2440,
+          "name": "Shamrock Bar & Grille",
+          "votes": 8,
+          "rating": 5.0,
+          "phone": "(608) 255-5029",
+          "address": "117 W Main St",
+          "zip": 53703,
+          "cuisine": "American (Traditional)"
+        },
+        "similarities": {
+          "syntactic": 0.194,
+          "trigram": 0.0,
+          "semantic": 0.881
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 235,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 5072,
+          "name": "Sonic Drive-in",
+          "votes": 72,
+          "rating": 3.3,
+          "phone": "(608) 831-2633",
+          "address": "6413 University Ave.",
+          "zip": 53562,
+          "cuisine": "Fast Food"
+        },
+        "right_record": {
+          "id": 2544,
+          "name": "The Taco Bros",
+          "votes": 26,
+          "rating": 4.0,
+          "phone": "(608) 422-5075",
+          "address": "604 E University Ave",
+          "zip": 53715,
+          "cuisine": "Mexican"
+        },
+        "similarities": {
+          "syntactic": 0.074,
+          "trigram": 0.0,
+          "semantic": 0.887
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 53,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 3786,
+          "name": "The Griddle Cafe",
+          "votes": 953,
+          "rating": 4.2,
+          "phone": "(323) 874-0377",
+          "address": "7916 W Sunset Blvd",
+          "zip": 90046,
+          "cuisine": "American,Breakfast,Coffee and Tea"
+        },
+        "right_record": {
+          "id": 1737,
+          "name": "The Carving Board",
+          "votes": 246,
+          "rating": 4.5,
+          "phone": "(323) 845-4550",
+          "address": "7300 Sunset Blvd",
+          "zip": 90046,
+          "cuisine": "Sandwiches"
+        },
+        "similarities": {
+          "syntactic": 0.364,
+          "trigram": 0.16,
+          "semantic": 0.868
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 132,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 4860,
+          "name": "Wah Kee Chinese Noodle Restaurant",
+          "votes": 147,
+          "rating": 3.6,
+          "phone": "(608) 255-5580",
+          "address": "600 Williamson St, Madison",
+          "zip": 53703,
+          "cuisine": "Asian,Chinese"
+        },
+        "right_record": {
+          "id": 2796,
+          "name": "Vientiane Palace Restaurant",
+          "votes": 72,
+          "rating": 3.5,
+          "phone": "(608) 255-2848",
+          "address": "151 W Gorham St",
+          "zip": 53703,
+          "cuisine": "Thai"
+        },
+        "similarities": {
+          "syntactic": 0.533,
+          "trigram": 0.217,
+          "semantic": 0.854
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 93,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 4923,
+          "name": "Bahn Thai Restaurant",
+          "votes": 90,
+          "rating": 3.8,
+          "phone": "(608) 256-0202",
+          "address": "944 Williamson St, Madison",
+          "zip": 53703,
+          "cuisine": "Thai,Vegetarian"
+        },
+        "right_record": {
+          "id": 2754,
+          "name": "Bellini Italian Restaurant",
+          "votes": 51,
+          "rating": 3.5,
+          "phone": "(608) 250-0097",
+          "address": "401 E Washington Ave",
+          "zip": 53703,
+          "cuisine": "Italian"
+        },
+        "similarities": {
+          "syntactic": 0.609,
+          "trigram": 0.273,
+          "semantic": 0.876
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 223,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 3786,
+          "name": "The Griddle Cafe",
+          "votes": 953,
+          "rating": 4.2,
+          "phone": "(323) 874-0377",
+          "address": "7916 W Sunset Blvd",
+          "zip": 90046,
+          "cuisine": "American,Breakfast,Coffee and Tea"
+        },
+        "right_record": {
+          "id": 2064,
+          "name": "Jay\u2019s Bar",
+          "votes": 211,
+          "rating": 4.0,
+          "phone": "(323) 666-1898",
+          "address": "4321 Sunset Blvd",
+          "zip": 90029,
+          "cuisine": "Bars"
+        },
+        "similarities": {
+          "syntactic": 0.16,
+          "trigram": 0.0,
+          "semantic": 0.867
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 4878,
+          "name": "Appletree Family Restaurant",
+          "votes": 34,
+          "rating": 3.5,
+          "phone": "(920) 623-4518",
+          "address": "675 Park Ave",
+          "zip": 53925,
+          "cuisine": "Diner"
+        },
+        "right_record": {
+          "id": 3303,
+          "name": "Uncle Gussy\u2019s",
+          "votes": 257,
+          "rating": 4.5,
+          "phone": "(929) 600-1111",
+          "address": "345 Park Ave",
+          "zip": 10154,
+          "cuisine": "Greek"
+        },
+        "similarities": {
+          "syntactic": 0.25,
+          "trigram": 0.0,
+          "semantic": 0.891
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 1915,
+          "name": "El Bolero",
+          "votes": 7,
+          "rating": 3.0,
+          "phone": "(214) 741-1986",
+          "address": "1201 Oak Lawn Avenue",
+          "zip": 75207,
+          "cuisine": "Mexican"
+        },
+        "right_record": {
+          "id": 912,
+          "name": "Zaguan Bakery & Cafe",
+          "votes": 261,
+          "rating": 4.0,
+          "phone": "(214) 219-8393",
+          "address": "2604 Oak Lawn Ave",
+          "zip": 75219,
+          "cuisine": "Bakeries"
+        },
+        "similarities": {
+          "syntactic": 0.276,
+          "trigram": 0.0,
+          "semantic": 0.842
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 5534,
+          "name": "Happy Grill",
+          "votes": 13,
+          "rating": 3.1,
+          "phone": "(608) 249-5828",
+          "address": "2810 E Washington Ave, Madison",
+          "zip": 53704,
+          "cuisine": "Mexican"
+        },
+        "right_record": {
+          "id": 2566,
+          "name": "Habanero\u2019s Mexican Grill",
+          "votes": 14,
+          "rating": 3.5,
+          "phone": "(608) 244-1990",
+          "address": "3001 N Sherman Ave",
+          "zip": 53704,
+          "cuisine": "Mexican"
+        },
+        "similarities": {
+          "syntactic": 0.457,
+          "trigram": 0.148,
+          "semantic": 0.943
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 166,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 7682,
+          "name": "Sambuca's Cafe",
+          "votes": 43,
+          "rating": 3.5,
+          "phone": "(212) 431-0408",
+          "address": "105 Mulberry Street, New York",
+          "zip": 10013,
+          "cuisine": "Italian,Pizza"
+        },
+        "right_record": {
+          "id": 3903,
+          "name": "Sharkey\u2019s Cafe",
+          "votes": 79,
+          "rating": 4.5,
+          "phone": "(212) 804-8183",
+          "address": "48 Mulberry St",
+          "zip": 10013,
+          "cuisine": "Coffee & Tea"
+        },
+        "similarities": {
+          "syntactic": 0.571,
+          "trigram": 0.2,
+          "semantic": 0.936
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 5344,
+          "name": "Mojo's Sports Pub & Grill",
+          "votes": 76,
+          "rating": 2.4,
+          "phone": "(608) 849-6656",
+          "address": "111 W Main St",
+          "zip": 53597,
+          "cuisine": "Burger,Bar Food,Sandwich"
+        },
+        "right_record": {
+          "id": 3168,
+          "name": "Lucky\u2019s Bar & Grille",
+          "votes": 21,
+          "rating": 2.5,
+          "phone": "(608) 850-5825",
+          "address": "1008 Quinn Dr",
+          "zip": 53597,
+          "cuisine": "Cafes"
+        },
+        "similarities": {
+          "syntactic": 0.489,
+          "trigram": 0.171,
+          "semantic": 0.933
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 5429,
+          "name": "Riley Tavern",
+          "votes": 41,
+          "rating": 3.5,
+          "phone": "(608) 845-9150",
+          "address": "8205 Klevenville Riley Rd",
+          "zip": 53593,
+          "cuisine": "Burger"
+        },
+        "right_record": {
+          "id": 3009,
+          "name": "The Klassik Tavern",
+          "votes": 22,
+          "rating": 4.0,
+          "phone": "(608) 845-6471",
+          "address": "410 W Verona Ave",
+          "zip": 53593,
+          "cuisine": "American (Traditional)"
+        },
+        "similarities": {
+          "syntactic": 0.533,
+          "trigram": 0.238,
+          "semantic": 0.905
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 202,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 4018,
+          "name": "French Quarter Market Place",
+          "votes": 86,
+          "rating": 3.5,
+          "phone": "(323) 654-0898",
+          "address": "7985 Santa Monica Blvd",
+          "zip": 90046,
+          "cuisine": "French,International"
+        },
+        "right_record": {
+          "id": 1676,
+          "name": "Foodlab",
+          "votes": 414,
+          "rating": 4.0,
+          "phone": "(323) 851-7120",
+          "address": "7253 Santa Monica Blvd",
+          "zip": 90046,
+          "cuisine": "Coffee & Tea"
+        },
+        "similarities": {
+          "syntactic": 0.176,
+          "trigram": 0.0,
+          "semantic": 0.906
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 338,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 2216,
+          "name": "Brother's Pizza",
+          "votes": 65,
+          "rating": 3.4,
+          "phone": "(214) 219-5200",
+          "address": "4152 Travis Street, Dallas",
+          "zip": 75204,
+          "cuisine": "Pizza"
+        },
+        "right_record": {
+          "id": 766,
+          "name": "ZaLat Pizza",
+          "votes": 84,
+          "rating": 4.0,
+          "phone": "(469) 573-2007",
+          "address": "2519 N Fitzhugh Ave",
+          "zip": 75204,
+          "cuisine": "Pizza"
+        },
+        "similarities": {
+          "syntactic": 0.538,
+          "trigram": 0.222,
+          "semantic": 0.916
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 4350,
+          "name": "Domino's",
+          "votes": 7,
+          "rating": 2.7,
+          "phone": "(608) 825-3200",
+          "address": "1585 W Main St",
+          "zip": 53590,
+          "cuisine": "Fast Food,Pizza"
+        },
+        "right_record": {
+          "id": 3203,
+          "name": "Echo Tap & Grill",
+          "votes": 60,
+          "rating": 4.0,
+          "phone": "(608) 256-6928",
+          "address": "554 W Main St",
+          "zip": 53703,
+          "cuisine": "Sports Bars"
+        },
+        "similarities": {
+          "syntactic": 0.167,
+          "trigram": 0.0,
+          "semantic": 0.87
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 341,
+          "max_candidates": 500
+        }
+      },
+      {
+        "left_record": {
+          "id": 4324,
+          "name": "Rio's Pizza",
+          "votes": 128,
+          "rating": 4.4,
+          "phone": "(562) 949-2324",
+          "address": "9317 Slauson Ave",
+          "zip": 90660,
+          "cuisine": "Pizza"
+        },
+        "right_record": {
+          "id": 2089,
+          "name": "Orleans and York Deli",
+          "votes": 391,
+          "rating": 4.5,
+          "phone": "(323) 291-8800",
+          "address": "4454 W Slauson Ave",
+          "zip": 90043,
+          "cuisine": "Cajun/Creole"
+        },
+        "similarities": {
+          "syntactic": 0.25,
+          "trigram": 0.0,
+          "semantic": 0.897
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 500
+        }
+      }
+    ]
+  },
+  "dataset_characteristics": {
+    "table_a_size": 6960,
+    "table_b_size": 3897,
+    "field_names": [
+      "name",
+      "votes",
+      "rating",
+      "phone",
+      "address",
+      "zip",
+      "cuisine"
+    ],
+    "sample_records": [
+      {
+        "id": 0,
+        "name": "Strings Ramen Shop",
+        "votes": 15,
+        "rating": 3.1,
+        "phone": "(312) 374-3450",
+        "address": "2141 S. Archer Avenue, Chicago",
+        "zip": 60616,
+        "cuisine": "Asian,Chinese,Ramen"
+      },
+      {
+        "id": 1,
+        "name": "Francesco's Hole In The Wall",
+        "votes": 179,
+        "rating": 4.0,
+        "phone": "(847) 272-0155",
+        "address": "254 Skokie Boulevard",
+        "zip": 60062,
+        "cuisine": "Italian"
+      },
+      {
+        "id": 3,
+        "name": "Four Belly",
+        "votes": 12,
+        "rating": 3.0,
+        "phone": "(773) 661-6182",
+        "address": "3227 N. Clark Street, Chicago",
+        "zip": 60657,
+        "cuisine": "Asian,BBQ,Japanese"
+      }
+    ]
+  }
+}

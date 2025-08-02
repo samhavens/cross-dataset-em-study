@@ -17,7 +17,51 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from .hybrid_matcher import Config
+
+# OLD CONFIG CLASS, NEED TO UNIFY
+class Config:
+    # TODO: remove this class and use ExperimentConfig instead
+    def __init__(self):
+        self.model = "gpt-4.1-nano"
+        self.temperature = 0
+        self.max_tokens = 100
+        self.total_cost = 0.0
+        self.total_input_tokens = 0
+        self.total_output_tokens = 0
+        self.use_semantic = True  # Enable semantic similarity by default
+        # 3-weight system for combining trigram, syntactic, and semantic scores
+        self.trigram_weight = 0.2  # Weight for trigram similarity
+        self.syntactic_weight = 0.2  # Weight for syntactic similarity
+        self.semantic_weight = 0.6  # Weight for semantic similarity
+        self.semantic_model = None  # Will be initialized lazily
+        self.embedding_base_url = None  # If set, use API endpoint instead of local model
+        self.embedding_model_name = "all-MiniLM-L6-v2"  # Model name for local or API
+        self.use_heuristics = False  # Enable heuristic rules
+        self.heuristic_engine = None  # Will be initialized if enabled
+        self.heuristic_file = None  # Path to heuristics file
+        self.embeddings = None  # Cached embeddings for the dataset
+
+    def set_weights(self, trigram_weight: float, syntactic_weight: float, semantic_weight: float):
+        """Set the 3-weight system with automatic normalization"""
+        # Validate weights are non-negative
+        if trigram_weight < 0 or syntactic_weight < 0 or semantic_weight < 0:
+            raise ValueError(f"Weights must be non-negative, got trigram={trigram_weight}, syntactic={syntactic_weight}, semantic={semantic_weight}")
+
+        # Calculate total for normalization
+        total = trigram_weight + syntactic_weight + semantic_weight
+
+        # Handle zero total case
+        if total == 0:
+            raise ValueError("At least one weight must be positive")
+
+        # Normalize weights to sum to 1.0
+        self.trigram_weight = trigram_weight / total
+        self.syntactic_weight = syntactic_weight / total
+        self.semantic_weight = semantic_weight / total
+
+        # Inform user if normalization was applied
+        if abs(total - 1.0) > 1e-6:
+            print(f"Weights normalized from ({trigram_weight:.3f}, {syntactic_weight:.3f}, {semantic_weight:.3f}) to ({self.trigram_weight:.3f}, {self.syntactic_weight:.3f}, {self.semantic_weight:.3f})")
 
 
 @dataclass

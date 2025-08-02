@@ -18,12 +18,14 @@ from .hybrid_matcher import (
     CandidateCache,
     Config,
     compute_dataset_embeddings,
-    get_top_candidates_cached,
-    syntactic_similarity,
-    trigram_similarity,
-    semantic_similarity_cached,
+    create_candidate_cache,
     get_embeddings_cache_path,
     get_semantic_model,
+    get_top_candidates_cached,
+    semantic_similarity_cached,
+    slugify_model_name,
+    syntactic_similarity,
+    trigram_similarity,
 )
 
 
@@ -315,11 +317,10 @@ def analyze_candidate_recall(
     # Create candidate cache if not provided
     if candidate_cache is None:
         if verbose:
-            print("📦 Building candidate cache for fast processing...")
-        B_records_list = list(B_records.values())
-        candidate_cache = CandidateCache(B_records_list)
+            print("📦 Building persistent candidate cache for fast processing...")
+        candidate_cache = create_candidate_cache(dataset, B_records, cfg, max_candidates)
         if verbose:
-            print("✅ Candidate cache ready")
+            print("✅ Candidate cache ready and persisted for reuse")
 
     # Define thresholds to test
     base_thresholds = [1, 5, 10, 25, 50, 100, 150, 200, 300, 500]
@@ -484,14 +485,6 @@ def analyze_dataset_for_claude(
     A_records = {row.id: row.to_dict() for _, row in A_df.iterrows()}
     B_records = {row.id: row.to_dict() for _, row in B_df.iterrows()}
 
-    # Build candidate cache ONCE for fast candidate generation
-    if verbose:
-        print("📦 Building candidate cache for fast processing...")
-    B_records_list = list(B_records.values())
-    candidate_cache = CandidateCache(B_records_list)
-    if verbose:
-        print("✅ Candidate cache ready")
-
     # Get field names
     field_names = [col for col in A_df.columns if col != "id"]
 
@@ -510,6 +503,13 @@ def analyze_dataset_for_claude(
         cfg.embedding_model_name = embedding_model
         if verbose:
             print(f"🤖 Analysis using local embedding model: {embedding_model}")
+
+    # Build persistent candidate cache ONCE for fast candidate generation (reusable by dev runs)
+    if verbose:
+        print("📦 Building persistent candidate cache for fast processing...")
+    candidate_cache = create_candidate_cache(dataset, B_records, cfg, max_candidates)
+    if verbose:
+        print("✅ Candidate cache ready and persisted for reuse")
 
     # Try to load embeddings for semantic similarity
     semantic_available = False

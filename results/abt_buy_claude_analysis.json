@@ -1,0 +1,2025 @@
+{
+  "dataset": "abt_buy",
+  "analysis_type": "validation",
+  "metadata": {
+    "total_pairs_analyzed": 1916,
+    "positive_pairs": 206,
+    "negative_pairs_sampled": 30,
+    "semantic_available": true
+  },
+  "similarity_analysis": {
+    "true_matches": {
+      "syntactic": {
+        "mean": 0.64194800462159,
+        "std": 0.15799967254483227,
+        "median": 0.6666666666666666,
+        "min": 0.21621621621621623,
+        "max": 1.0
+      },
+      "trigram": {
+        "mean": 0.45959093099413795,
+        "std": 0.17677710309097355,
+        "median": 0.44116832779623477,
+        "min": 0.18867924528301888,
+        "max": 1.0
+      },
+      "semantic": {
+        "mean": 0.8650754461579673,
+        "std": 0.049187862928761414,
+        "median": 0.874825792323481,
+        "min": 0.6465323766027326,
+        "max": 0.9587405741852737
+      }
+    },
+    "false_positives": {
+      "syntactic": {
+        "mean": 0.5309850209609043,
+        "std": 0.10086973811270018,
+        "median": 0.518481182795699,
+        "min": 0.32142857142857145,
+        "max": 0.7474747474747475
+      },
+      "trigram": {
+        "mean": 0.280887345199811,
+        "std": 0.10882899905787567,
+        "median": 0.251984126984127,
+        "min": 0.17105263157894737,
+        "max": 0.6296296296296297
+      },
+      "semantic": {
+        "mean": 0.7726919745058115,
+        "std": 0.08604879368181545,
+        "median": 0.7839987387031074,
+        "min": 0.5639233836589682,
+        "max": 0.9236670547198018
+      }
+    }
+  },
+  "candidate_analysis": {
+    "recall_at_1": 0.6650485436893204,
+    "recall_at_5": 0.8883495145631068,
+    "recall_at_10": 0.9368932038834952,
+    "recall_at_25": 0.9805825242718447,
+    "recall_at_50": 0.9951456310679612,
+    "recall_at_100": 0.9951456310679612,
+    "recall_at_150": 1.0,
+    "recall_at_200": 1.0,
+    "recall_at_300": 1.0,
+    "recall_at_500": 1.0
+  },
+  "concrete_examples": {
+    "true_matches": [
+      {
+        "left_record": {
+          "id": 1027,
+          "name": "linksys etherfast10/100 5-port auto-sensing switch ezxs55w",
+          "description": "linksys etherfast10/100 5-port auto-sensing switch ezxs55w 5 port 10/100 autosensing ports with both half and full duplex modes perfect for integrating your 10baset and 100basetx network hardware switched 10/100 ports run at 10mbps , 20mbps , 100mbps up to 200mbps",
+          "price": 29.0
+        },
+        "right_record": {
+          "id": 1,
+          "name": "linksys etherfast ezxs55w ethernet switch",
+          "description": "5 x 10/100base-tx lan",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.505,
+          "trigram": 0.4,
+          "semantic": 0.881
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 713,
+          "name": "samsung 5 disc home theater surround sound system htz510",
+          "description": "samsung 5 disc home theater surround sound system htz510 5-disc dvd changer hdmi output 5.1 channel home theater audio system multimedia disc playback xm satellite radio-ready wireless ready ipod connectivity compatible black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 650,
+          "name": "samsung ht-z510 home theater system",
+          "description": "dvd player , 5.1 speakers 5 disc ( s ) progressive scan 1200w rms dolby digital , dolby pro logic ii , dts",
+          "price": 321.55
+        },
+        "similarities": {
+          "syntactic": 0.637,
+          "trigram": 0.482,
+          "semantic": 0.833
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 229,
+          "name": "weber genesis s-310 natural gas stainless steel outdoor grill 3870001",
+          "description": "weber genesis s-310 natural gas stainless steel outdoor grill 3870001 3 stainless steel burners 42,000 btu-per-hour input electronic crossover ignition system center mounted thermometer cast aluminum end caps 2 heavy duty front locking casters stainless steel finish assembly required",
+          "price": 919.0
+        },
+        "right_record": {
+          "id": 321,
+          "name": "weber genesis series s-310 60 ' freestanding gas grill",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.504,
+          "trigram": 0.295,
+          "semantic": 0.864
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 777,
+          "name": "panasonic expandable bluetooth-enabled dect 6.0 phone system kxth1212b",
+          "description": "panasonic expandable bluetooth-enabled dect 6.0 phone system kxth1212b call waiting caller id white backlit color lcd lighted handset keypad night mode compatible with most bluetooth cell phones 5 hours talk time/11 days standby time 60 channels black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 883,
+          "name": "panasonic kxth1212b",
+          "description": "",
+          "price": 79.99
+        },
+        "similarities": {
+          "syntactic": 0.427,
+          "trigram": 0.242,
+          "semantic": 0.738
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 33,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 645,
+          "name": "sony 7.1 channel black a/v receiver strdg720",
+          "description": "sony 7.1 channel black a/v receiver strdg720 105 watts x 7 amplifier power accepts 1080/60p and 24p video signal via hdmi bravia sync digital media port digital cinema auto calibration digital cinema sound dolby digital , dolby digital ex , dolby pro logic ii , dolby pro logic iix , dts , dts-es , dts 96/24 , dts neo :6 decoding black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 722,
+          "name": "sony str-dg720 a/v receiver strdg720",
+          "description": "dolby digital , dolby pro logic ii , dts 96/24 , dts neo :6 , dolby digital ex , dolby pro logic iix , dolby pro logic , dts-es , digital cinema sound , dts",
+          "price": 224.79
+        },
+        "similarities": {
+          "syntactic": 0.7,
+          "trigram": 0.479,
+          "semantic": 0.847
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 168,
+          "name": "olympus lithium ion rechargeable battery li42b",
+          "description": "olympus li-42b lithium ion rechargeable battery li42b compatible with stylus 730 , 7200sw , 770se , 710 , 740 and fe230",
+          "price": ""
+        },
+        "right_record": {
+          "id": 258,
+          "name": "olympus li-42b lithium ion digital camera battery 202034",
+          "description": "lithium ion ( li-ion ) 3.7 v dc photo battery",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.627,
+          "trigram": 0.371,
+          "semantic": 0.725
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 473,
+          "name": "yamaha 5.1 channel home theater in a box system in black yht390bk",
+          "description": "yamaha 5.1 channel home theater in a box system in black yht390bk new scene , compressed music enhancer ipod compatibility 600w powerful surround sound silent cinema 192khz/24-bit dacs for all channels black finish",
+          "price": 399.0
+        },
+        "right_record": {
+          "id": 742,
+          "name": "yamaha yht-390bl home theater system yht-390bl",
+          "description": ", 5.1 speakers progressive scan 600w rms black",
+          "price": 319.96
+        },
+        "similarities": {
+          "syntactic": 0.667,
+          "trigram": 0.406,
+          "semantic": 0.827
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 474,
+          "name": "apple macbook air superdrive mb397ga",
+          "description": "apple macbook air superdrive mb397ga compact and portable slot-loading 8x superdrive connect to macbook air usb slot play and burn both cds and dvds watch dvd movie , install software , or create backup discs",
+          "price": 99.0
+        },
+        "right_record": {
+          "id": 1066,
+          "name": "apple 8x dvdrw drive mb397g/a",
+          "description": "( double-layer ) dvd-ram/r/rw 8x 8x 8x ( dvd ) 24x 16x 24x ( cd ) usb external",
+          "price": 95.71
+        },
+        "similarities": {
+          "syntactic": 0.677,
+          "trigram": 0.304,
+          "semantic": 0.79
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 692,
+          "name": "lg 5.6 cu . ft. black freestanding electric range lre30453bk",
+          "description": "lg 5.6 cu . ft. black freestanding electric range lre30453bk intuitouch control system evenjet convection system 5.6 cubic capacity wideview oven window 5 radiant elements 25 heating settings black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 782,
+          "name": "lg 5.6 cu.ft . freestanding electric range",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.765,
+          "trigram": 0.556,
+          "semantic": 0.907
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 658,
+          "name": "sony 1gb memory stick pro duo mark 2 media card msmt1g",
+          "description": "sony 1gb memory stick pro duo mark 2 media card msmt1g 160 mbps transfer speed 940mb actual capacity",
+          "price": 19.0
+        },
+        "right_record": {
+          "id": 670,
+          "name": "sony 1gb memory stick pro duo card msmt1g",
+          "description": "1 gb",
+          "price": 13.41
+        },
+        "similarities": {
+          "syntactic": 0.863,
+          "trigram": 0.731,
+          "semantic": 0.916
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 520,
+          "name": "nikon coolpix s550 10 megapixel black digital camera coolpixs550gb",
+          "description": "nikon coolpix s550 10 megapixel black digital camera coolpixs550gb 10.0 megapixels 5x optical zoom nikkor glass lens electronic vr image stabilization bright 2.5 ' high resolution lcd in-camera red-eye fix face-priority af d-lighting graphite black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 536,
+          "name": "nikon coolpix s550 digital camera graphite black 26108",
+          "description": "10 megapixel 16:9 4x digital zoom 2.5 ' active matrix tft color lcd",
+          "price": 168.72
+        },
+        "similarities": {
+          "syntactic": 0.6,
+          "trigram": 0.507,
+          "semantic": 0.875
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 734,
+          "name": "lg 24 ' ldf6920st fully integrated built in stainless steel dishwasher ldf6920ss",
+          "description": "lg 24 ' ldf6920st fully integrated built in stainless steel dishwasher ldf6920ss xl tall tub cleans up to 16 place settings at once adjustable upper rack lodecibel quiet operation senseclean wash system 5 wash cycles with 3 spray arms multi-level water direction slim direct drive motor fully integrated electronic control panel stainless steel finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 776,
+          "name": "lg ldf6920st fully integrated dishwasher with 5 wash cycles , 3 spray arms , senseclean system , delay start , food disposer and self-clean filter : stainless steel",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.41,
+          "trigram": 0.333,
+          "semantic": 0.89
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 531,
+          "name": "sony dvp-fx820 red 8 ' portable dvd player dvpfx820r",
+          "description": "sony dvp-fx820 red 8 ' portable dvd player dvpfx820r swivel & flip screen with dual sensor for remote control control buttons on screen bezel 12 bit video dac with 108 mhz processing removable , rechargeable battery & car adapter included red finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 763,
+          "name": "sony dvp-fx820 / r portable dvd player dvpfx820/r",
+          "description": "8 ' lcd dvd + rw , dvd-rw , dvd + r , dvd-r , cd-rw dvd video , cd-da , mp3 , jpeg playback 1 disc ( s ) red",
+          "price": 159.94
+        },
+        "similarities": {
+          "syntactic": 0.911,
+          "trigram": 0.667,
+          "semantic": 0.877
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1,
+          "name": "bose acoustimass 5 series iii speaker system am53bk",
+          "description": "bose acoustimass 5 series iii speaker system am53bk 2 dual cube speakers with two 2-1/2 ' wide-range drivers in each speaker powerful bass module with two 5-1/2 ' woofers 200 watts max power black finish",
+          "price": 399.0
+        },
+        "right_record": {
+          "id": 154,
+          "name": "bose acoustimass 5 series iii speaker system 21725",
+          "description": "2.1-channel black",
+          "price": 359.0
+        },
+        "similarities": {
+          "syntactic": 0.911,
+          "trigram": 0.796,
+          "semantic": 0.886
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 367,
+          "name": "sirius stiletto 2 portable satellite radio sl2pk1",
+          "description": "sirius stiletto 2 portable satellite radio sl2pk1 sirius replay controls record up to 100 hours stores up to 10 hours of individual songs 2gb internal memory personalized sports ticker srs trubass and 3d focus technologies wifi black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 466,
+          "name": "sirius sl2pk1 sirius stiletto 2 portable radio",
+          "description": "",
+          "price": 234.99
+        },
+        "similarities": {
+          "syntactic": 0.674,
+          "trigram": 0.7,
+          "semantic": 0.858
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 112,
+          "name": "sennheisser hi-fi wireless headphone rs120",
+          "description": "sennheisser hi-fi wireless headphone rs120 supra aural wireless rf headphone system range of up to 100 meters three selectable rf channels transmitter with metal cradle",
+          "price": ""
+        },
+        "right_record": {
+          "id": 51,
+          "name": "sennheiser rs 120 wireless hi-fi headphone rs120",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.8,
+          "trigram": 0.75,
+          "semantic": 0.865
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1003,
+          "name": "netgear prosafe 24-port gigabit rackmount switch with 2 sfp slots jgs524f",
+          "description": "netgear prosafe 24-port gigabit rackmount switch jgs524f 24\u00a010/100 / 1000 mbps ports automatic speed full/half-duplex sensing auto uplink two hot-swappable small form factor pluggable gbic slots up to 48 gbps of switching capacity compatible with pc , macintosh , linux , and unix operating systems",
+          "price": ""
+        },
+        "right_record": {
+          "id": 93,
+          "name": "netgear prosafe jgs524f 24-port gigabit ethernet switch jgs524fna",
+          "description": "netgear prosafe jgs544f 24 port gigabit rackmount switch with 2 gigabit slots",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.725,
+          "trigram": 0.5,
+          "semantic": 0.959
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 965,
+          "name": "sanus 30 ' 58 ' visionmount flat panel tv black tilting wall mount lt25b1",
+          "description": "sanus 30 ' 58 ' visionmount flat panel tv black tilting wall mount lt25b1 lateral shift adjustment virtual axis height and level adjustments clickstand clickfit system open wall plate black finish",
+          "price": 199.0
+        },
+        "right_record": {
+          "id": 688,
+          "name": "sanus visionmount lt25-b1 tilting wall mount",
+          "description": "175 lb black",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.684,
+          "trigram": 0.458,
+          "semantic": 0.832
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 5,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 972,
+          "name": "logitech black v450 nano cordless laser mouse for notebooks 910000619",
+          "description": "logitech black v450 nano cordless laser mouse for notebooks 910000619 laser precision side-to-side scrolling plus zoom advanced 2.4 ghz wireless connection storable nano reciever 12 months battery life with indicator light black finish",
+          "price": 49.0
+        },
+        "right_record": {
+          "id": 678,
+          "name": "logitech v450 nano cordless laser mouse for notebooks 910-000619",
+          "description": "laser",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.947,
+          "trigram": 0.829,
+          "semantic": 0.957
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 106,
+          "name": "netgear prosafe 16 port 10/100 desktop switch purple finish fs116p",
+          "description": "netgear prosafe 16 port 10/100 desktop switch fs116p 16 auto speed-sensing 10/100 rj-45 ports 96 kb embedded memory per unit",
+          "price": 299.0
+        },
+        "right_record": {
+          "id": 91,
+          "name": "netgear prosafe fs116p ethernet switch fs116pna",
+          "description": "16 x 10/100base-tx lan",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.619,
+          "trigram": 0.355,
+          "semantic": 0.879
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1045,
+          "name": "logitech cordless desktop mx 5500 revolution keyboard and mouse combination 920000383",
+          "description": "logitech cordless desktop mx 5500 revolution keyboard and mouse combination 920000383 cordless laser mouse revolutionary scroll wheel precise click-to-click scrolling rapid charging stand dynamic lcd keyboard display bluetooth wireless technology secureconnect technology black finish",
+          "price": 169.0
+        },
+        "right_record": {
+          "id": 526,
+          "name": "logitech cordless desktop mx 5500 revolution keyboard and mouse 920-000383",
+          "description": "logitech cordless desktop mx 5500 revolution",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.918,
+          "trigram": 0.829,
+          "semantic": 0.936
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 569,
+          "name": "samsung 46 ' series 6 lcd black flat panel hdtv ln46a650",
+          "description": "samsung 46 ' series 6 lcd black flat panel hdtv ln46a650 full 1080p high definition resolution 16:9 widescreen aspect ratio 50,000:1 dynamic contrast ratio 4ms response time and auto motion plus 120hz technology srs trusurround xt audio built-in digital tuner ( atsc/clear qam ) picture-in-picture auto volume leveler 4 hdmi slots swivel stand piano black with hint amber finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 646,
+          "name": "samsung ln46a650 46 ' lcd tv",
+          "description": "samsung ln46a650 46 ' 1080p lcd hdtv 50,000:1 dynamic contrast ratio 120hz 4ms response time",
+          "price": 1599.98
+        },
+        "similarities": {
+          "syntactic": 0.381,
+          "trigram": 0.333,
+          "semantic": 0.842
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 755,
+          "name": "panasonic viera 46 ' black plasma flat panel 1080p hdtv th46pz850u",
+          "description": "panasonic viera 46 ' black plasma flat panel 1080p hdtv th46pz850u 1,920 x 1,080 resolution 1,000,000:1 dynamic contrast ratio 5,120 equivalent shades of gradation 24p cinematic playback x.v.color motion adaptive 3d y/c digital comb filter motion pattern noise reduction black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 843,
+          "name": "panasonic viera th-46pz850u 46 ' plasma tv th46pz850u",
+          "description": "46 ' atsc , ntsc 16:9 1920 x 1080 hdtv",
+          "price": 1695.96
+        },
+        "similarities": {
+          "syntactic": 0.689,
+          "trigram": 0.493,
+          "semantic": 0.879
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 947,
+          "name": "canon powershot black 14.7 megapixel digital camera g10",
+          "description": "canon powershot black 14.7 megapixel digital camera g10 14.7 megapixel 5x optical zoom optical image stabilizer digic 4 image processor face detection self-timer intelligent contrast correction 3.0 ' purecolor lcd print/share button black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 994,
+          "name": "canon powershot g10 14 megapixel digital camera w / 28mm wide lens , 5x optical zoom , 3 ' lcd , face detection & red eye correction 2663b001",
+          "description": "",
+          "price": 409.88
+        },
+        "similarities": {
+          "syntactic": 0.469,
+          "trigram": 0.289,
+          "semantic": 0.866
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 771,
+          "name": "sony black 5.1 channel home theater system htddwg700",
+          "description": "sony black 5.1 channel home theater system htddwg700 5.1 channel 900 watts power portable audio enhancer with front audio input ipod cradle digital cinema auto calibration bravia sync digital media port black finish",
+          "price": 199.0
+        },
+        "right_record": {
+          "id": 831,
+          "name": "sony ht-ddwg700 home theater system htddwg700",
+          "description": "dvd player , 5.1 speakers 900w rms dts , dolby digital , dolby pro logic ii",
+          "price": 206.96
+        },
+        "similarities": {
+          "syntactic": 0.742,
+          "trigram": 0.554,
+          "semantic": 0.833
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1076,
+          "name": "logitech cordless desktop wave keyboard and mouse combo 920000264",
+          "description": "logitech cordless desktop wave keyboard and mouse combo 920000264 contoured wave-shaped key design cushioned contoured palm rest adjustable keyboard height comfortable design high-performance laser mouse instant media access programmable f-keys compatible with pc and mac black finish",
+          "price": 79.0
+        },
+        "right_record": {
+          "id": 391,
+          "name": "logitech cordless desktop wave 920-000264",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.755,
+          "trigram": 0.538,
+          "semantic": 0.851
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 826,
+          "name": "d-link broadband cable modem dcm202",
+          "description": "d-link broadband cable modem dcm202 docsis 2.0 cablelabs certified high-speed internet connectivity always on and always connected ethernet or usb connectivity front panel led indicator lights grey finish",
+          "price": 79.0
+        },
+        "right_record": {
+          "id": 19,
+          "name": "d-link express ethernetwork high-speed docsis 2.0 cable modem dcm-202",
+          "description": "d-link broadband cable modem",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.577,
+          "trigram": 0.25,
+          "semantic": 0.917
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 42,
+          "name": "maytag over-the-range microwave oven mmv5207bk",
+          "description": "maytag over-the-range microwave oven mmv5207bk 2.0 cubic foot capacity 1,100 watts ten power levels sensor cook custom program option wideglide tray delay-stop fan settings deluxe charcoal odor filter black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 812,
+          "name": "maytag 2.0 cu . ft. over-the-range microwave oven",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.758,
+          "trigram": 0.554,
+          "semantic": 0.9
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 153,
+          "name": "sony dsch2 soft carrying camera case black finish lcscsh",
+          "description": "sony dsch2 soft carrying black camera case lcscsh polypropylene construction extra compartments for accessory storage can hold many sony or other manufacturers digital cameras black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 247,
+          "name": "sony lcs-csh soft camera case lcscsh",
+          "description": "top loading polypropylene black",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.696,
+          "trigram": 0.414,
+          "semantic": 0.872
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 165,
+          "name": "sony minidv cleaning cassette dvm12cld",
+          "description": "sony minidv cleaning cassette dvm12cld play for 10 seconds and it cleans the heads of your minidv camcorder for picture-perfect performance designed for all minidv camcorders and minidv vcrs",
+          "price": ""
+        },
+        "right_record": {
+          "id": 32,
+          "name": "sony minidv head cleaner dvm12cld",
+          "description": "head cleaner",
+          "price": 7.95
+        },
+        "similarities": {
+          "syntactic": 0.761,
+          "trigram": 0.457,
+          "semantic": 0.8
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 103,
+          "name": "garmin streetpilot c330 dash mount black finish 0101061300",
+          "description": "garmin streetpilot c330 dash mount 0101061300 non-skid mount design fully portable includes 12/24 volt cigarette lighter adapter black finish",
+          "price": 57.0
+        },
+        "right_record": {
+          "id": 204,
+          "name": "garmin gps receiver dash mount 010-10613-00",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.673,
+          "trigram": 0.267,
+          "semantic": 0.837
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 207,
+          "name": "lg wdp3n 14 ' tall navy blue pedestal with drawer wdp3bl",
+          "description": "lg wdp3n 14 ' tall navy blue pedestal with drawer wdp3bl doubles as a great place to store laundry products provides easy access to front loading doors minimizes bending and stooping at doors navy blue finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 185,
+          "name": "lg electronics wdp3 laundry pedestal with drawer blue",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.606,
+          "trigram": 0.365,
+          "semantic": 0.927
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 756,
+          "name": "uniden dect 6.0 digital accessory handset dcx300",
+          "description": "uniden dect 6.0 digital accessory handset dcx300 dect 6.0 interference free cordless frequency large color display blue backlit keypad handset speakerphone intercom or call transfer between handsets polyphonic ring tones advanced phonebook features last 5 number redial piano black finish",
+          "price": 34.0
+        },
+        "right_record": {
+          "id": 514,
+          "name": "uniden dcx300 dect 6.0 accessory handset and cradle for the dect2000 series",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.618,
+          "trigram": 0.481,
+          "semantic": 0.873
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 753,
+          "name": "mitsubishi 835 diamond series 73 ' 1080p dlp rear projection hdtv wd73835",
+          "description": "mitsubishi 835 diamond series 73 ' 1080p dlp rear projection hdtv wd73835 1920 x 1080 full hd resolution 6-color processor smooth 120hz x.v.color plush1080p 12-bit digital video processing color 4d video noise reduction 3d ready netcommand deepfield imager black finish",
+          "price": 3499.0
+        },
+        "right_record": {
+          "id": 898,
+          "name": "mitsubishi diamond wd-73835 73 ' projection tv wd73835",
+          "description": "73 ' dlp",
+          "price": 3299.0
+        },
+        "similarities": {
+          "syntactic": 0.724,
+          "trigram": 0.494,
+          "semantic": 0.883
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 479,
+          "name": "sony black cyber-shot digital camera dscw150b",
+          "description": "sony dscw150 black cyber-shot digital camera dscw150b 8.1 megapixels 2.7 ' lcd display 15 mb internal memory carl zeiss 5x optical zoom lens 16:9 high-resolution mode 9-point auto focus automatic macro shooting high sensitivity mode burst mode face detection intelligent scene recognition mode in-camera retouching super steadyshot optical image stabilization with anti-blur solution music slideshow hdtv compatibility beginner-friendly function guide black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 880,
+          "name": "sony cyber-shot dsc-w150 digital camera black dscw150/b",
+          "description": "8.1 megapixel 16:9 2x digital zoom 2.7 ' active matrix tft color lcd",
+          "price": 129.99
+        },
+        "similarities": {
+          "syntactic": 0.78,
+          "trigram": 0.736,
+          "semantic": 0.877
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 743,
+          "name": "tomtom black carry case 9uea01700",
+          "description": "tomtom black carry case 9uea01700 specifically designed for tomtom one 130 gps durable and compact protective hardcover material wrist strap black finish",
+          "price": 19.0
+        },
+        "right_record": {
+          "id": 679,
+          "name": "tomtom one 130 carry bag 9uea .017.00",
+          "description": "black",
+          "price": 14.74
+        },
+        "similarities": {
+          "syntactic": 0.714,
+          "trigram": 0.26,
+          "semantic": 0.866
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 729,
+          "name": "weber q 320 liquid propane table and outdoor grill 586002",
+          "description": "weber q 320 liquid propane table and outdoor grill 586002 462 sq. in . total cooking area 21,700 btu stainless steel burners porcelain-enameled cast-iron cooking grate cast-aluminum lid and body electronic ignition grill out handle light folding work tables with tool holders removable catch pan built-in thermometer stationary cart included black and aluminum finish assembly required",
+          "price": 379.0
+        },
+        "right_record": {
+          "id": 521,
+          "name": "weber q 320 gas grill",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.487,
+          "trigram": 0.233,
+          "semantic": 0.803
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 6,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 418,
+          "name": "garmin 010-10823-01 carrying case 0101082301",
+          "description": "garmin 010-10823-01 carrying case 0101082301 durable leather case fits garmin 4.3 models black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 295,
+          "name": "garmin leather carry case for nuvi 660\u00a0010-10823 -01",
+          "description": "top loading leather",
+          "price": 9.28
+        },
+        "similarities": {
+          "syntactic": 0.396,
+          "trigram": 0.312,
+          "semantic": 0.786
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 56,
+          "name": "universal ir/rf remote mx350",
+          "description": "universal ir/rf remote mx350 controls up to 10 components extensive macro programming memory back-up one hand ergonomics",
+          "price": 149.95
+        },
+        "right_record": {
+          "id": 107,
+          "name": "universal mx-350 osiris remote control mx350",
+          "description": "tv , vcr , dvd player , cd player , cable box , satellite receiver , dvr , audio receivers 100 ft universal remote",
+          "price": 93.9
+        },
+        "similarities": {
+          "syntactic": 0.694,
+          "trigram": 0.383,
+          "semantic": 0.809
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 19,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 896,
+          "name": "garmin nuvi 275t gps navigation system 0100057600",
+          "description": "garmin nuvi 275t gps navigation system 0100057600 3.5 ' antiglare touchscreen display size turn-by-turn directions voice prompts speaks street names 2-d or 3-d maps bluetooth wireless technology avoid traffic tie-ups integrated fm traffic receiver sleek & slim design jpeg picture viewer world travel clock up to 4 hours of battery life garmin lock grey finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 943,
+          "name": "garmin nuvi 275t 3.5 ' gps w/text to speech , bluetooth , where am i ? , connect photos 010-00576-00",
+          "description": "",
+          "price": 245.99
+        },
+        "similarities": {
+          "syntactic": 0.51,
+          "trigram": 0.195,
+          "semantic": 0.897
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 400,
+          "name": "panasonic black expandable digital cordless dect 6.0 phone system kxtg8232b",
+          "description": "panasonic black expandable digital cordless dect 6.0 phone system kxtg8232b large 1.5 ' color lcd extended talk time reduced interference hearing aid compatibility all-digital answering system 2 handsets piano black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 461,
+          "name": "panasonic kx-tg8232b cordless phone",
+          "description": "1 x phone line ( s ) black",
+          "price": 79.99
+        },
+        "similarities": {
+          "syntactic": 0.473,
+          "trigram": 0.329,
+          "semantic": 0.794
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 18,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 327,
+          "name": "ge 24 ' gsd2400nww white built-in dishwasher gsd2400wh",
+          "description": "ge 24 ' gsd2400nww white built-in dishwasher gsd2400wh 4-level powerscrub wash system hotstart option piranha hard food disposer heated dry option self-cleaning filter system white finish",
+          "price": 259.0
+        },
+        "right_record": {
+          "id": 985,
+          "name": "ge gsd2400nww dishwasher with 5 wash cycles gsd2400nww",
+          "description": "",
+          "price": 272.01
+        },
+        "similarities": {
+          "syntactic": 0.611,
+          "trigram": 0.318,
+          "semantic": 0.889
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 52,
+          "name": "olympus olympus ni-mh quick charger and battery set b90su",
+          "description": "olympus olympus ni-mh quick charger and battery set b90su ultra-compact size and removable ac cable charges four aa batteries in around 255 minutes 4 x 2300mah aa batteries included",
+          "price": ""
+        },
+        "right_record": {
+          "id": 61,
+          "name": "olympus b-90su aa/aaa size battery charger 200899",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.358,
+          "trigram": 0.297,
+          "semantic": 0.853
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 129,
+          "name": "whirlpool duet sport front loading white washer white finish wfw8300swh",
+          "description": "whirlpool duet sport front loading white washer wfw8300swh 3.4 cubic foot capacity electronic controls 7 cycles child lockout door lock variable-speed motor automatic water level control delay wash feature white finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 868,
+          "name": "whirlpool wfw8300sw 27 ' front-load washer w/3 .4 cu . ft. capacity ( white )",
+          "description": "",
+          "price": 668.75
+        },
+        "similarities": {
+          "syntactic": 0.473,
+          "trigram": 0.317,
+          "semantic": 0.864
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 342,
+          "name": "canon eos 40d digital slr camera in black eos40dbody",
+          "description": "canon eos 40d digital slr camera in black eos40dbody body only 10.1 megapixel cmos sensor digic iii image processor auto pop-up , retractable , built-in flash 3.0 ' tft color liquid-crystal monitor af system with 9 cross-type sensors black finish lens sold separately",
+          "price": ""
+        },
+        "right_record": {
+          "id": 418,
+          "name": "canon eos 40d digital slr camera 1901b004",
+          "description": "canon eos 40d 10 megapixel digital slr camera body only",
+          "price": 849.95
+        },
+        "similarities": {
+          "syntactic": 0.753,
+          "trigram": 0.564,
+          "semantic": 0.897
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 949,
+          "name": "canon powershot silver 14.7 megapixel digital camera sd990is",
+          "description": "canon powershot silver 14.7 megapixel digital camera sd990is 14.7 megapixel 3.7 x optical zoom optical image stabilizer optical viewfinder large high-quality 2.5 ' purecolor lcd digic 4 image processor face detection self-timer intelligent contrast correction quick mode print/share button silver finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 1000,
+          "name": "canon powershot sd990 is 14 megapixel digital camera w / 3.7 x optical zoom , ua len , face detection , 2.5 lcd , & iso 1600 silver 3191b001",
+          "description": "",
+          "price": 299.88
+        },
+        "similarities": {
+          "syntactic": 0.5,
+          "trigram": 0.37,
+          "semantic": 0.911
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 5,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 303,
+          "name": "haier 20 ' atsc color tube television htr20",
+          "description": "haier 20 ' atsc color tube television htr20 video noise reduction multi picture modes multilingual display digital comb filter component video input front av jacks",
+          "price": ""
+        },
+        "right_record": {
+          "id": 498,
+          "name": "20 ' television crt htr20",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.618,
+          "trigram": 0.362,
+          "semantic": 0.765
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 38,
+          "name": "toshiba rechargeable 5-hour battery pack medb05lx",
+          "description": "toshiba rechargeable 5-hour battery pack medb05lx works with sdp2500 and sdp2600 portable dvd players",
+          "price": 149.99
+        },
+        "right_record": {
+          "id": 192,
+          "name": "toshiba lithium ion portable dvd player battery medb05lx",
+          "description": "lithium ion ( li-ion ) 7.4 v dc portable dvd player battery",
+          "price": 149.99
+        },
+        "similarities": {
+          "syntactic": 0.61,
+          "trigram": 0.312,
+          "semantic": 0.855
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 373,
+          "name": "microsoft office standard 2007\u00a002107746",
+          "description": "microsoft office standard 2007\u00a002107746 create documents faster , more easily and more intuitively automatic document recovery tool document inspector online tutorials with step-by-step instructions compatible with windows vista , windows xp sp2 and windows server 2003 sp1",
+          "price": 399.0
+        },
+        "right_record": {
+          "id": 181,
+          "name": "microsoft office 2007 standard 021-07746",
+          "description": "",
+          "price": 319.99
+        },
+        "similarities": {
+          "syntactic": 0.861,
+          "trigram": 0.667,
+          "semantic": 0.78
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 253,
+          "name": "sony black cyber-shot w series digital camera carrying case lcscsl",
+          "description": "sony lcs-csl black cyber-shot w and s series digital camera carrying case lcscsl designed exclusively for your cyber-shot w and s series digital camera form-fitting design leather material black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 459,
+          "name": "sony lcs-csl cyber-shot camera case",
+          "description": "top loading leather black",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.594,
+          "trigram": 0.382,
+          "semantic": 0.911
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      }
+    ],
+    "confusing_non_matches": [
+      {
+        "left_record": {
+          "id": 612,
+          "name": "sony black soft carrying case lcsx30",
+          "description": "sony black soft carrying case lcsx30 stain resistant nylon case increased interior capacity modular interface black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 446,
+          "name": "sony lcs-csq soft cyber-shot camera case lcscsq/b",
+          "description": "top loading polyamide black",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.588,
+          "trigram": 0.25,
+          "semantic": 0.834
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 6,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 996,
+          "name": "sharp aquos black blu-ray disc player bdhp50u",
+          "description": "sharp aquos black blu-ray disc player bdhp50u full 1080/24p resolution bd-rom profile 1.1 and bd-live support hdmi version 1.3 output x.v.color dolby digital plus , dolby true hd and dts-hd decoding aquos link function 192khz/24-bit audio d/a converter upconverting video signals to 720p , 1080i or 1080p with 4,096 steps of gradation using hdmi black finish",
+          "price": 399.0
+        },
+        "right_record": {
+          "id": 835,
+          "name": "samsung bdp-1500 blu-ray dvd player bdp1500",
+          "description": "",
+          "price": 218.2
+        },
+        "similarities": {
+          "syntactic": 0.636,
+          "trigram": 0.254,
+          "semantic": 0.755
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 416,
+          "name": "garmin 010-10723-00 ac adapter cable with international adapters 0101072300",
+          "description": "garmin 010-10723-00 ac adapter cable with international adapters 0101072300 includes uk & euro adapters black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 275,
+          "name": "garmin suction cup mount 010-10823-00",
+          "description": "",
+          "price": 24.84
+        },
+        "similarities": {
+          "syntactic": 0.321,
+          "trigram": 0.188,
+          "semantic": 0.721
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 11,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 11,
+          "name": "panasonic 2-line integrated telephone system kxts208w",
+          "description": "panasonic 2-line integrated telephone system kxts208w 3-way conference one-touch/speed dialer speakerphone white finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 177,
+          "name": "panasonic kx-ts3282w corded telephone",
+          "description": "2 x phone line ( s ) headset white",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.556,
+          "trigram": 0.288,
+          "semantic": 0.831
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 811,
+          "name": "denon black home theater surround sound receiver avr1709",
+          "description": "denon black avr-1709 home theater surround sound receiver avr1709 80 watts per channel 7 channels hdmi v1 .3 a video switching dolby digital surround ex , dolby pro logic iix , dts es 6.1 , dts neo :6 decoding audyssey multeq , dynamic volume and dynamic eq video up-conversion black finish",
+          "price": 449.99
+        },
+        "right_record": {
+          "id": 417,
+          "name": "denon avr-4308ci a/v receiver avr4308ci",
+          "description": "dolby pro logic iix , dolby digital surround , dts-es , dts neo :6 , dts 96/24 , neural surroundfm , am , xm",
+          "price": 1849.77
+        },
+        "similarities": {
+          "syntactic": 0.505,
+          "trigram": 0.227,
+          "semantic": 0.818
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 12,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 715,
+          "name": "samsung 5 disc home theater surround sound system httz515",
+          "description": "samsung 5 disc home theater surround sound system httz515 5.1 channel 5 disc capability usb host play ipod dock divx playback dolby digital , dolby pro logic and dts system black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 734,
+          "name": "samsung htx810t home theater system htx810t",
+          "description": "samsung ht-x810 2.1 soundbar home theater system",
+          "price": 580.14
+        },
+        "similarities": {
+          "syntactic": 0.64,
+          "trigram": 0.458,
+          "semantic": 0.719
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 10,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 370,
+          "name": "nikon d300 digital slr digital camera d300body",
+          "description": "nikon d300 digital slr digital camera d300body 12.3 megapixel dx-format cmos sensor 3 ' super density 920,000-dot vga color monitor continuous shooting up to 6 frames per second fast accurate 51-point autofocus with 3d focus tracking scene recognition system ( srs ) dynamic integrated dust reduction system two liveview shooting modes picture control settings rugged magnesium-alloy construction black finish body only",
+          "price": ""
+        },
+        "right_record": {
+          "id": 538,
+          "name": "nikon coolpix s550 digital camera cool blue 26109",
+          "description": "10 megapixel 16:9 4x digital zoom 2.5 ' active matrix tft color lcd",
+          "price": 169.95
+        },
+        "similarities": {
+          "syntactic": 0.547,
+          "trigram": 0.322,
+          "semantic": 0.767
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 16,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 480,
+          "name": "sony red cyber-shot digital camera dscw150r",
+          "description": "sony dscw150 red cyber-shot digital camera dscw150r 8.1 megapixels 2.7 ' lcd display 15 mb internal memory carl zeiss 5x optical zoom lens 16:9 high-resolution mode 9-point auto focus automatic macro shooting high sensitivity mode burst mode face detection intelligent scene recognition mode in-camera retouching super steadyshot optical image stabilization with anti-blur solution music slideshow hdtv compatibility beginner-friendly function guide red finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 399,
+          "name": "nikon digital camera leather case 5811",
+          "description": "leather black",
+          "price": 7.99
+        },
+        "similarities": {
+          "syntactic": 0.494,
+          "trigram": 0.226,
+          "semantic": 0.611
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 400,
+          "name": "panasonic black expandable digital cordless dect 6.0 phone system kxtg8232b",
+          "description": "panasonic black expandable digital cordless dect 6.0 phone system kxtg8232b large 1.5 ' color lcd extended talk time reduced interference hearing aid compatibility all-digital answering system 2 handsets piano black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 635,
+          "name": "panasonic kx-tg9343t cordless phone",
+          "description": "panasonic kx-tg9343t dect 6.0 expandable digital cordless answering system w/3 handsets",
+          "price": 102.12
+        },
+        "similarities": {
+          "syntactic": 0.527,
+          "trigram": 0.25,
+          "semantic": 0.867
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 198,
+          "name": "canon pgi-5bk black ink tank cartridge pgi5bk",
+          "description": "canon pgi-5bk black ink tank cartridge pgi5bk smudge resistant resists smearing caused by highlighters smudge resistant pigment ink formulation for long lasting prints",
+          "price": 16.0
+        },
+        "right_record": {
+          "id": 366,
+          "name": "canon pg-40 twin pack black ink cartridge 0615b013",
+          "description": "black",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.695,
+          "trigram": 0.448,
+          "semantic": 0.841
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 5,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 508,
+          "name": "panasonic viera 37 ' 1080p lcd hdtv in black tc37lz85",
+          "description": "panasonic viera 37 ' 1080p lcd hdtv in black tc37lz85 ips alpha 1080p high-definition lcd panel 10000:1 contrast ratio 178 \u00b0 wide viewing angle 6.7 ms response intelligent scene controller built-in sd card slot 3 hdmi inputs and viera link hdavi control surround sound black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 21,
+          "name": "panasonic black toner cartridge kx-fa83",
+          "description": "panasonic toner cartridge for the kx-fl511 , kx-fl541 , kx-fl611 and kx-flm651 series",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.413,
+          "trigram": 0.189,
+          "semantic": 0.564
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 393,
+          "name": "klipsch black wireless ipod speaker roomgroove",
+          "description": "klipsch black wireless ipod speaker roomgroove wirelessly sends cd-quality music to/from other roomgrooves retractable dock charges ipods with 30-pin connectors horn-loaded technology for precise high tones dual high-output woofers deliver room-filling bass black finish",
+          "price": 299.0
+        },
+        "right_record": {
+          "id": 440,
+          "name": "klipsch groove pm20 computer speakers 1007596",
+          "description": "groove pm20 computer speakers",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.418,
+          "trigram": 0.246,
+          "semantic": 0.752
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 12,
+          "name": "sony 300 disc cd changer cdpcx355",
+          "description": "sony 300 disc cd changer cdpcx355 megastorage control cd-r/cd-rw playback 32 step program play control a1 ii custom file memo cd text keyboard input 2 jog dials remote control black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 207,
+          "name": "denon dcm-390 5 disc cd changer dcm390",
+          "description": "",
+          "price": 348.0
+        },
+        "similarities": {
+          "syntactic": 0.676,
+          "trigram": 0.312,
+          "semantic": 0.86
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 7,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1054,
+          "name": "griffin black tunebuds mobile for ipod and iphone 9410tunbmblb",
+          "description": "griffin black tunebuds mobile for ipod and iphone 9410tunbmblb compatible with iphone and ipod three sizes of cushioned silicone earpads high-sensitivity microphone controlmic button earphone cable black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 850,
+          "name": "griffin elan form for iphone 3g 8223-ip2efrmb",
+          "description": "griffin elan form iphone 3g blk",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.505,
+          "trigram": 0.193,
+          "semantic": 0.647
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 960,
+          "name": "canon printer black ink cartridge cli221blk",
+          "description": "canon printer black ink cartridge cli221blk fine technology for exceptional sharpness and detail compatible with pixma ip3600 , pixma ip4600 , pixma mp620 and pixma mp980",
+          "price": ""
+        },
+        "right_record": {
+          "id": 939,
+          "name": "canon cl-211 color ink cartridge for pixma mp240 and mp480 printers 2976b001",
+          "description": "cyan , magenta , yellow",
+          "price": 19.37
+        },
+        "similarities": {
+          "syntactic": 0.437,
+          "trigram": 0.27,
+          "semantic": 0.852
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 10,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 90,
+          "name": "canon color ink tank cl41cl",
+          "description": "canon color ink tank cl41cl compatible with the pixma ip1600 , mp170 printers",
+          "price": 24.0
+        },
+        "right_record": {
+          "id": 1050,
+          "name": "canon cli-221 color ink 4-pack ( black / cyan / magenta / yellow ) 2946b004",
+          "description": "",
+          "price": 44.99
+        },
+        "similarities": {
+          "syntactic": 0.412,
+          "trigram": 0.192,
+          "semantic": 0.835
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 16,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 109,
+          "name": "canon high capacity color ink cartridge color ink cl51",
+          "description": "canon high capacity color ink cartridge cl51 compatible with pixma ip6210d , ip6220d , mp150 , mp170 and mp450 printers",
+          "price": 35.0
+        },
+        "right_record": {
+          "id": 89,
+          "name": "canon pgi-5bk black ink cartridge 0628b002",
+          "description": "canon pgi-5 pigment black ink cartridge for canon contrastplus photo printers",
+          "price": 14.99
+        },
+        "similarities": {
+          "syntactic": 0.521,
+          "trigram": 0.266,
+          "semantic": 0.839
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 6,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 103,
+          "name": "garmin streetpilot c330 dash mount black finish 0101061300",
+          "description": "garmin streetpilot c330 dash mount 0101061300 non-skid mount design fully portable includes 12/24 volt cigarette lighter adapter black finish",
+          "price": 57.0
+        },
+        "right_record": {
+          "id": 275,
+          "name": "garmin suction cup mount 010-10823-00",
+          "description": "",
+          "price": 24.84
+        },
+        "similarities": {
+          "syntactic": 0.589,
+          "trigram": 0.171,
+          "semantic": 0.754
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 9,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 308,
+          "name": "panasonic nnsd797s stainless steel countertop microwave oven nnsd797ss",
+          "description": "panasonic nnsd797s stainless steel countertop microwave oven nnsd797ss 1.6 cu . ft. capacity 1250w output power 10 power levels 5 cooking stages one-touch sensor cooking or heating timer stainless steel finish",
+          "price": 199.0
+        },
+        "right_record": {
+          "id": 344,
+          "name": "panasonic nnsd667s 1.2 cu . ft. countertop microwave oven in stainless steel",
+          "description": "",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.671,
+          "trigram": 0.63,
+          "semantic": 0.924
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 738,
+          "name": "samsung black blu-ray player bdp1500",
+          "description": "samsung black blu-ray player bdp1500 1080p with 24hz video output x.v.color connectivity ( hdmi v1 .3 option ) selectable dvd upconversion ( 720p/1080i/1080p ) anynet + ( hdmi-cec ) dolby digital , dolby digital plus , dolby truehd and dts-hd master audio ethernet port black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 725,
+          "name": "samsung dvd-1080p8 dvd player",
+          "description": "dvd + rw , dvd-rw , cd-rw dvd video , jpeg , mp3 , wma , mpeg-4 , dvd audio , video cd , cd-da , divx playback progressive scan",
+          "price": 72.11
+        },
+        "similarities": {
+          "syntactic": 0.492,
+          "trigram": 0.234,
+          "semantic": 0.763
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 28,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 462,
+          "name": "linksys wireless-g ethernet bridge wet54g",
+          "description": "linksys wireless-g ethernet bridge wet54g converts wired-ethernet devices to wireless-g network connectivity for windows , macintosh , linux , playstation consoles , xbox consoles , or anything with an ethernet port plug and play , no driver installation require",
+          "price": 89.0
+        },
+        "right_record": {
+          "id": 480,
+          "name": "linksys rangeplus wrt160n 4-port wireless-n broadband router wrt160n",
+          "description": "linksys ultra rangeplus wireless-n broadband router",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.477,
+          "trigram": 0.193,
+          "semantic": 0.662
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 11,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1001,
+          "name": "canon black 21.1 megapixel eos digital slr camera body eos5dmarkiibody",
+          "description": "canon black 21.1 megapixel eos digital slr camera body eos5dmarkiibody 21.1 megapixel 3.0 ' clear view lcd monitor hd video shooting digic 4 image processor live view mode self cleaning sensor unit dust delete data detection anti-reflective and scratch-resistant coatings lens not included black finish",
+          "price": 2699.0
+        },
+        "right_record": {
+          "id": 654,
+          "name": "canon powershot sd890 is digital camera 2566b001",
+          "description": "canon powershot sd890 is 10 megapixel , 5x optical zoom , 2.5 ' lcd , ua lens digital camera",
+          "price": 198.0
+        },
+        "similarities": {
+          "syntactic": 0.458,
+          "trigram": 0.196,
+          "semantic": 0.783
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 21,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 479,
+          "name": "sony black cyber-shot digital camera dscw150b",
+          "description": "sony dscw150 black cyber-shot digital camera dscw150b 8.1 megapixels 2.7 ' lcd display 15 mb internal memory carl zeiss 5x optical zoom lens 16:9 high-resolution mode 9-point auto focus automatic macro shooting high sensitivity mode burst mode face detection intelligent scene recognition mode in-camera retouching super steadyshot optical image stabilization with anti-blur solution music slideshow hdtv compatibility beginner-friendly function guide black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 573,
+          "name": "sony cyber-shot dsc-w120 digital camera pink dscw120/p",
+          "description": "16:9 2x digital zoom 2.5 ' active matrix tft color lcd",
+          "price": 109.99
+        },
+        "similarities": {
+          "syntactic": 0.747,
+          "trigram": 0.542,
+          "semantic": 0.825
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 11,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 581,
+          "name": "samsung 32 ' black flat panel series 4 lcd hdtv ln32a450",
+          "description": "samsung 32 ' black flat panel series 4 lcd hdtv ln32a450 10,000:1 dynamic contrast ratio 1366 x 768 true 720p resolution 6ms response time cold cathode fluorescent lamp ( ccfl ) hidden bottom speakers srs trusurround xt built-in atsc/clear qam tuner v-chip system swivel stand black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 680,
+          "name": "samsung 4 series ln26a450 26 ' lcd tv",
+          "description": "samsung ln26a450 26 ' widescreen 720p lcd hdtv 5000:1 dynamic contrast ratio 8ms response time piano black",
+          "price": 549.0
+        },
+        "similarities": {
+          "syntactic": 0.516,
+          "trigram": 0.29,
+          "semantic": 0.785
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 433,
+          "name": "canon red photo ink cartridge cli8r",
+          "description": "canon red photo ink cartridge cli8r fine technology for exceptional sharpness & detail compatible with canon pixma pro9000",
+          "price": 16.0
+        },
+        "right_record": {
+          "id": 939,
+          "name": "canon cl-211 color ink cartridge for pixma mp240 and mp480 printers 2976b001",
+          "description": "cyan , magenta , yellow",
+          "price": 19.37
+        },
+        "similarities": {
+          "syntactic": 0.45,
+          "trigram": 0.207,
+          "semantic": 0.808
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 8,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 809,
+          "name": "griffin ipod roadtrip with smartscan 4040rdtrpb",
+          "description": "griffin ipod roadtrip with smartscan 4040rdtrpb play music from your ipod on your car?s stereo system as it charges switch quickly between pre-sets smartsound plus technology delivers clear sound under real-world conditions flexible steel neck black finish",
+          "price": 89.0
+        },
+        "right_record": {
+          "id": 469,
+          "name": "griffin itrip fm transmitter 4052-trpseb",
+          "description": "30ft",
+          "price": ""
+        },
+        "similarities": {
+          "syntactic": 0.552,
+          "trigram": 0.171,
+          "semantic": 0.575
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 23,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 947,
+          "name": "canon powershot black 14.7 megapixel digital camera g10",
+          "description": "canon powershot black 14.7 megapixel digital camera g10 14.7 megapixel 5x optical zoom optical image stabilizer digic 4 image processor face detection self-timer intelligent contrast correction 3.0 ' purecolor lcd print/share button black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 654,
+          "name": "canon powershot sd890 is digital camera 2566b001",
+          "description": "canon powershot sd890 is 10 megapixel , 5x optical zoom , 2.5 ' lcd , ua lens digital camera",
+          "price": 198.0
+        },
+        "similarities": {
+          "syntactic": 0.68,
+          "trigram": 0.394,
+          "semantic": 0.774
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 947,
+          "name": "canon powershot black 14.7 megapixel digital camera g10",
+          "description": "canon powershot black 14.7 megapixel digital camera g10 14.7 megapixel 5x optical zoom optical image stabilizer digic 4 image processor face detection self-timer intelligent contrast correction 3.0 ' purecolor lcd print/share button black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 536,
+          "name": "nikon coolpix s550 digital camera graphite black 26108",
+          "description": "10 megapixel 16:9 4x digital zoom 2.5 ' active matrix tft color lcd",
+          "price": 168.72
+        },
+        "similarities": {
+          "syntactic": 0.532,
+          "trigram": 0.265,
+          "semantic": 0.774
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 11,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 638,
+          "name": "sony 32 ' bravia xbr series black lcd flat panel hdtv kdl32xbr6",
+          "description": "sony 32 ' bravia xbr series black lcd flat panel hdtv kdl32xbr6 1920 x 1080 full hd 1080p resolution digital media extender ( dmex ) bravia engine technology advanced contrast enhancer ( ace ) enhanced ( xmb ) user interface with rich 3d graphics 24p true cinema black finish",
+          "price": ""
+        },
+        "right_record": {
+          "id": 840,
+          "name": "sony bravia kdl-32l4000 32 ' lcd tv kdl32l4000",
+          "description": "32 ' atsc , ntsc 16:9 1366 x 768 hdtv",
+          "price": 597.72
+        },
+        "similarities": {
+          "syntactic": 0.495,
+          "trigram": 0.293,
+          "semantic": 0.793
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 11,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 961,
+          "name": "canon printer gray ink cartridge cli221gry",
+          "description": "canon printer gray ink cartridge cli221gry fine technology for exceptional sharpness and detail compatible with pixma ip3600 , pixma ip4600 , pixma mp620 and pixma mp980",
+          "price": ""
+        },
+        "right_record": {
+          "id": 85,
+          "name": "canon ink cartridge for pixma ip4200 , ip5200 , ip5200r and ip6600d printers 0620b002",
+          "description": "black",
+          "price": 13.99
+        },
+        "similarities": {
+          "syntactic": 0.378,
+          "trigram": 0.261,
+          "semantic": 0.849
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 8,
+          "max_candidates": 50
+        }
+      }
+    ]
+  },
+  "dataset_characteristics": {
+    "table_a_size": 1081,
+    "table_b_size": 1092,
+    "field_names": [
+      "name",
+      "description",
+      "price"
+    ],
+    "sample_records": [
+      {
+        "id": 0,
+        "name": "sony turntable pslx350h",
+        "description": "sony turntable pslx350h belt drive system 33-1/3 and 45 rpm speeds servo speed control supplied moving magnet phono cartridge bonded diamond stylus static balance tonearm pitch control",
+        "price": ""
+      },
+      {
+        "id": 1,
+        "name": "bose acoustimass 5 series iii speaker system am53bk",
+        "description": "bose acoustimass 5 series iii speaker system am53bk 2 dual cube speakers with two 2-1/2 ' wide-range drivers in each speaker powerful bass module with two 5-1/2 ' woofers 200 watts max power black finish",
+        "price": 399.0
+      },
+      {
+        "id": 2,
+        "name": "sony switcher sbv40s",
+        "description": "sony switcher sbv40s eliminates disconnecting and reconnecting cables compact design 4 a/v inputs with s-video jacks 1 a/v output with s-video ( y/c ) jack 2 audio output",
+        "price": 49.0
+      }
+    ]
+  }
+}

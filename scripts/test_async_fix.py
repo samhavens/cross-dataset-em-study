@@ -3,8 +3,8 @@
 
 import asyncio
 import os
-import sys
 import pathlib
+import sys
 
 # Fix tokenizer warnings
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -13,10 +13,11 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent))
 
 from src.entity_matching.hybrid_matcher import run_matching
 
+
 async def test_async_fix():
     """Test with the async fixes"""
     print("🧪 Testing async fixes for SDK scope conflicts...")
-    
+
     try:
         result = await run_matching(
             dataset="beer",
@@ -26,11 +27,11 @@ async def test_async_fix():
             semantic_weight=0.5,
             concurrency=2  # Low concurrency
         )
-        
+
         print("✅ Async fixes successful!")
         print(f"Results: F1={result.get('f1', 0):.3f}")
         return True
-        
+
     except Exception as e:
         print(f"❌ Async issues still present: {e}")
         import traceback

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Test the beer dataset fix"""
 
-import os
-import sys
-import pathlib
 import asyncio
+import os
+import pathlib
+import sys
 import time
 
 # Set the tokenizer fix first
@@ -14,12 +14,13 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent))
 
 from src.entity_matching.hybrid_matcher import run_matching
 
+
 async def test_beer_fix():
     """Test the beer dataset with the tokenizer fix"""
     print("🧪 Testing beer dataset with tokenizer fix...")
-    
+
     start_time = time.time()
-    
+
     try:
         result = await asyncio.wait_for(
             run_matching(
@@ -32,11 +33,11 @@ async def test_beer_fix():
             ),
             timeout=120  # 2 minutes
         )
-        
+
         elapsed = time.time() - start_time
         print(f"✅ Beer test completed in {elapsed:.1f}s")
         print(f"Results: {result}")
-        
+
     except asyncio.TimeoutError:
         print("❌ Beer test timed out")
     except Exception as e:

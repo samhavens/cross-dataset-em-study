@@ -3,13 +3,15 @@
 Quick fix for the async batch processing hang by adding timeouts and better error handling.
 """
 
-import sys
 import pathlib
+import sys
+
 sys.path.append(str(pathlib.Path(__file__).parent.parent))
 
-from src.entity_matching.hybrid_matcher import run_matching
 import asyncio
 import os
+
+from src.entity_matching.hybrid_matcher import run_matching
 
 # Set environment variable to prevent tokenizer warnings
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -17,7 +19,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 async def test_with_timeout():
     """Test with very low concurrency and timeout"""
     print("🔧 Testing with timeout and low concurrency...")
-    
+
     try:
         # Use very conservative settings
         result = await asyncio.wait_for(
@@ -31,10 +33,10 @@ async def test_with_timeout():
             ),
             timeout=120  # 2 minutes timeout
         )
-        
+
         print("✅ Test completed successfully!")
         return result
-        
+
     except asyncio.TimeoutError:
         print("❌ Test timed out - there's definitely a deadlock issue")
         return None

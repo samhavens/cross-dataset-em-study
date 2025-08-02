@@ -100,17 +100,19 @@ class SimplifiedAgenticGenerator:
             if self.embedding_base_url:
                 mcp_servers['entity-matching']['env']['EMBEDDING_BASE_URL'] = self.embedding_base_url
 
+        print(f"🔍 MCP server config: {mcp_servers}")
+
         allowed_tools=[
-            "Read",  # Allow reading code files for analysis
-            "Task",  # Allow planning and task management
-            "LS",    # Allow listing directories for navigation
-            "Grep",  # Allow searching through files
+            # "Read",  # Allow reading code files for analysis
+            # "Task",  # Allow planning and task management
+            # "LS",    # Allow listing directories for navigation
+            # "Grep",  # Allow searching through files
             "mcp__entity-matching__ReadInstructions",
             "mcp__entity-matching__ReadSampleData",
             "mcp__entity-matching__GetBaseline",
             "mcp__entity-matching__RunExperiment",
             "mcp__entity-matching__ReportIssue",
-            "mcp__entity-matching__WriteWeights",
+            "mcp__entity-matching__TestWeights",
         ]
 
         # Initial prompt for the interactive session - different for each mode
@@ -130,7 +132,7 @@ Goal: Optimize {self.dataset} dataset weights for F1 > {self.target_f1}
 WORKFLOW:
 1. mcp__entity-matching__ReadInstructions (dataset: "{self.dataset}") - START HERE
 2. mcp__entity-matching__GetBaseline (dataset: "{self.dataset}") - Check current performance
-3. mcp__entity-matching__WriteWeights - ONLY change weights, NO rules
+3. mcp__entity-matching__TestWeights - ONLY change weights, NO rules
 4. mcp__entity-matching__RunExperiment - Test on full dev set
 5. Iterate quickly on weight combinations
 
@@ -152,16 +154,16 @@ Goal: Optimize {self.dataset} dataset for F1 > {self.target_f1}
 WORKFLOW:
 1. mcp__entity-matching__ReadInstructions (dataset: "{self.dataset}") - START HERE
 2. mcp__entity-matching__GetBaseline (dataset: "{self.dataset}") - Check current performance
-3a. mcp__entity-matching__WriteWeights - Optimize similarity weights (semantic_weight, trigram_weight, syntactic_weight must sum to 1.0)
+3a. mcp__entity-matching__TestWeights - Optimize similarity weights (semantic_weight, trigram_weight, syntactic_weight must sum to 1.0)
 3b.1. mcp__entity-matching__ReadPrompt - Read current prompt structure
 3b.2. mcp__entity-matching__WritePrompt - Modify prompt structure for better LLM guidance
 4. mcp__entity-matching__RunExperiment - Test on dev set and analyze detailed failure modes
 5. Repeat steps 3 (a or b1 & 2) and 4 to iterate on both weights and prompt modifications, but only do one or the other at a time to be a good scientist.
 
 FOCUS:
-- Find optimal semantic_weight, trigram_weight, syntactic_weight (must sum to 1.0) using WriteWeights
+- Find optimal semantic_weight, trigram_weight, syntactic_weight (must sum to 1.0) using TestWeights
 - Modify the prompt structure using WritePrompt to give better LLM guidance for specific matching scenarios
-- Use WriteWeights for weight changes, WritePrompt for prompt modifications - these are separate tools!"""
+- When you want to see how your weights and prompt changes affect the dev set, use RunExperiment"""
 
         else:  # mode == "heuristics"
             allowed_tools.append("mcp__entity-matching__WriteRules")
@@ -191,14 +193,13 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
 
         options = ClaudeCodeOptions(
             mcp_servers=mcp_servers,
-            # Allow MCP tools + essential planning/analysis tools
-            allowed_tools=allowed_tools,
             # Explicitly disallow system tools (except Read, Task, LS, Grep which are allowed above)
             disallowed_tools=[
                 "Bash", "Write", "Edit", "MultiEdit", "Glob",
                 "NotebookEdit", "NotebookRead", "TodoWrite",
-                "WebSearch", "WebFetch"  # Block web access
+                "WebSearch", "WebFetch", "Read", "Task", "LS", "Grep"
             ],
+            allowed_tools=allowed_tools,
             permission_mode="acceptEdits",
             cwd=os.getcwd(),
             max_turns=30
@@ -209,10 +210,6 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
 
         print("🚀 Starting interactive ClaudeSDKClient session...")
         print(f"  MCP_SERVER_MODE: {os.environ.get('MCP_SERVER_MODE')}")
-        mcp_tools = [t for t in options.allowed_tools if 'mcp__' in t]
-        print(f"   MCP tools: {len(mcp_tools)}")
-        print(f"   MCP tool list: {mcp_tools}")
-        print(f"   All allowed: {len(options.allowed_tools)}")
         print(f"   Disallowed: {len(options.disallowed_tools)}")
         print(f"   MCP server mode: {os.environ.get('MCP_SERVER_MODE', 'full')}")
 
@@ -259,7 +256,7 @@ FOCUS: Optimize weights AND create custom rules based on data analysis."""
                                     print(f"         Args: {json.dumps(block.input, indent=8)}")
 
                                     # Highlight weight changes for easy tracking
-                                    if block.name == "mcp__entity-matching__WriteWeights":
+                                    if block.name == "mcp__entity-matching__TestWeights":
                                         sem = block.input.get('semantic_weight')
                                         tri = block.input.get('trigram_weight')
                                         syn = block.input.get('syntactic_weight')

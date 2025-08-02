@@ -1,57 +1,2944 @@
 {
-  "timestamp": "2025-07-07T17:34:14.307844",
+  "timestamp": "2025-07-31T15:23:58.549037",
   "dataset": "beer",
   "pipeline_version": "complete_v3_working_rules",
   "dev_results": {
-    "f1": 0.8571428571428571,
-    "precision": 0.8571428571428571,
-    "recall": 0.8571428571428571,
-    "cost_usd": 0.0155238,
-    "processing_time": 158.93998885154724
+    "f1": 0.8148148148148148,
+    "precision": 0.8461538461538461,
+    "recall": 0.7857142857142857,
+    "cost_usd": 0.047492400000000004,
+    "processing_time": 3.3020358085632324
   },
   "optimal_params": {
-    "max_candidates": 10,
-    "semantic_weight": 0.15,
+    "max_candidates": 50,
+    "semantic_weight": 0.9,
+    "trigram_weight": 0.05,
+    "syntactic_weight": 0.05,
     "model": "gpt-4.1-nano",
     "use_semantic": true
   },
-  "heuristics_file": "results/generated_rules/beer_generated_heuristics.json",
+  "heuristics_file": "results/generated_rules/beer_known_params_config.json",
   "rule_generation": "claude_sdk_success",
   "baseline_results": {
-    "f1": 0.9333333333333333,
-    "precision": 0.875,
+    "f1": 0.9655172413793104,
+    "precision": 0.9333333333333333,
     "recall": 1.0,
-    "cost_usd": 0.031204799999999998,
-    "processing_time": 14.874008178710938
+    "cost_usd": 0.12982200000000002,
+    "processing_time": 118.78672480583191,
+    "predictions": {
+      "113": 140,
+      "3079": 1650,
+      "3372": 1853,
+      "2215": 549,
+      "1042": 55,
+      "4203": 2393,
+      "2572": 1297,
+      "271": 1410,
+      "1024": 1278,
+      "1780": 685,
+      "200": 911,
+      "3963": 646,
+      "833": 2883,
+      "4168": 2416,
+      "2007": 203,
+      "1218": 1638,
+      "982": 2999,
+      "1621": 548,
+      "487": 2583,
+      "29": 1638,
+      "4027": 2302,
+      "3130": 1682,
+      "76": 2831,
+      "525": 2627,
+      "2972": 646,
+      "2115": 947,
+      "4063": 2331,
+      "1479": 430,
+      "2026": 206,
+      "1219": 1009,
+      "492": 218,
+      "3917": 2224,
+      "262": 1348,
+      "696": 646,
+      "3381": 1859,
+      "563": 1177,
+      "4161": 2409,
+      "862": 2906,
+      "2242": 1048,
+      "3956": 2251,
+      "285": 1519,
+      "2558": 1284,
+      "2596": 1314,
+      "406": 1255,
+      "4181": 2428,
+      "3098": 1661,
+      "1842": 737
+    }
   },
   "enhanced_results": {
-    "f1": 0.8333333333333333,
+    "f1": 0.962962962962963,
     "precision": 1.0,
-    "recall": 0.7142857142857143,
-    "cost_usd": 0.009436,
-    "processing_time": 30.3831148147583,
-    "early_decisions": 21,
-    "llm_calls": 70,
-    "llm_call_reduction": 23.076923076923073
+    "recall": 0.9285714285714286,
+    "cost_usd": 0.12760380000000002,
+    "processing_time": 6.33792519569397,
+    "early_decisions": 0,
+    "llm_calls": 91,
+    "llm_call_reduction": 0.0,
+    "predictions": {
+      "271": 1410,
+      "1780": 685,
+      "3381": 1859,
+      "4027": 2302,
+      "3130": 1682,
+      "563": 1177,
+      "1755": 646,
+      "2115": 947,
+      "4063": 2331,
+      "29": 1638,
+      "525": 2627,
+      "1219": 1009,
+      "492": 218,
+      "3917": 2224,
+      "1479": 430,
+      "696": 2001,
+      "1471": 691,
+      "501": 2283,
+      "309": 1681,
+      "3963": 646,
+      "4161": 2409,
+      "862": 2906,
+      "2242": 1048,
+      "4203": 2393,
+      "406": 1255,
+      "4181": 2428,
+      "3956": 2251,
+      "285": 1519,
+      "3079": 1650,
+      "3372": 1853,
+      "2558": 1284,
+      "833": 2883,
+      "2444": 1195,
+      "4168": 2416,
+      "2007": 203,
+      "2215": 549,
+      "2494": 1233,
+      "1042": 55,
+      "982": 2999,
+      "487": 2583,
+      "113": 140,
+      "3098": 1661,
+      "1842": 737
+    }
   },
   "ab_comparison": {
-    "f1_improvement": -0.10000000000000009,
-    "cost_change": -0.021768799999999998,
+    "f1_improvement": -0.0025542784163473664,
+    "cost_change": -0.0022182000000000035,
     "rules_helped": false
   },
+  "optimization_artifacts": {
+    "generated_heuristics": {
+      "hyperparameters": {
+        "max_candidates": 50,
+        "semantic_weight": 0.9,
+        "trigram_weight": 0.05,
+        "syntactic_weight": 0.05,
+        "decision_threshold": 0.5,
+        "auto_accept_threshold": 0.9,
+        "auto_reject_threshold": 0.1
+      },
+      "candidate_rules": [],
+      "score_rules": [],
+      "decision_rules": [],
+      "weight_rules": [],
+      "prompt_rules": [],
+      "pipeline_rules": [],
+      "timestamp": "2025-07-31T15:24:41",
+      "generation_method": "baseline_initialization",
+      "mode": "prompt-modification",
+      "generation_cost_info": {
+        "total_cost_usd": 0.15988575,
+        "session_id": "65ded98c-20a5-4df0-aecc-37ca7fc84e21",
+        "duration_ms": 218656,
+        "turn_count": 23,
+        "model": "gpt-4.1-nano",
+        "approach": "interactive_client"
+      }
+    },
+    "heuristics_file_path": "results/generated_rules/beer_known_params_config.json",
+    "sample_data": {
+      "dataset": "beer",
+      "target_f1": 95.3,
+      "dev_metrics": {},
+      "dev_pairs": [],
+      "analysis_insights": {
+        "dataset": "beer",
+        "analysis_type": "validation",
+        "metadata": {
+          "total_pairs_analyzed": 91,
+          "positive_pairs": 14,
+          "negative_pairs_sampled": 30,
+          "semantic_available": true
+        },
+        "similarity_analysis": {
+          "true_matches": {
+            "syntactic": {
+              "mean": 0.7667856001558866,
+              "std": 0.13192385503204088,
+              "median": 0.789760348583878,
+              "min": 0.4888888888888889,
+              "max": 1.0
+            },
+            "trigram": {
+              "mean": 0.6191414953473464,
+              "std": 0.17914893072141697,
+              "median": 0.625,
+              "min": 0.3225806451612903,
+              "max": 1.0
+            },
+            "semantic": {
+              "mean": 0.9039179410061543,
+              "std": 0.06831056256501937,
+              "median": 0.9257187100276694,
+              "min": 0.7359046964263662,
+              "max": 0.9791366764437867
+            }
+          },
+          "false_positives": {
+            "syntactic": {
+              "mean": 0.58368867197607,
+              "std": 0.11043483421381232,
+              "median": 0.5847701149425287,
+              "min": 0.38461538461538464,
+              "max": 0.9787234042553191
+            },
+            "trigram": {
+              "mean": 0.30929949281359814,
+              "std": 0.10628638611458498,
+              "median": 0.2736185383244207,
+              "min": 0.20833333333333334,
+              "max": 0.7916666666666666
+            },
+            "semantic": {
+              "mean": 0.7400071041940972,
+              "std": 0.05535624859389854,
+              "median": 0.7364240606506486,
+              "min": 0.6398776534839024,
+              "max": 0.9394267973694531
+            }
+          }
+        },
+        "candidate_analysis": {
+          "recall_at_1": 0.8571428571428571,
+          "recall_at_5": 0.9285714285714286,
+          "recall_at_10": 0.9285714285714286,
+          "recall_at_25": 0.9285714285714286,
+          "recall_at_50": 0.9285714285714286,
+          "recall_at_100": 0.9285714285714286,
+          "recall_at_150": 1.0,
+          "recall_at_200": 1.0,
+          "recall_at_300": 1.0,
+          "recall_at_500": 1.0
+        },
+        "concrete_examples": {
+          "true_matches": [
+            {
+              "left_record": {
+                "id": 3073,
+                "Beer_Name": "MovAmber Moustache Ale",
+                "Brew_Factory_Name": "Bull City Burger And Brewery",
+                "Style": "American Amber / Red Ale",
+                "ABV": "-"
+              },
+              "right_record": {
+                "id": 1647,
+                "Beer_Name": "Bull City Movamber Moustache Ale",
+                "Brew_Factory_Name": "Bull City Burger and Brewery",
+                "Style": "Amber Ale",
+                "ABV": "-"
+              },
+              "similarities": {
+                "syntactic": 0.815,
+                "trigram": 0.69,
+                "semantic": 0.953
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 2163,
+                "Beer_Name": "Bitter Orange Blossom",
+                "Brew_Factory_Name": "I & I Brewing",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.30 %"
+              },
+              "right_record": {
+                "id": 985,
+                "Beer_Name": "I & I Bitter Orange Blossom",
+                "Brew_Factory_Name": "I & I Brewing",
+                "Style": "Amber Ale",
+                "ABV": "5.30 %"
+              },
+              "similarities": {
+                "syntactic": 0.875,
+                "trigram": 0.76,
+                "semantic": 0.97
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 3622,
+                "Beer_Name": "Buckleys Original Ale",
+                "Brew_Factory_Name": "Buckley 's Beers",
+                "Style": "American Amber / Red Ale",
+                "ABV": "4.50 %"
+              },
+              "right_record": {
+                "id": 2020,
+                "Beer_Name": "Buckleys Original Ale",
+                "Brew_Factory_Name": "Yarra Flats Brewery",
+                "Style": "English Pale Ale",
+                "ABV": "4.90 %"
+              },
+              "similarities": {
+                "syntactic": 1.0,
+                "trigram": 1.0,
+                "semantic": 0.824
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 2764,
+                "Beer_Name": "Willimantic Riverfest Red",
+                "Brew_Factory_Name": "Willimantic Brewing Co. .",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.20 %"
+              },
+              "right_record": {
+                "id": 1423,
+                "Beer_Name": "Willimantic Riverfest Red Ale",
+                "Brew_Factory_Name": "Willimantic Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "5.20 %"
+              },
+              "similarities": {
+                "syntactic": 0.926,
+                "trigram": 0.852,
+                "semantic": 0.979
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 2700,
+                "Beer_Name": "British Knight Scotch Red Ale",
+                "Brew_Factory_Name": "Oskar Blues Grill & Brew",
+                "Style": "American Amber / Red Ale",
+                "ABV": "7.40 %"
+              },
+              "right_record": {
+                "id": 1380,
+                "Beer_Name": "Oskar Blues British Knight Scotch Red Ale",
+                "Brew_Factory_Name": "Oskar Blues Brewery",
+                "Style": "Scottish Ale",
+                "ABV": "7.40 %"
+              },
+              "similarities": {
+                "syntactic": 0.829,
+                "trigram": 0.692,
+                "semantic": 0.933
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 1030,
+                "Beer_Name": "Sierra Amber Ale",
+                "Brew_Factory_Name": "Silver Peak Restaurant & Brewery",
+                "Style": "American Amber / Red Ale",
+                "ABV": "4.50 %"
+              },
+              "right_record": {
+                "id": 43,
+                "Beer_Name": "Chy_e Sierra Amber Ale",
+                "Brew_Factory_Name": "Zamecky Pivovar Chy_e",
+                "Style": "Amber Ale",
+                "ABV": "5.30 %"
+              },
+              "similarities": {
+                "syntactic": 0.842,
+                "trigram": 0.7,
+                "semantic": 0.81
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 5,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 1522,
+                "Beer_Name": "Radeau Red Ale",
+                "Brew_Factory_Name": "Cooper 's Cave Ale Company",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.50 %"
+              },
+              "right_record": {
+                "id": 467,
+                "Beer_Name": "Coopers Cave Radeau Red Ale",
+                "Brew_Factory_Name": "Coopers Cave Ale Company",
+                "Style": "Irish Ale",
+                "ABV": "-"
+              },
+              "similarities": {
+                "syntactic": 0.683,
+                "trigram": 0.48,
+                "semantic": 0.876
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 1004,
+                "Beer_Name": "Indian Red Head",
+                "Brew_Factory_Name": "Catawba Brewing Co. .",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.00 %"
+              },
+              "right_record": {
+                "id": 20,
+                "Beer_Name": "Catawba Valley Indian Head Red",
+                "Brew_Factory_Name": "Catawba Valley Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "5 %"
+              },
+              "similarities": {
+                "syntactic": 0.489,
+                "trigram": 0.323,
+                "semantic": 0.919
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 2867,
+                "Beer_Name": "Red Curry Ale",
+                "Brew_Factory_Name": "Hideout Brewing Company",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.50 %"
+              },
+              "right_record": {
+                "id": 1493,
+                "Beer_Name": "Hideout Red Curry Ale",
+                "Brew_Factory_Name": "The Hideout Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "-"
+              },
+              "similarities": {
+                "syntactic": 0.765,
+                "trigram": 0.579,
+                "semantic": 0.954
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 1748,
+                "Beer_Name": "Rock Steady Red",
+                "Brew_Factory_Name": "The Rock Wood Fire Pizza & Brewery",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.00 %"
+              },
+              "right_record": {
+                "id": 652,
+                "Beer_Name": "Acoustic Rock Steady Red Cider",
+                "Brew_Factory_Name": "Acoustic Brewing Company",
+                "Style": "Cider",
+                "ABV": "6 %"
+              },
+              "similarities": {
+                "syntactic": 0.667,
+                "trigram": 0.464,
+                "semantic": 0.736
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 1474,
+                "Beer_Name": "Revenuers Red Ale",
+                "Brew_Factory_Name": "Catawba Brewing Co. .",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.20 %"
+              },
+              "right_record": {
+                "id": 427,
+                "Beer_Name": "Catawba Valley Revenuers Red Ale",
+                "Brew_Factory_Name": "Catawba Valley Brewing Company",
+                "Style": "Irish Ale",
+                "ABV": "5.20 %"
+              },
+              "similarities": {
+                "syntactic": 0.694,
+                "trigram": 0.517,
+                "semantic": 0.903
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 1394,
+                "Beer_Name": "Hooligan Amber Ale",
+                "Brew_Factory_Name": "Bentley Brewing Company / Dark Horse Tavern",
+                "Style": "American Amber / Red Ale",
+                "ABV": "6.00 %"
+              },
+              "right_record": {
+                "id": 358,
+                "Beer_Name": "Bentley Hooligan Amber Ale",
+                "Brew_Factory_Name": "Bentley Brewing Co. / Dark Horse Tavern",
+                "Style": "Amber Ale",
+                "ABV": "6 %"
+              },
+              "similarities": {
+                "syntactic": 0.818,
+                "trigram": 0.667,
+                "semantic": 0.966
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 2491,
+                "Beer_Name": "5 Star Amber Ale",
+                "Brew_Factory_Name": "The Civil Life Brewing Company",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.00 %"
+              },
+              "right_record": {
+                "id": 1230,
+                "Beer_Name": "The Civil Life Stevie_s 5 Star Amber Ale",
+                "Brew_Factory_Name": "The Civil Life Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "5 %"
+              },
+              "similarities": {
+                "syntactic": 0.571,
+                "trigram": 0.361,
+                "semantic": 0.936
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 3468,
+                "Beer_Name": "Red RYEding Hood",
+                "Brew_Factory_Name": "Chapman 's Brewing Company",
+                "Style": "American Amber / Red Ale",
+                "ABV": "10.00 %"
+              },
+              "right_record": {
+                "id": 1921,
+                "Beer_Name": "Chapman_s Red RYEding Hood",
+                "Brew_Factory_Name": "Chapman_s Brewing Company",
+                "Style": "Specialty Grain",
+                "ABV": "10 %"
+              },
+              "similarities": {
+                "syntactic": 0.762,
+                "trigram": 0.583,
+                "semantic": 0.896
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 1,
+                "max_candidates": 50
+              }
+            }
+          ],
+          "confusing_non_matches": [
+            {
+              "left_record": {
+                "id": 138,
+                "Beer_Name": "Double Dread Imperial Red Ale",
+                "Brew_Factory_Name": "Mad River Brewing Company",
+                "Style": "American Amber / Red Ale",
+                "ABV": "8.60 %"
+              },
+              "right_record": {
+                "id": 1496,
+                "Beer_Name": "Kinetic Infrared Imperial Red Ale",
+                "Brew_Factory_Name": "Kinetic Brewing Company",
+                "Style": "American Strong Ale",
+                "ABV": "9.30 %"
+              },
+              "similarities": {
+                "syntactic": 0.71,
+                "trigram": 0.4,
+                "semantic": 0.768
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 12,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 3402,
+                "Beer_Name": "Red Shedman 's Imperial Amber Ale",
+                "Brew_Factory_Name": "57 Brew Pub & Bistro",
+                "Style": "American Amber / Red Ale",
+                "ABV": "7.60 %"
+              },
+              "right_record": {
+                "id": 1096,
+                "Beer_Name": "Boxing Cat Firecracker Imperial Red Ale",
+                "Brew_Factory_Name": "Boxing Cat Brewery",
+                "Style": "Amber Ale",
+                "ABV": "6.60 %"
+              },
+              "similarities": {
+                "syntactic": 0.5,
+                "trigram": 0.236,
+                "semantic": 0.732
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 3963,
+                "Beer_Name": "Hop Around Imperial Red Ale",
+                "Brew_Factory_Name": "Big Bay Brewing Co. .",
+                "Style": "American Amber / Red Ale",
+                "ABV": "9.00 %"
+              },
+              "right_record": {
+                "id": 623,
+                "Beer_Name": "Oak Creek King Crimson Imperial Red Ale",
+                "Brew_Factory_Name": "Oak Creek Brewing Co. .",
+                "Style": "American Strong Ale",
+                "ABV": "9.50 %"
+              },
+              "similarities": {
+                "syntactic": 0.667,
+                "trigram": 0.326,
+                "semantic": 0.774
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 3,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 2246,
+                "Beer_Name": "Freedom Bridge Amber Ale",
+                "Brew_Factory_Name": "Barley Brothers Brewery & Grill",
+                "Style": "American Amber / Red Ale",
+                "ABV": "-"
+              },
+              "right_record": {
+                "id": 2249,
+                "Beer_Name": "Bridge Ambleside Amber Ale - Pomegranate & Galena Hops",
+                "Brew_Factory_Name": "Bridge Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "5.30 %"
+              },
+              "similarities": {
+                "syntactic": 0.41,
+                "trigram": 0.25,
+                "semantic": 0.815
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 9,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 4323,
+                "Beer_Name": "Ole ' Redbeard Barleywine ( Bourbon Barrel Aged )",
+                "Brew_Factory_Name": "Fitger 's Brewhouse",
+                "Style": "American Barleywine",
+                "ABV": "-"
+              },
+              "right_record": {
+                "id": 2378,
+                "Beer_Name": "Columbus Bourbon Barrel Aged Uncle Rusty",
+                "Brew_Factory_Name": "Columbus Brewing Company",
+                "Style": "American Strong Ale",
+                "ABV": "-"
+              },
+              "similarities": {
+                "syntactic": 0.539,
+                "trigram": 0.317,
+                "semantic": 0.666
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 18,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 1322,
+                "Beer_Name": "The Live Bait Amber Ale",
+                "Brew_Factory_Name": "Mudhook Brewing Company",
+                "Style": "American Amber / Red Ale",
+                "ABV": "6.00 %"
+              },
+              "right_record": {
+                "id": 1308,
+                "Beer_Name": "BNS The Hills Have Eyes Amber Ale",
+                "Brew_Factory_Name": "BNS Brewing & Distilling",
+                "Style": "Amber Ale",
+                "ABV": "5.20 %"
+              },
+              "similarities": {
+                "syntactic": 0.643,
+                "trigram": 0.268,
+                "semantic": 0.657
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 4162,
+                "Beer_Name": "John Barleycorn - Bourbon Barrel Aged",
+                "Brew_Factory_Name": "Mad River Brewing Company",
+                "Style": "American Barleywine",
+                "ABV": "12.50 %"
+              },
+              "right_record": {
+                "id": 2936,
+                "Beer_Name": "Actual Bourbon Barrel Aged Elektron",
+                "Brew_Factory_Name": "Actual Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "7.30 %"
+              },
+              "similarities": {
+                "syntactic": 0.611,
+                "trigram": 0.383,
+                "semantic": 0.703
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 10,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 2320,
+                "Beer_Name": "Fire Brew Red Ale",
+                "Brew_Factory_Name": "Minhas Craft Brewery",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.50 %"
+              },
+              "right_record": {
+                "id": 524,
+                "Beer_Name": "Conshohocken Hale Fire Red Ale",
+                "Brew_Factory_Name": "Conshohocken Brewing Co. .",
+                "Style": "Amber Ale",
+                "ABV": "6.60 %"
+              },
+              "similarities": {
+                "syntactic": 0.511,
+                "trigram": 0.273,
+                "semantic": 0.774
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 3661,
+                "Beer_Name": "Double Red Hot Ale",
+                "Brew_Factory_Name": "Midnight Sun Brewing Co. .",
+                "Style": "American Amber / Red Ale",
+                "ABV": "7.57 %"
+              },
+              "right_record": {
+                "id": 1090,
+                "Beer_Name": "Below Grade Super Duty Double Red Ale",
+                "Brew_Factory_Name": "Below Grade Brewing LLC",
+                "Style": "American Strong Ale",
+                "ABV": "7.70 %"
+              },
+              "similarities": {
+                "syntactic": 0.509,
+                "trigram": 0.275,
+                "semantic": 0.749
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 16,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 252,
+                "Beer_Name": "Red Rose Amber Ale",
+                "Brew_Factory_Name": "Baird Brewing Company / Fishmarket Taproom",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.40 %"
+              },
+              "right_record": {
+                "id": 1073,
+                "Beer_Name": "Upland Rad Red Amber Ale",
+                "Brew_Factory_Name": "Upland Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "5.60 %"
+              },
+              "similarities": {
+                "syntactic": 0.619,
+                "trigram": 0.423,
+                "semantic": 0.785
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 6,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 287,
+                "Beer_Name": "Flying Monkey Amber Ale",
+                "Brew_Factory_Name": "Flying Monkey Brewing Company",
+                "Style": "American Amber / Red Ale",
+                "ABV": "4.60 %"
+              },
+              "right_record": {
+                "id": 2581,
+                "Beer_Name": "Flying Monkeys Amber Ale",
+                "Brew_Factory_Name": "Flying Monkeys Craft Brewery",
+                "Style": "Amber Ale",
+                "ABV": "5 %"
+              },
+              "similarities": {
+                "syntactic": 0.979,
+                "trigram": 0.792,
+                "semantic": 0.939
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 2,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 732,
+                "Beer_Name": "Saint Gleason Imperial Red Ale",
+                "Brew_Factory_Name": "Abita Brewing Co. .",
+                "Style": "American Amber / Red Ale",
+                "ABV": "-"
+              },
+              "right_record": {
+                "id": 1414,
+                "Beer_Name": "Renegade Scarlett Letter Imperial Red Ale",
+                "Brew_Factory_Name": "Renegade Brewing Company",
+                "Style": "American Strong Ale",
+                "ABV": "8.50 %"
+              },
+              "similarities": {
+                "syntactic": 0.648,
+                "trigram": 0.3,
+                "semantic": 0.715
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 4104,
+                "Beer_Name": "Kickin ' Chicken Bourbon Barrel Barley Wine",
+                "Brew_Factory_Name": "Santa Fe Brewing Company",
+                "Style": "American Barleywine",
+                "ABV": "12.00 %"
+              },
+              "right_record": {
+                "id": 2416,
+                "Beer_Name": "Elevator Barrel Aged Barley Wine",
+                "Brew_Factory_Name": "Elevator Brewing Company",
+                "Style": "Barley Wine",
+                "ABV": "-"
+              },
+              "similarities": {
+                "syntactic": 0.587,
+                "trigram": 0.275,
+                "semantic": 0.64
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 21,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 2934,
+                "Beer_Name": "Ale Mania Imperial Red Ale",
+                "Brew_Factory_Name": "Ale-Mania",
+                "Style": "American Amber / Red Ale",
+                "ABV": "9.50 %"
+              },
+              "right_record": {
+                "id": 2582,
+                "Beer_Name": "Worthy Eruption Imperial Red Ale",
+                "Brew_Factory_Name": "Worthy Brewing Company",
+                "Style": "American Strong Ale",
+                "ABV": "8 %"
+              },
+              "similarities": {
+                "syntactic": 0.655,
+                "trigram": 0.395,
+                "semantic": 0.768
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 46,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 4336,
+                "Beer_Name": "Old Blarney Barleywine - Bourbon Barrel Aged",
+                "Brew_Factory_Name": "Moylan 's Brewery",
+                "Style": "American Barleywine",
+                "ABV": "10.00 %"
+              },
+              "right_record": {
+                "id": 2510,
+                "Beer_Name": "21st Amendment Bourbon Barrel Lower da Boom Barleywine",
+                "Brew_Factory_Name": "21st Amendment Brewery",
+                "Style": "Barley Wine",
+                "ABV": "9.50 %"
+              },
+              "similarities": {
+                "syntactic": 0.408,
+                "trigram": 0.313,
+                "semantic": 0.733
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 9,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 655,
+                "Beer_Name": "Rhino Chaser Imperial Red Ale",
+                "Brew_Factory_Name": "Pizza Port Solana Beach",
+                "Style": "American Amber / Red Ale",
+                "ABV": "9.50 %"
+              },
+              "right_record": {
+                "id": 1661,
+                "Beer_Name": "Edge Imperial Red Ale &#40; Spring Seasonal &#41;",
+                "Brew_Factory_Name": "Edge Brewing Company",
+                "Style": "American Strong Ale",
+                "ABV": "8.50 %"
+              },
+              "similarities": {
+                "syntactic": 0.462,
+                "trigram": 0.268,
+                "semantic": 0.726
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 2975,
+                "Beer_Name": "Rock River Red Ale",
+                "Brew_Factory_Name": "Berghoff Brewery",
+                "Style": "American Amber / Red Ale",
+                "ABV": "-"
+              },
+              "right_record": {
+                "id": 2899,
+                "Beer_Name": "Boxing Rock Temptation Red Ale",
+                "Brew_Factory_Name": "Boxing Rock Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "6 %"
+              },
+              "similarities": {
+                "syntactic": 0.583,
+                "trigram": 0.257,
+                "semantic": 0.697
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 928,
+                "Beer_Name": "Old Detroit Amber Ale",
+                "Brew_Factory_Name": "Frankenmuth Brewery",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.60 %"
+              },
+              "right_record": {
+                "id": 2275,
+                "Beer_Name": "Maldita Old Continent American Amber Ale",
+                "Brew_Factory_Name": "Faustino Microcervejeira",
+                "Style": "Amber Ale",
+                "ABV": "6 %"
+              },
+              "similarities": {
+                "syntactic": 0.59,
+                "trigram": 0.244,
+                "semantic": 0.794
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 13,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 704,
+                "Beer_Name": "Redeemer Imperial Red Ale",
+                "Brew_Factory_Name": "Boston Beer Works - Canal Street",
+                "Style": "American Amber / Red Ale",
+                "ABV": "8.20 %"
+              },
+              "right_record": {
+                "id": 124,
+                "Beer_Name": "Laguna Beach Grateful Red Imperial Red Ale",
+                "Brew_Factory_Name": "Laguna Beach Brewing",
+                "Style": "American Strong Ale",
+                "ABV": "11 %"
+              },
+              "similarities": {
+                "syntactic": 0.597,
+                "trigram": 0.349,
+                "semantic": 0.756
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 35,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 496,
+                "Beer_Name": "Mountain Goat Fancy Pants Amber Ale",
+                "Brew_Factory_Name": "Mountain Goat Beer Pty Ltd",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.40 %"
+              },
+              "right_record": {
+                "id": 1535,
+                "Beer_Name": "Breckenridge Mountain Series : Hoppy Amber Ale",
+                "Brew_Factory_Name": "Breckenridge Brewery",
+                "Style": "Amber Ale",
+                "ABV": "6.10 %"
+              },
+              "similarities": {
+                "syntactic": 0.519,
+                "trigram": 0.242,
+                "semantic": 0.75
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 3388,
+                "Beer_Name": "Stone Liberty Station Outbreak Series : Red Ale",
+                "Brew_Factory_Name": "Stone Brewing Co. .",
+                "Style": "American Amber / Red Ale",
+                "ABV": "7.00 %"
+              },
+              "right_record": {
+                "id": 838,
+                "Beer_Name": "Brew Bus Detour Series : Rollin Dirty Red Ale - Wood Aged",
+                "Brew_Factory_Name": "Cigar City Brewing",
+                "Style": "Irish Ale",
+                "ABV": "5 %"
+              },
+              "similarities": {
+                "syntactic": 0.385,
+                "trigram": 0.222,
+                "semantic": 0.667
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 429,
+                "Beer_Name": "Simeon Jones River Valley Amber Ale",
+                "Brew_Factory_Name": "Picaroons Brewing Co. .",
+                "Style": "American Amber / Red Ale",
+                "ABV": "4.50 %"
+              },
+              "right_record": {
+                "id": 2805,
+                "Beer_Name": "Metolius River Ales Rusty Spinner Amber Ale",
+                "Brew_Factory_Name": "Genesee Brewing Company &#40; North American Breweries &#41;",
+                "Style": "Amber Ale",
+                "ABV": "5.10 %"
+              },
+              "similarities": {
+                "syntactic": 0.641,
+                "trigram": 0.269,
+                "semantic": 0.724
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 2751,
+                "Beer_Name": "Spencer Creek Amber Ale",
+                "Brew_Factory_Name": "Mia & Pia 's Pizzeria And Brewhouse",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.50 %"
+              },
+              "right_record": {
+                "id": 2550,
+                "Beer_Name": "Ruby Mountain Angel Creek Amber Ale",
+                "Brew_Factory_Name": "Ruby Mountain Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "-"
+              },
+              "similarities": {
+                "syntactic": 0.586,
+                "trigram": 0.359,
+                "semantic": 0.753
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 37,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 2614,
+                "Beer_Name": "Killer Red Fresh Hop India Red Ale",
+                "Brew_Factory_Name": "Double Mountain Brewery & Taproom",
+                "Style": "American Amber / Red Ale",
+                "ABV": "7.20 %"
+              },
+              "right_record": {
+                "id": 1645,
+                "Beer_Name": "8 Wired Tall Poppy India Red Ale",
+                "Brew_Factory_Name": "Renaissance Brewing",
+                "Style": "Amber Ale",
+                "ABV": "7 %"
+              },
+              "similarities": {
+                "syntactic": 0.667,
+                "trigram": 0.267,
+                "semantic": 0.719
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 32,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 1743,
+                "Beer_Name": "Red 's Heaven 15th Anniversary Imperial Red Ale",
+                "Brew_Factory_Name": "Flying Bison Brewing Company",
+                "Style": "American Amber / Red Ale",
+                "ABV": "8.30 %"
+              },
+              "right_record": {
+                "id": 2334,
+                "Beer_Name": "Austin Beerworks Battle Axe Imperial Red Ale",
+                "Brew_Factory_Name": "Austin Beerworks",
+                "Style": "American Strong Ale",
+                "ABV": "8 %"
+              },
+              "similarities": {
+                "syntactic": 0.527,
+                "trigram": 0.214,
+                "semantic": 0.734
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 487,
+                "Beer_Name": "Three Beavers Imperial Red Ale",
+                "Brew_Factory_Name": "Howe Sound Inn & Brewing Company",
+                "Style": "American Amber / Red Ale",
+                "ABV": "7.50 %"
+              },
+              "right_record": {
+                "id": 2582,
+                "Beer_Name": "Worthy Eruption Imperial Red Ale",
+                "Brew_Factory_Name": "Worthy Brewing Company",
+                "Style": "American Strong Ale",
+                "ABV": "8 %"
+              },
+              "similarities": {
+                "syntactic": 0.71,
+                "trigram": 0.349,
+                "semantic": 0.751
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 26,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 128,
+                "Beer_Name": "The Unforgiven Amber Ale",
+                "Brew_Factory_Name": "Rush River Brewing Company",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.80 %"
+              },
+              "right_record": {
+                "id": 1230,
+                "Beer_Name": "The Civil Life Stevie_s 5 Star Amber Ale",
+                "Brew_Factory_Name": "The Civil Life Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "5 %"
+              },
+              "similarities": {
+                "syntactic": 0.531,
+                "trigram": 0.208,
+                "semantic": 0.732
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 113,
+                "Beer_Name": "Alexander Keith 's Red Amber Ale",
+                "Brew_Factory_Name": "Alexander Keith 's",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.00 %"
+              },
+              "right_record": {
+                "id": 2975,
+                "Beer_Name": "Swashbuckler Red Sea Amber Ale",
+                "Brew_Factory_Name": "Swashbuckler Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "-"
+              },
+              "similarities": {
+                "syntactic": 0.581,
+                "trigram": 0.25,
+                "semantic": 0.762
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 3593,
+                "Beer_Name": "Escanaba River Amber Ale",
+                "Brew_Factory_Name": "Dead Bear Brewing Co. .",
+                "Style": "American Amber / Red Ale",
+                "ABV": "5.76 %"
+              },
+              "right_record": {
+                "id": 2636,
+                "Beer_Name": "Piney River McKinney Eddy Amber Ale",
+                "Brew_Factory_Name": "Piney River Brewing Company",
+                "Style": "Amber Ale",
+                "ABV": "-"
+              },
+              "similarities": {
+                "syntactic": 0.576,
+                "trigram": 0.316,
+                "semantic": 0.678
+              },
+              "candidate_generation": {
+                "found": false,
+                "rank": null,
+                "max_candidates": 50
+              }
+            },
+            {
+              "left_record": {
+                "id": 3246,
+                "Beer_Name": "Buffalo Trace Bourbon Barrel Aged Amber Ale",
+                "Brew_Factory_Name": "Wolf Hills Brewing Company",
+                "Style": "American Amber / Red Ale",
+                "ABV": "-"
+              },
+              "right_record": {
+                "id": 709,
+                "Beer_Name": "Bull & Barrel Session Style - Amber Ale",
+                "Brew_Factory_Name": "Bull & Barrel Brew Pub",
+                "Style": "Amber Ale",
+                "ABV": "4.70 %"
+              },
+              "similarities": {
+                "syntactic": 0.561,
+                "trigram": 0.238,
+                "semantic": 0.738
+              },
+              "candidate_generation": {
+                "found": true,
+                "rank": 27,
+                "max_candidates": 50
+              }
+            }
+          ]
+        },
+        "dataset_characteristics": {
+          "table_a_size": 4345,
+          "table_b_size": 3000,
+          "field_names": [
+            "Beer_Name",
+            "Brew_Factory_Name",
+            "Style",
+            "ABV"
+          ],
+          "sample_records": [
+            {
+              "id": 0,
+              "Beer_Name": "Tr\u00c3 \u00b6 egs Nugget Nectar",
+              "Brew_Factory_Name": "Tr\u00c3 \u00b6 egs Brewing Company",
+              "Style": "American Amber / Red Ale",
+              "ABV": "7.50 %"
+            },
+            {
+              "id": 1,
+              "Beer_Name": "Fat Tire Amber Ale",
+              "Brew_Factory_Name": "New Belgium Brewing",
+              "Style": "American Amber / Red Ale",
+              "ABV": "5.20 %"
+            },
+            {
+              "id": 2,
+              "Beer_Name": "Levitation Ale",
+              "Brew_Factory_Name": "Stone Brewing Co. .",
+              "Style": "American Amber / Red Ale",
+              "ABV": "4.40 %"
+            }
+          ]
+        }
+      }
+    },
+    "optimal_hyperparameters": {
+      "baseline": {
+        "max_candidates": 50,
+        "semantic_weight": 0.9,
+        "trigram_weight": 0.05,
+        "syntactic_weight": 0.05
+      },
+      "enhanced": {
+        "max_candidates": 50,
+        "semantic_weight": 0.9,
+        "trigram_weight": 0.05,
+        "syntactic_weight": 0.05,
+        "decision_threshold": 0.5,
+        "auto_accept_threshold": 0.9,
+        "auto_reject_threshold": 0.1
+      }
+    },
+    "reproduction_data": {
+      "final_prompt_structure": {
+        "sections": [
+          {
+            "title": "ENTITY MATCHING TASK",
+            "description": "You are an expert at entity matching. Your task is to find the candidate that refers to the same real-world entity as the left record.",
+            "unordered_list": [
+              "Two records match if they refer to the same entity, even if:",
+              "They have different formatting or spellings",
+              "One has more/less information than the other",
+              "They use different abbreviations or representations"
+            ]
+          },
+          {
+            "title": "COMPARISON CRITERIA",
+            "description": "Compare the left record against the candidate. Look for:",
+            "ordered_list": [
+              "Same entity name (allowing for variations in spelling/format)",
+              "Matching key identifiers (IDs, codes, etc.)",
+              "Consistent attribute values where they overlap",
+              "No contradictory information"
+            ]
+          },
+          {
+            "title": "REASONING PROCESS",
+            "description": "Think step by step and identify if the candidate represents the same entity."
+          },
+          {
+            "title": "RESPONSE FORMAT REQUIREMENTS",
+            "description": "Your response must follow this exact format:",
+            "unordered_list": [
+              "You MUST respond with ONLY a single integer number",
+              "If the candidate matches the left record: respond with the candidate number",
+              "If the candidate does NOT match the left record: respond with \"-1\"",
+              "DO NOT include any words, explanations, or other text",
+              "DO NOT include quotes, brackets, or punctuation",
+              "Examples of CORRECT responses: `7` or `-1`",
+              "Examples of INCORRECT responses: \"no match\", \"the movie babel\", \"candidate 0\""
+            ]
+          }
+        ]
+      }
+    },
+    "conversation_logs": [
+      {
+        "file": "results/temp/mcp_server.log",
+        "content": "...[truncated]...\n.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,365 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,365 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,366 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,366 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,366 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,367 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,367 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,367 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,368 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,368 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,368 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,368 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,369 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,369 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,369 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,370 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,370 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,370 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,370 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,371 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,371 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,371 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,371 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,372 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,372 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,372 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,372 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,373 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,373 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,374 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,374 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,374 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:10,375 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:18,404 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:18,404 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 503 Service Unavailable\"\n2025-07-31 15:27:18,405 - openai._base_client - INFO - Retrying request to /chat/completions in 0.438090 seconds\n2025-07-31 15:27:18,405 - openai._base_client - INFO - Retrying request to /chat/completions in 0.411082 seconds\n2025-07-31 15:27:18,711 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:18,717 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:18,772 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:18,783 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:18,809 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:18,812 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:18,821 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:18,859 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:18,859 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:18,888 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:19,156 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:19,252 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:19,288 - entity-matching-server - INFO - \ud83d\udccb Registered experiment 9cb103be with active pipeline registry 2e38ba14\n2025-07-31 15:27:19,296 - entity-matching-server - INFO - \ud83e\uddea EXPERIMENT 9cb103be COMPLETE\n2025-07-31 15:27:19,296 - entity-matching-server - INFO -    \ud83d\udcca Results: F1=0.0000, P=0.0000, R=0.0000 (TP=0, FP=0, FN=14)\n2025-07-31 15:27:19,296 - entity-matching-server - INFO -    \ud83d\udcc1 Saved: results/experiments/exp_9cb103be/config.json\n2025-07-31 15:27:19,296 - entity-matching-server - INFO -    \ud83d\udcca Results: results/experiments/exp_9cb103be/results.json\n2025-07-31 15:27:19,297 - entity-matching-server - INFO - \ud83d\udcca Result text: \ud83e\uddea Enhanced Test Results for beer [Experiment 9cb103be]:\n\n\ud83d\udcca PERFORMANCE METRICS:\n   F1 Score: 0.0000\n   Precision: 0.0000\n   Recall: 0.0000\n\n\ud83d\udd0d DETAILED ANALYSIS:\n   Confusion Matrix: TP=0, FP=0, FN=14\n   \u26a0\ufe0f  FALSE NEGATIVES: 14 pairs missed (should have matched)\n   \ud83d\udea8 CRITICAL: No true positives found! All matches were missed.\n\n\ud83d\udd34 FALSE NEGATIVES (14 cases - showing up to 20):\n\n   [1] Left Record: {\"id\": 3917, \"Beer_Name\": \"Honey Basil Amber\", \"Brew_Factory_Name\": \"Rude Hippo Brewing Company\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"7.40 %\"}\n       Missed Match: {\"id\": 2224, \"Beer_Name\": \"Rude Hippo Honey Basil Amber\", \"Brew_Factory_Name\": \"18th Street Brewery\", \"Style\": \"Amber Ale\", \"ABV\": \"7.40 %\"}\n       Similarity: trigram=0.585, semantic=0.934\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [2] Left Record: {\"id\": 271, \"Beer_Name\": \"Real McCoy Amber Ale\", \"Brew_Factory_Name\": \"Mammoth Brewing Company\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"4.50 %\"}\n       Missed Match: {\"id\": 1410, \"Beer_Name\": \"Mammoth Real McCoy Amber Ale\", \"Brew_Factory_Name\": \"Mammoth Brewing Company\", \"Style\": \"Altbier\", \"ABV\": \"4.50 %\"}\n       Similarity: trigram=0.723, semantic=0.942\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [3] Left Record: {\"id\": 1780, \"Beer_Name\": \"Jazz Beer Tarraco Amber\", \"Brew_Factory_Name\": \"Tarraco Beer\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"6.90 %\"}\n       Missed Match: {\"id\": 685, \"Beer_Name\": \"Jazz Beer Tarraco Amber\", \"Brew_Factory_Name\": \"Ca l_Arenys - Cervezas Guineu\", \"Style\": \"Amber Ale\", \"ABV\": \"6.90 %\"}\n       Similarity: trigram=0.565, semantic=0.923\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [4] Left Record: {\"id\": 2558, \"Beer_Name\": \"Arrow Point Amber\", \"Brew_Factory_Name\": \"Bainbridge Island Brewing Company\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"5.40 %\"}\n       Missed Match: {\"id\": 1284, \"Beer_Name\": \"Bainbridge Island Arrow Point Amber\", \"Brew_Factory_Name\": \"Bainbridge Island Brewing Company\", \"Style\": \"Amber Ale\", \"ABV\": \"5.40 %\"}\n       Similarity: trigram=0.791, semantic=0.967\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [5] Left Record: {\"id\": 563, \"Beer_Name\": \"Amber Waves Ale\", \"Brew_Factory_Name\": \"Capitol City Brewing\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"5.40 %\"}\n       Missed Match: {\"id\": 1177, \"Beer_Name\": \"Capitol City Amber Waves Ale\", \"Brew_Factory_Name\": \"Capitol City Brewing Company\", \"Style\": \"Amber Ale\", \"ABV\": \"5.60 %\"}\n       Similarity: trigram=0.646, semantic=0.959\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [6] Left Record: {\"id\": 1621, \"Beer_Name\": \"Red Rocket Amber Ale\", \"Brew_Factory_Name\": \"Third Base Sports Bar & Brewery\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"6.40 %\"}\n       Missed Match: {\"id\": 548, \"Beer_Name\": \"Third Base Red Rocket Amber Ale\", \"Brew_Factory_Name\": \"Third Base Sports Bar & Brewery\", \"Style\": \"Amber Ale\", \"ABV\": \"4.60 %\"}\n       Similarity: trigram=0.735, semantic=0.966\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [7] Left Record: {\"id\": 2007, \"Beer_Name\": \"Bushfire American Red\", \"Brew_Factory_Name\": \"Granite Falls Brewing Co. .\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"5.00 %\"}\n       Missed Match: {\"id\": 203, \"Beer_Name\": \"Granite Falls Bushfire American Red Ale\", \"Brew_Factory_Name\": \"Granite Falls Brewing Company\", \"Style\": \"Amber Ale\", \"ABV\": \"5 %\"}\n       Similarity: trigram=0.737, semantic=0.935\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [8] Left Record: {\"id\": 1042, \"Beer_Name\": \"Legends Of The Bay Giant 's Tomb\", \"Brew_Factory_Name\": \"Hockley Valley Brewing Co. .\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"5.00 %\"}\n       Missed Match: {\"id\": 55, \"Beer_Name\": \"Legends of the Bay Giant_s Tomb\", \"Brew_Factory_Name\": \"Hockley Valley Brewing & Malting Company\", \"Style\": \"Amber Ale\", \"ABV\": \"5 %\"}\n       Similarity: trigram=0.636, semantic=0.966\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [9] Left Record: {\"id\": 3381, \"Beer_Name\": \"Willoughby American Amber Ale\", \"Brew_Factory_Name\": \"Willoughby Brewing\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"4.90 %\"}\n       Missed Match: {\"id\": 1859, \"Beer_Name\": \"Willoughby American Amber Ale\", \"Brew_Factory_Name\": \"Willoughby Brewing Co. .\", \"Style\": \"Amber Ale\", \"ABV\": \"5.50 %\"}\n       Similarity: trigram=0.672, semantic=0.949\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [10] Left Record: {\"id\": 1842, \"Beer_Name\": \"Heatwave Red Ale\", \"Brew_Factory_Name\": \"La Quinta Brewing Co. .\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"6.00 %\"}\n       Missed Match: {\"id\": 737, \"Beer_Name\": \"La Quinta Brewing Co. . Heatwave Red Ale\", \"Brew_Factory_Name\": \"La Quinta Brewing Co. .\", \"Style\": \"Amber Ale\", \"ABV\": \"6 %\"}\n       Similarity: trigram=0.718, semantic=0.955\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [11] Left Record: {\"id\": 4063, \"Beer_Name\": \"Thomas Hooker Old Marley Barleywine\", \"Brew_Factory_Name\": \"Thomas Hooker Brewing Company\", \"Style\": \"American Barleywine\", \"ABV\": \"10.00 %\"}\n       Missed Match: {\"id\": 2331, \"Beer_Name\": \"Thomas Hooker Old Marley Barleywine\", \"Brew_Factory_Name\": \"Thomas Hooker Brewing Company\", \"Style\": \"Barley Wine\", \"ABV\": \"10 %\"}\n       Similarity: trigram=0.774, semantic=0.977\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [12] Left Record: {\"id\": 4161, \"Beer_Name\": \"Centurion Barleywine Ale\", \"Brew_Factory_Name\": \"Golden City Brewery\", \"Style\": \"American Barleywine\", \"ABV\": \"-\"}\n       Missed Match: {\"id\": 2409, \"Beer_Name\": \"Golden City Centurion Barleywine Ale\", \"Brew_Factory_Name\": \"Golden City Brewery\", \"Style\": \"Barley Wine\", \"ABV\": \"11.20 %\"}\n       Similarity: trigram=0.688, semantic=0.918\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [13] Left Record: {\"id\": 862, \"Beer_Name\": \"Red Ale Priprioca\", \"Brew_Factory_Name\": \"Cervejaria Amaz\u00c3 \u00b4 nia Ltda .\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"6.00 %\"}\n       Missed Match: {\"id\": 2906, \"Beer_Name\": \"Amazon Beer Priprioca Red Ale\", \"Brew_Factory_Name\": \"Amazon Beer\", \"Style\": \"Amber Ale\", \"ABV\": \"6 %\"}\n       Similarity: trigram=0.479, semantic=0.868\n       Candidate Analysis: found=True, rank=1, max_candidates=150\n\n   [14] Left Record: {\"id\": 2242, \"Beer_Name\": \"Big Red Balls\", \"Brew_Factory_Name\": \"Hillcrest Brewing Company\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"8.00 %\"}\n       Missed Match: {\"id\": 1048, \"Beer_Name\": \"Hillcrest Big Red Balls\", \"Brew_Factory_Name\": \"Hillcrest Brewing Company\", \"Style\": \"Imperial IPA\", \"ABV\": \"8 %\"}\n       Similarity: trigram=0.616, semantic=0.892\n       Candidate Analysis: found=True, rank=1, max_candidates=150\nReflect on these results and improve the weighting and/or prompt.\n2025-07-31 15:27:19,297 - entity-matching-server - INFO - \u2705 Tool RunExperiment completed successfully\n2025-07-31 15:27:19,297 - entity-matching-server - INFO - \ud83d\udce4 Response: \ud83e\uddea Enhanced Test Results for beer [Experiment 9cb103be]:\n\n\ud83d\udcca PERFORMANCE METRICS:\n   F1 Score: 0.0000\n   Precision: 0.0000\n   Recall: 0.0000\n\n\ud83d\udd0d DETAILED ANALYSIS:\n   Confusion Matrix: TP=0, FP=0, FN=14\n...\n2025-07-31 15:27:32,713 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest\n2025-07-31 15:27:32,716 - entity-matching-server - INFO - \ud83d\udd27 Tool called: WritePrompt\n2025-07-31 15:27:32,716 - entity-matching-server - INFO - \ud83d\udcdd Arguments: {\n  \"prompt_data\": {\n    \"sections\": [\n      {\n        \"title\": \"ENTITY MATCHING TASK\",\n        \"description\": \"You are an expert at entity matching. Your task is to find the candidate that refers to the same real-world entity as the left record.\",\n        \"unordered_list\": [\n          \"Two records match if they refer to the same entity, even if:\",\n          \"They have different formatting or spellings\",\n          \"One has more/less information than the other\",\n          \"They use different abbreviations or representations\"\n        ]\n      },\n      {\n        \"title\": \"COMPARISON CRITERIA\",\n        \"description\": \"Compare the left record against the candidate. Look for:\",\n        \"ordered_list\": [\n          \"Same entity name (allowing for variations in spelling/format)\",\n          \"Matching key identifiers (IDs, codes, etc.)\",\n          \"Consistent attribute values where they overlap\",\n          \"No contradictory information\"\n        ]\n      },\n      {\n        \"title\": \"BEER MATCHING GUIDANCE\",\n        \"description\": \"For beer records, pay special attention to:\",\n        \"unordered_list\": [\n          \"Beer name is the primary identifier - look for exact or very similar names\",\n          \"Brewery name should match (allowing for abbreviations like 'Co.' vs 'Company')\",\n          \"One record may have brewery name prepended to beer name (e.g. 'Red Ale' vs 'Brewery Red Ale')\",\n          \"Ignore minor differences in style descriptions\",\n          \"Same ABV strongly indicates a match when names are similar\"\n        ]\n      },\n      {\n        \"title\": \"REASONING PROCESS\",\n        \"description\": \"Think step by step and identify if the candidate represents the same entity.\"\n      },\n      {\n        \"title\": \"RESPONSE FORMAT REQUIREMENTS\",\n        \"description\": \"Your response must follow this exact format:\",\n        \"unordered_list\": [\n          \"You MUST respond with ONLY a single integer number\",\n          \"If the candidate matches the left record: respond with the candidate number\",\n          \"If the candidate does NOT match the left record: respond with \\\"-1\\\"\",\n          \"DO NOT include any words, explanations, or other text\",\n          \"DO NOT include quotes, brackets, or punctuation\",\n          \"Examples of CORRECT responses: `7` or `-1`\",\n          \"Examples of INCORRECT responses: \\\"no match\\\", \\\"the beer name\\\", \\\"candidate 0\\\"\"\n        ]\n      }\n    ]\n  }\n}\n2025-07-31 15:27:32,718 - entity-matching-server - INFO - \u2705 Tool WritePrompt completed successfully\n2025-07-31 15:27:32,718 - entity-matching-server - INFO - \ud83d\udce4 Response: \u2705 **Prompt Structure Updated Successfully**\n\n**Updated Sections**: 5\n1. ENTITY MATCHING TASK\n2. COMPARISON CRITERIA\n3. BEER MATCHING GUIDANCE\n4. REASONING PROCESS\n5. RESPONSE FORMAT REQUIREMENTS\n\n**\ud83d\udcdd ...\n2025-07-31 15:27:37,133 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest\n2025-07-31 15:27:37,135 - entity-matching-server - INFO - \ud83d\udd27 Tool called: RunExperiment\n2025-07-31 15:27:37,135 - entity-matching-server - INFO - \ud83d\udcdd Arguments: {\n  \"semantic_weight\": 0.2,\n  \"trigram_weight\": 0.5,\n  \"syntactic_weight\": 0.3,\n  \"max_candidates\": 150\n}\n2025-07-31 15:27:37,136 - entity-matching-server - INFO - \ud83d\udcca Inheriting configuration from experiment 9cb103be\n2025-07-31 15:27:37,136 - entity-matching-server - INFO - \ud83d\udcdd Using updated prompt data from WritePrompt\n2025-07-31 15:27:37,136 - entity-matching-server - INFO - \ud83d\udd27 Resolved parameters: semantic=0.2, trigram=0.5, syntactic=0.3, candidates=150\n2025-07-31 15:27:37,137 - entity-matching-server - INFO - \ud83d\udcbe Saved experiment config: results/experiments/exp_2023e805/config.json\n2025-07-31 15:27:37,137 - entity-matching-server - INFO - \ud83d\ude80 Running experiment: ExperimentConfig(id=2023e805, dataset=beer, model=gpt-4.1-nano, embedding=tei, weights=0.20/0.50/0.30, candidates=150)\n2025-07-31 15:27:41,551 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,555 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,582 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,584 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,587 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,588 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,595 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,598 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,602 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,603 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,610 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,610 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,614 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,616 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,618 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,620 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,624 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,823 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,823 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,824 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,824 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,825 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,825 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,825 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,825 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,826 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,826 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,826 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,827 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,827 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,827 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,828 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,828 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,828 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,829 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,829 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,829 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,830 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,830 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,830 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,831 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,831 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,831 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,831 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,832 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,832 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,832 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,833 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,833 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,833 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,834 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,834 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,835 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,835 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,835 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,836 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,836 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,836 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,837 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,837 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,837 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,837 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,838 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,838 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,839 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,839 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,839 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,840 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,840 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,889 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,892 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,892 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,893 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,893 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:41,893 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,293 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,294 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,539 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,546 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,555 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,660 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,728 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,737 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,743 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,753 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,761 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,787 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,787 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,788 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:42,802 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:49,482 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:27:49,537 - entity-matching-server - INFO - \ud83d\udccb Registered experiment 2023e805 with active pipeline registry 2e38ba14\n2025-07-31 15:27:49,540 - entity-matching-server - INFO - \ud83e\uddea EXPERIMENT 2023e805 COMPLETE\n2025-07-31 15:27:49,540 - entity-matching-server - INFO -    \ud83d\udcca Results: F1=0.9655, P=0.9333, R=1.0000 (TP=14, FP=1, FN=0)\n2025-07-31 15:27:49,540 - entity-matching-server - INFO -    \ud83d\udcc1 Saved: results/experiments/exp_2023e805/config.json\n2025-07-31 15:27:49,540 - entity-matching-server - INFO -    \ud83d\udcca Results: results/experiments/exp_2023e805/results.json\n2025-07-31 15:27:49,540 - entity-matching-server - INFO - \ud83d\udcca Result text: \ud83e\uddea Enhanced Test Results for beer [Experiment 2023e805]:\n\n\ud83d\udcca PERFORMANCE METRICS:\n   F1 Score: 0.9655\n   Precision: 0.9333\n   Recall: 1.0000\n\n\ud83d\udd0d DETAILED ANALYSIS:\n   Confusion Matrix: TP=14, FP=1, FN=0\n   \u26a0\ufe0f  FALSE POSITIVES: 1 pairs incorrectly marked as matches\n\n\ud83d\udd34 FALSE POSITIVES (1 cases - showing up to 20):\n\n   [1] Left Record: {\"id\": 76, \"Beer_Name\": \"Green Lakes Organic Ale\", \"Brew_Factory_Name\": \"Deschutes Brewery\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"5.20 %\"}\n       Predicted Match: {\"id\": 2831, \"Beer_Name\": \"Deschutes Green Lakes Non-Organic Ale\", \"Brew_Factory_Name\": \"Deschutes Brewery\", \"Style\": \"Amber Ale\", \"ABV\": \"6.40 %\"}\n       Should Match: {\"id\": 2831, \"Beer_Name\": \"Deschutes Green Lakes Non-Organic Ale\", \"Brew_Factory_Name\": \"Deschutes Brewery\", \"Style\": \"Amber Ale\", \"ABV\": \"6.40 %\"}\n       Predicted Similarity: semantic=0.932, trigram=0.644, syntactic=0.867\n       Actual Similarity: semantic=0.932, trigram=0.644, syntactic=0.867\n\n\u2705 TRUE POSITIVES (14 cases - showing sample):\n\n   [1] Left Record: {\"id\": 3917, \"Beer_Name\": \"Honey Basil Amber\", \"Brew_Factory_Name\": \"Rude Hippo Brewing Company\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"7.40 %\"}\n       Matched Record: {\"id\": 2224, \"Beer_Name\": \"Rude Hippo Honey Basil Amber\", \"Brew_Factory_Name\": \"18th Street Brewery\", \"Style\": \"Amber Ale\", \"ABV\": \"7.40 %\"}\n       Similarity: trigram=0.585, semantic=0.934\n\n   [2] Left Record: {\"id\": 271, \"Beer_Name\": \"Real McCoy Amber Ale\", \"Brew_Factory_Name\": \"Mammoth Brewing Company\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"4.50 %\"}\n       Matched Record: {\"id\": 1410, \"Beer_Name\": \"Mammoth Real McCoy Amber Ale\", \"Brew_Factory_Name\": \"Mammoth Brewing Company\", \"Style\": \"Altbier\", \"ABV\": \"4.50 %\"}\n       Similarity: trigram=0.723, semantic=0.942\n\n   [3] Left Record: {\"id\": 1780, \"Beer_Name\": \"Jazz Beer Tarraco Amber\", \"Brew_Factory_Name\": \"Tarraco Beer\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"6.90 %\"}\n       Matched Record: {\"id\": 685, \"Beer_Name\": \"Jazz Beer Tarraco Amber\", \"Brew_Factory_Name\": \"Ca l_Arenys - Cervezas Guineu\", \"Style\": \"Amber Ale\", \"ABV\": \"6.90 %\"}\n       Similarity: trigram=0.565, semantic=0.923\nReflect on these results and improve the weighting and/or prompt.\n2025-07-31 15:27:49,541 - entity-matching-server - INFO - \u2705 Tool RunExperiment completed successfully\n2025-07-31 15:27:49,541 - entity-matching-server - INFO - \ud83d\udce4 Response: \ud83e\uddea Enhanced Test Results for beer [Experiment 2023e805]:\n\n\ud83d\udcca PERFORMANCE METRICS:\n   F1 Score: 0.9655\n   Precision: 0.9333\n   Recall: 1.0000\n\n\ud83d\udd0d DETAILED ANALYSIS:\n   Confusion Matrix: TP=14, FP=1, FN=0\n...\n2025-07-31 15:27:59,857 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest\n2025-07-31 15:27:59,860 - entity-matching-server - INFO - \ud83d\udd27 Tool called: WritePrompt\n2025-07-31 15:27:59,860 - entity-matching-server - INFO - \ud83d\udcdd Arguments: {\n  \"prompt_data\": {\n    \"sections\": [\n      {\n        \"title\": \"ENTITY MATCHING TASK\",\n        \"description\": \"You are an expert at entity matching. Your task is to find the candidate that refers to the same real-world entity as the left record.\",\n        \"unordered_list\": [\n          \"Two records match if they refer to the same entity, even if:\",\n          \"They have different formatting or spellings\",\n          \"One has more/less information than the other\",\n          \"They use different abbreviations or representations\"\n        ]\n      },\n      {\n        \"title\": \"COMPARISON CRITERIA\",\n        \"description\": \"Compare the left record against the candidate. Look for:\",\n        \"ordered_list\": [\n          \"Same entity name (allowing for variations in spelling/format)\",\n          \"Matching key identifiers (IDs, codes, etc.)\",\n          \"Consistent attribute values where they overlap\",\n          \"No contradictory information\"\n        ]\n      },\n      {\n        \"title\": \"BEER MATCHING GUIDANCE\",\n        \"description\": \"For beer records, pay special attention to:\",\n        \"unordered_list\": [\n          \"Beer name is the primary identifier - look for exact or very similar names\",\n          \"Brewery name should match (allowing for abbreviations like 'Co.' vs 'Company')\",\n          \"One record may have brewery name prepended to beer name (e.g. 'Red Ale' vs 'Brewery Red Ale')\",\n          \"Important: Different variants are NOT matches (Organic vs Non-Organic, Light vs Regular, etc.)\",\n          \"Same ABV strongly indicates a match when names are similar\",\n          \"Ignore minor differences in style descriptions\"\n        ]\n      },\n      {\n        \"title\": \"REASONING PROCESS\",\n        \"description\": \"Think step by step and identify if the candidate represents the same entity.\"\n      },\n      {\n        \"title\": \"RESPONSE FORMAT REQUIREMENTS\",\n        \"description\": \"Your response must follow this exact format:\",\n        \"unordered_list\": [\n          \"You MUST respond with ONLY a single integer number\",\n          \"If the candidate matches the left record: respond with the candidate number\",\n          \"If the candidate does NOT match the left record: respond with \\\"-1\\\"\",\n          \"DO NOT include any words, explanations, or other text\",\n          \"DO NOT include quotes, brackets, or punctuation\",\n          \"Examples of CORRECT responses: `7` or `-1`\",\n          \"Examples of INCORRECT responses: \\\"no match\\\", \\\"the beer name\\\", \\\"candidate 0\\\"\"\n        ]\n      }\n    ]\n  }\n}\n2025-07-31 15:27:59,861 - entity-matching-server - INFO - \u2705 Tool WritePrompt completed successfully\n2025-07-31 15:27:59,862 - entity-matching-server - INFO - \ud83d\udce4 Response: \u2705 **Prompt Structure Updated Successfully**\n\n**Updated Sections**: 5\n1. ENTITY MATCHING TASK\n2. COMPARISON CRITERIA\n3. BEER MATCHING GUIDANCE\n4. REASONING PROCESS\n5. RESPONSE FORMAT REQUIREMENTS\n\n**\ud83d\udcdd ...\n2025-07-31 15:28:02,730 - mcp.server.lowlevel.server - INFO - Processing request of type CallToolRequest\n2025-07-31 15:28:02,732 - entity-matching-server - INFO - \ud83d\udd27 Tool called: RunExperiment\n2025-07-31 15:28:02,732 - entity-matching-server - INFO - \ud83d\udcdd Arguments: {\n  \"semantic_weight\": 0.2,\n  \"trigram_weight\": 0.5,\n  \"syntactic_weight\": 0.3,\n  \"max_candidates\": 150\n}\n2025-07-31 15:28:02,733 - entity-matching-server - INFO - \ud83d\udcca Inheriting configuration from experiment 2023e805\n2025-07-31 15:28:02,733 - entity-matching-server - INFO - \ud83d\udcdd Using updated prompt data from WritePrompt\n2025-07-31 15:28:02,733 - entity-matching-server - INFO - \ud83d\udd27 Resolved parameters: semantic=0.2, trigram=0.5, syntactic=0.3, candidates=150\n2025-07-31 15:28:02,734 - entity-matching-server - INFO - \ud83d\udcbe Saved experiment config: results/experiments/exp_acc49675/config.json\n2025-07-31 15:28:02,734 - entity-matching-server - INFO - \ud83d\ude80 Running experiment: ExperimentConfig(id=acc49675, dataset=beer, model=gpt-4.1-nano, embedding=tei, weights=0.20/0.50/0.30, candidates=150)\n2025-07-31 15:28:07,181 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,193 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,219 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,227 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,240 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,243 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,268 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,271 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,279 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,281 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,286 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,287 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,288 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,306 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,307 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,309 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,311 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,311 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,313 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,314 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,315 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,319 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,321 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,324 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,324 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,325 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,329 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,333 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,337 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,337 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,338 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,339 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,344 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,346 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,347 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,347 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,356 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,357 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,367 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,368 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,369 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,375 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,376 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,378 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,381 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,382 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,389 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,394 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,597 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,598 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,598 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,599 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,600 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,600 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,600 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,601 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,601 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,601 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,602 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,602 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,602 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,603 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,603 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,603 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,604 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,604 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,604 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,605 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,605 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,605 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,606 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,606 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,606 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,649 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,650 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,650 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:07,651 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,054 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,054 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,054 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,303 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,348 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,379 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,421 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,428 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,453 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,515 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,541 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,700 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,803 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,868 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions \"HTTP/1.1 200 OK\"\n2025-07-31 15:28:08,924 - entity-matching-server - INFO - \ud83d\udccb Registered experiment acc49675 with active pipeline registry 2e38ba14\n2025-07-31 15:28:08,927 - entity-matching-server - INFO - \ud83e\uddea EXPERIMENT acc49675 COMPLETE\n2025-07-31 15:28:08,927 - entity-matching-server - INFO -    \ud83d\udcca Results: F1=1.0000, P=1.0000, R=1.0000 (TP=14, FP=0, FN=0)\n2025-07-31 15:28:08,927 - entity-matching-server - INFO -    \ud83d\udcc1 Saved: results/experiments/exp_acc49675/config.json\n2025-07-31 15:28:08,927 - entity-matching-server - INFO -    \ud83d\udcca Results: results/experiments/exp_acc49675/results.json\n2025-07-31 15:28:08,927 - entity-matching-server - INFO -    \u2705 Perfect results - no errors!\n2025-07-31 15:28:08,927 - entity-matching-server - INFO - \ud83d\udcca Result text: \ud83e\uddea Enhanced Test Results for beer [Experiment acc49675]:\n\n\ud83d\udcca PERFORMANCE METRICS:\n   F1 Score: 1.0000\n   Precision: 1.0000\n   Recall: 1.0000\n\n\ud83d\udd0d DETAILED ANALYSIS:\n   Confusion Matrix: TP=14, FP=0, FN=0\n\n\u2705 TRUE POSITIVES (14 cases - showing sample):\n\n   [1] Left Record: {\"id\": 3917, \"Beer_Name\": \"Honey Basil Amber\", \"Brew_Factory_Name\": \"Rude Hippo Brewing Company\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"7.40 %\"}\n       Matched Record: {\"id\": 2224, \"Beer_Name\": \"Rude Hippo Honey Basil Amber\", \"Brew_Factory_Name\": \"18th Street Brewery\", \"Style\": \"Amber Ale\", \"ABV\": \"7.40 %\"}\n       Similarity: trigram=0.585, semantic=0.934\n\n   [2] Left Record: {\"id\": 271, \"Beer_Name\": \"Real McCoy Amber Ale\", \"Brew_Factory_Name\": \"Mammoth Brewing Company\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"4.50 %\"}\n       Matched Record: {\"id\": 1410, \"Beer_Name\": \"Mammoth Real McCoy Amber Ale\", \"Brew_Factory_Name\": \"Mammoth Brewing Company\", \"Style\": \"Altbier\", \"ABV\": \"4.50 %\"}\n       Similarity: trigram=0.723, semantic=0.942\n\n   [3] Left Record: {\"id\": 1780, \"Beer_Name\": \"Jazz Beer Tarraco Amber\", \"Brew_Factory_Name\": \"Tarraco Beer\", \"Style\": \"American Amber / Red Ale\", \"ABV\": \"6.90 %\"}\n       Matched Record: {\"id\": 685, \"Beer_Name\": \"Jazz Beer Tarraco Amber\", \"Brew_Factory_Name\": \"Ca l_Arenys - Cervezas Guineu\", \"Style\": \"Amber Ale\", \"ABV\": \"6.90 %\"}\n       Similarity: trigram=0.565, semantic=0.923\n   \ud83c\udf89 PERFECT RESULTS - No errors!\n\n2025-07-31 15:28:08,927 - entity-matching-server - INFO - \u2705 Tool RunExperiment completed successfully\n2025-07-31 15:28:08,927 - entity-matching-server - INFO - \ud83d\udce4 Response: \ud83e\uddea Enhanced Test Results for beer [Experiment acc49675]:\n\n\ud83d\udcca PERFORMANCE METRICS:\n   F1 Score: 1.0000\n   Precision: 1.0000\n   Recall: 1.0000\n\n\ud83d\udd0d DETAILED ANALYSIS:\n   Confusion Matrix: TP=14, FP=0, FN=0\n...\n",
+        "size_bytes": 50018,
+        "note": "Full conversation content included for reproduction"
+      }
+    ],
+    "temp_artifacts": [
+      {
+        "file": "results/temp/sample_data_beer.json",
+        "content": {
+          "dataset": "beer",
+          "target_f1": 95.3,
+          "dev_metrics": {},
+          "dev_pairs": [],
+          "analysis_insights": {
+            "dataset": "beer",
+            "analysis_type": "validation",
+            "metadata": {
+              "total_pairs_analyzed": 91,
+              "positive_pairs": 14,
+              "negative_pairs_sampled": 30,
+              "semantic_available": true
+            },
+            "similarity_analysis": {
+              "true_matches": {
+                "syntactic": {
+                  "mean": 0.7667856001558866,
+                  "std": 0.13192385503204088,
+                  "median": 0.789760348583878,
+                  "min": 0.4888888888888889,
+                  "max": 1.0
+                },
+                "trigram": {
+                  "mean": 0.6191414953473464,
+                  "std": 0.17914893072141697,
+                  "median": 0.625,
+                  "min": 0.3225806451612903,
+                  "max": 1.0
+                },
+                "semantic": {
+                  "mean": 0.9039179410061543,
+                  "std": 0.06831056256501937,
+                  "median": 0.9257187100276694,
+                  "min": 0.7359046964263662,
+                  "max": 0.9791366764437867
+                }
+              },
+              "false_positives": {
+                "syntactic": {
+                  "mean": 0.58368867197607,
+                  "std": 0.11043483421381232,
+                  "median": 0.5847701149425287,
+                  "min": 0.38461538461538464,
+                  "max": 0.9787234042553191
+                },
+                "trigram": {
+                  "mean": 0.30929949281359814,
+                  "std": 0.10628638611458498,
+                  "median": 0.2736185383244207,
+                  "min": 0.20833333333333334,
+                  "max": 0.7916666666666666
+                },
+                "semantic": {
+                  "mean": 0.7400071041940972,
+                  "std": 0.05535624859389854,
+                  "median": 0.7364240606506486,
+                  "min": 0.6398776534839024,
+                  "max": 0.9394267973694531
+                }
+              }
+            },
+            "candidate_analysis": {
+              "recall_at_1": 0.8571428571428571,
+              "recall_at_5": 0.9285714285714286,
+              "recall_at_10": 0.9285714285714286,
+              "recall_at_25": 0.9285714285714286,
+              "recall_at_50": 0.9285714285714286,
+              "recall_at_100": 0.9285714285714286,
+              "recall_at_150": 1.0,
+              "recall_at_200": 1.0,
+              "recall_at_300": 1.0,
+              "recall_at_500": 1.0
+            },
+            "concrete_examples": {
+              "true_matches": [
+                {
+                  "left_record": {
+                    "id": 3073,
+                    "Beer_Name": "MovAmber Moustache Ale",
+                    "Brew_Factory_Name": "Bull City Burger And Brewery",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "-"
+                  },
+                  "right_record": {
+                    "id": 1647,
+                    "Beer_Name": "Bull City Movamber Moustache Ale",
+                    "Brew_Factory_Name": "Bull City Burger and Brewery",
+                    "Style": "Amber Ale",
+                    "ABV": "-"
+                  },
+                  "similarities": {
+                    "syntactic": 0.815,
+                    "trigram": 0.69,
+                    "semantic": 0.953
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 2163,
+                    "Beer_Name": "Bitter Orange Blossom",
+                    "Brew_Factory_Name": "I & I Brewing",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.30 %"
+                  },
+                  "right_record": {
+                    "id": 985,
+                    "Beer_Name": "I & I Bitter Orange Blossom",
+                    "Brew_Factory_Name": "I & I Brewing",
+                    "Style": "Amber Ale",
+                    "ABV": "5.30 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.875,
+                    "trigram": 0.76,
+                    "semantic": 0.97
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 3622,
+                    "Beer_Name": "Buckleys Original Ale",
+                    "Brew_Factory_Name": "Buckley 's Beers",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "4.50 %"
+                  },
+                  "right_record": {
+                    "id": 2020,
+                    "Beer_Name": "Buckleys Original Ale",
+                    "Brew_Factory_Name": "Yarra Flats Brewery",
+                    "Style": "English Pale Ale",
+                    "ABV": "4.90 %"
+                  },
+                  "similarities": {
+                    "syntactic": 1.0,
+                    "trigram": 1.0,
+                    "semantic": 0.824
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 2764,
+                    "Beer_Name": "Willimantic Riverfest Red",
+                    "Brew_Factory_Name": "Willimantic Brewing Co. .",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.20 %"
+                  },
+                  "right_record": {
+                    "id": 1423,
+                    "Beer_Name": "Willimantic Riverfest Red Ale",
+                    "Brew_Factory_Name": "Willimantic Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "5.20 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.926,
+                    "trigram": 0.852,
+                    "semantic": 0.979
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 2700,
+                    "Beer_Name": "British Knight Scotch Red Ale",
+                    "Brew_Factory_Name": "Oskar Blues Grill & Brew",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "7.40 %"
+                  },
+                  "right_record": {
+                    "id": 1380,
+                    "Beer_Name": "Oskar Blues British Knight Scotch Red Ale",
+                    "Brew_Factory_Name": "Oskar Blues Brewery",
+                    "Style": "Scottish Ale",
+                    "ABV": "7.40 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.829,
+                    "trigram": 0.692,
+                    "semantic": 0.933
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 1030,
+                    "Beer_Name": "Sierra Amber Ale",
+                    "Brew_Factory_Name": "Silver Peak Restaurant & Brewery",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "4.50 %"
+                  },
+                  "right_record": {
+                    "id": 43,
+                    "Beer_Name": "Chy_e Sierra Amber Ale",
+                    "Brew_Factory_Name": "Zamecky Pivovar Chy_e",
+                    "Style": "Amber Ale",
+                    "ABV": "5.30 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.842,
+                    "trigram": 0.7,
+                    "semantic": 0.81
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 5,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 1522,
+                    "Beer_Name": "Radeau Red Ale",
+                    "Brew_Factory_Name": "Cooper 's Cave Ale Company",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.50 %"
+                  },
+                  "right_record": {
+                    "id": 467,
+                    "Beer_Name": "Coopers Cave Radeau Red Ale",
+                    "Brew_Factory_Name": "Coopers Cave Ale Company",
+                    "Style": "Irish Ale",
+                    "ABV": "-"
+                  },
+                  "similarities": {
+                    "syntactic": 0.683,
+                    "trigram": 0.48,
+                    "semantic": 0.876
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 1004,
+                    "Beer_Name": "Indian Red Head",
+                    "Brew_Factory_Name": "Catawba Brewing Co. .",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.00 %"
+                  },
+                  "right_record": {
+                    "id": 20,
+                    "Beer_Name": "Catawba Valley Indian Head Red",
+                    "Brew_Factory_Name": "Catawba Valley Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "5 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.489,
+                    "trigram": 0.323,
+                    "semantic": 0.919
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 2867,
+                    "Beer_Name": "Red Curry Ale",
+                    "Brew_Factory_Name": "Hideout Brewing Company",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.50 %"
+                  },
+                  "right_record": {
+                    "id": 1493,
+                    "Beer_Name": "Hideout Red Curry Ale",
+                    "Brew_Factory_Name": "The Hideout Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "-"
+                  },
+                  "similarities": {
+                    "syntactic": 0.765,
+                    "trigram": 0.579,
+                    "semantic": 0.954
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 1748,
+                    "Beer_Name": "Rock Steady Red",
+                    "Brew_Factory_Name": "The Rock Wood Fire Pizza & Brewery",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.00 %"
+                  },
+                  "right_record": {
+                    "id": 652,
+                    "Beer_Name": "Acoustic Rock Steady Red Cider",
+                    "Brew_Factory_Name": "Acoustic Brewing Company",
+                    "Style": "Cider",
+                    "ABV": "6 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.667,
+                    "trigram": 0.464,
+                    "semantic": 0.736
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 1474,
+                    "Beer_Name": "Revenuers Red Ale",
+                    "Brew_Factory_Name": "Catawba Brewing Co. .",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.20 %"
+                  },
+                  "right_record": {
+                    "id": 427,
+                    "Beer_Name": "Catawba Valley Revenuers Red Ale",
+                    "Brew_Factory_Name": "Catawba Valley Brewing Company",
+                    "Style": "Irish Ale",
+                    "ABV": "5.20 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.694,
+                    "trigram": 0.517,
+                    "semantic": 0.903
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 1394,
+                    "Beer_Name": "Hooligan Amber Ale",
+                    "Brew_Factory_Name": "Bentley Brewing Company / Dark Horse Tavern",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "6.00 %"
+                  },
+                  "right_record": {
+                    "id": 358,
+                    "Beer_Name": "Bentley Hooligan Amber Ale",
+                    "Brew_Factory_Name": "Bentley Brewing Co. / Dark Horse Tavern",
+                    "Style": "Amber Ale",
+                    "ABV": "6 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.818,
+                    "trigram": 0.667,
+                    "semantic": 0.966
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 2491,
+                    "Beer_Name": "5 Star Amber Ale",
+                    "Brew_Factory_Name": "The Civil Life Brewing Company",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.00 %"
+                  },
+                  "right_record": {
+                    "id": 1230,
+                    "Beer_Name": "The Civil Life Stevie_s 5 Star Amber Ale",
+                    "Brew_Factory_Name": "The Civil Life Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "5 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.571,
+                    "trigram": 0.361,
+                    "semantic": 0.936
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 3468,
+                    "Beer_Name": "Red RYEding Hood",
+                    "Brew_Factory_Name": "Chapman 's Brewing Company",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "10.00 %"
+                  },
+                  "right_record": {
+                    "id": 1921,
+                    "Beer_Name": "Chapman_s Red RYEding Hood",
+                    "Brew_Factory_Name": "Chapman_s Brewing Company",
+                    "Style": "Specialty Grain",
+                    "ABV": "10 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.762,
+                    "trigram": 0.583,
+                    "semantic": 0.896
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 1,
+                    "max_candidates": 50
+                  }
+                }
+              ],
+              "confusing_non_matches": [
+                {
+                  "left_record": {
+                    "id": 138,
+                    "Beer_Name": "Double Dread Imperial Red Ale",
+                    "Brew_Factory_Name": "Mad River Brewing Company",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "8.60 %"
+                  },
+                  "right_record": {
+                    "id": 1496,
+                    "Beer_Name": "Kinetic Infrared Imperial Red Ale",
+                    "Brew_Factory_Name": "Kinetic Brewing Company",
+                    "Style": "American Strong Ale",
+                    "ABV": "9.30 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.71,
+                    "trigram": 0.4,
+                    "semantic": 0.768
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 12,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 3402,
+                    "Beer_Name": "Red Shedman 's Imperial Amber Ale",
+                    "Brew_Factory_Name": "57 Brew Pub & Bistro",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "7.60 %"
+                  },
+                  "right_record": {
+                    "id": 1096,
+                    "Beer_Name": "Boxing Cat Firecracker Imperial Red Ale",
+                    "Brew_Factory_Name": "Boxing Cat Brewery",
+                    "Style": "Amber Ale",
+                    "ABV": "6.60 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.5,
+                    "trigram": 0.236,
+                    "semantic": 0.732
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 3963,
+                    "Beer_Name": "Hop Around Imperial Red Ale",
+                    "Brew_Factory_Name": "Big Bay Brewing Co. .",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "9.00 %"
+                  },
+                  "right_record": {
+                    "id": 623,
+                    "Beer_Name": "Oak Creek King Crimson Imperial Red Ale",
+                    "Brew_Factory_Name": "Oak Creek Brewing Co. .",
+                    "Style": "American Strong Ale",
+                    "ABV": "9.50 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.667,
+                    "trigram": 0.326,
+                    "semantic": 0.774
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 3,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 2246,
+                    "Beer_Name": "Freedom Bridge Amber Ale",
+                    "Brew_Factory_Name": "Barley Brothers Brewery & Grill",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "-"
+                  },
+                  "right_record": {
+                    "id": 2249,
+                    "Beer_Name": "Bridge Ambleside Amber Ale - Pomegranate & Galena Hops",
+                    "Brew_Factory_Name": "Bridge Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "5.30 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.41,
+                    "trigram": 0.25,
+                    "semantic": 0.815
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 9,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 4323,
+                    "Beer_Name": "Ole ' Redbeard Barleywine ( Bourbon Barrel Aged )",
+                    "Brew_Factory_Name": "Fitger 's Brewhouse",
+                    "Style": "American Barleywine",
+                    "ABV": "-"
+                  },
+                  "right_record": {
+                    "id": 2378,
+                    "Beer_Name": "Columbus Bourbon Barrel Aged Uncle Rusty",
+                    "Brew_Factory_Name": "Columbus Brewing Company",
+                    "Style": "American Strong Ale",
+                    "ABV": "-"
+                  },
+                  "similarities": {
+                    "syntactic": 0.539,
+                    "trigram": 0.317,
+                    "semantic": 0.666
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 18,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 1322,
+                    "Beer_Name": "The Live Bait Amber Ale",
+                    "Brew_Factory_Name": "Mudhook Brewing Company",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "6.00 %"
+                  },
+                  "right_record": {
+                    "id": 1308,
+                    "Beer_Name": "BNS The Hills Have Eyes Amber Ale",
+                    "Brew_Factory_Name": "BNS Brewing & Distilling",
+                    "Style": "Amber Ale",
+                    "ABV": "5.20 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.643,
+                    "trigram": 0.268,
+                    "semantic": 0.657
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 4162,
+                    "Beer_Name": "John Barleycorn - Bourbon Barrel Aged",
+                    "Brew_Factory_Name": "Mad River Brewing Company",
+                    "Style": "American Barleywine",
+                    "ABV": "12.50 %"
+                  },
+                  "right_record": {
+                    "id": 2936,
+                    "Beer_Name": "Actual Bourbon Barrel Aged Elektron",
+                    "Brew_Factory_Name": "Actual Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "7.30 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.611,
+                    "trigram": 0.383,
+                    "semantic": 0.703
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 10,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 2320,
+                    "Beer_Name": "Fire Brew Red Ale",
+                    "Brew_Factory_Name": "Minhas Craft Brewery",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.50 %"
+                  },
+                  "right_record": {
+                    "id": 524,
+                    "Beer_Name": "Conshohocken Hale Fire Red Ale",
+                    "Brew_Factory_Name": "Conshohocken Brewing Co. .",
+                    "Style": "Amber Ale",
+                    "ABV": "6.60 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.511,
+                    "trigram": 0.273,
+                    "semantic": 0.774
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 3661,
+                    "Beer_Name": "Double Red Hot Ale",
+                    "Brew_Factory_Name": "Midnight Sun Brewing Co. .",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "7.57 %"
+                  },
+                  "right_record": {
+                    "id": 1090,
+                    "Beer_Name": "Below Grade Super Duty Double Red Ale",
+                    "Brew_Factory_Name": "Below Grade Brewing LLC",
+                    "Style": "American Strong Ale",
+                    "ABV": "7.70 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.509,
+                    "trigram": 0.275,
+                    "semantic": 0.749
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 16,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 252,
+                    "Beer_Name": "Red Rose Amber Ale",
+                    "Brew_Factory_Name": "Baird Brewing Company / Fishmarket Taproom",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.40 %"
+                  },
+                  "right_record": {
+                    "id": 1073,
+                    "Beer_Name": "Upland Rad Red Amber Ale",
+                    "Brew_Factory_Name": "Upland Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "5.60 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.619,
+                    "trigram": 0.423,
+                    "semantic": 0.785
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 6,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 287,
+                    "Beer_Name": "Flying Monkey Amber Ale",
+                    "Brew_Factory_Name": "Flying Monkey Brewing Company",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "4.60 %"
+                  },
+                  "right_record": {
+                    "id": 2581,
+                    "Beer_Name": "Flying Monkeys Amber Ale",
+                    "Brew_Factory_Name": "Flying Monkeys Craft Brewery",
+                    "Style": "Amber Ale",
+                    "ABV": "5 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.979,
+                    "trigram": 0.792,
+                    "semantic": 0.939
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 2,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 732,
+                    "Beer_Name": "Saint Gleason Imperial Red Ale",
+                    "Brew_Factory_Name": "Abita Brewing Co. .",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "-"
+                  },
+                  "right_record": {
+                    "id": 1414,
+                    "Beer_Name": "Renegade Scarlett Letter Imperial Red Ale",
+                    "Brew_Factory_Name": "Renegade Brewing Company",
+                    "Style": "American Strong Ale",
+                    "ABV": "8.50 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.648,
+                    "trigram": 0.3,
+                    "semantic": 0.715
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 4104,
+                    "Beer_Name": "Kickin ' Chicken Bourbon Barrel Barley Wine",
+                    "Brew_Factory_Name": "Santa Fe Brewing Company",
+                    "Style": "American Barleywine",
+                    "ABV": "12.00 %"
+                  },
+                  "right_record": {
+                    "id": 2416,
+                    "Beer_Name": "Elevator Barrel Aged Barley Wine",
+                    "Brew_Factory_Name": "Elevator Brewing Company",
+                    "Style": "Barley Wine",
+                    "ABV": "-"
+                  },
+                  "similarities": {
+                    "syntactic": 0.587,
+                    "trigram": 0.275,
+                    "semantic": 0.64
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 21,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 2934,
+                    "Beer_Name": "Ale Mania Imperial Red Ale",
+                    "Brew_Factory_Name": "Ale-Mania",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "9.50 %"
+                  },
+                  "right_record": {
+                    "id": 2582,
+                    "Beer_Name": "Worthy Eruption Imperial Red Ale",
+                    "Brew_Factory_Name": "Worthy Brewing Company",
+                    "Style": "American Strong Ale",
+                    "ABV": "8 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.655,
+                    "trigram": 0.395,
+                    "semantic": 0.768
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 46,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 4336,
+                    "Beer_Name": "Old Blarney Barleywine - Bourbon Barrel Aged",
+                    "Brew_Factory_Name": "Moylan 's Brewery",
+                    "Style": "American Barleywine",
+                    "ABV": "10.00 %"
+                  },
+                  "right_record": {
+                    "id": 2510,
+                    "Beer_Name": "21st Amendment Bourbon Barrel Lower da Boom Barleywine",
+                    "Brew_Factory_Name": "21st Amendment Brewery",
+                    "Style": "Barley Wine",
+                    "ABV": "9.50 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.408,
+                    "trigram": 0.313,
+                    "semantic": 0.733
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 9,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 655,
+                    "Beer_Name": "Rhino Chaser Imperial Red Ale",
+                    "Brew_Factory_Name": "Pizza Port Solana Beach",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "9.50 %"
+                  },
+                  "right_record": {
+                    "id": 1661,
+                    "Beer_Name": "Edge Imperial Red Ale &#40; Spring Seasonal &#41;",
+                    "Brew_Factory_Name": "Edge Brewing Company",
+                    "Style": "American Strong Ale",
+                    "ABV": "8.50 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.462,
+                    "trigram": 0.268,
+                    "semantic": 0.726
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 2975,
+                    "Beer_Name": "Rock River Red Ale",
+                    "Brew_Factory_Name": "Berghoff Brewery",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "-"
+                  },
+                  "right_record": {
+                    "id": 2899,
+                    "Beer_Name": "Boxing Rock Temptation Red Ale",
+                    "Brew_Factory_Name": "Boxing Rock Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "6 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.583,
+                    "trigram": 0.257,
+                    "semantic": 0.697
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 928,
+                    "Beer_Name": "Old Detroit Amber Ale",
+                    "Brew_Factory_Name": "Frankenmuth Brewery",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.60 %"
+                  },
+                  "right_record": {
+                    "id": 2275,
+                    "Beer_Name": "Maldita Old Continent American Amber Ale",
+                    "Brew_Factory_Name": "Faustino Microcervejeira",
+                    "Style": "Amber Ale",
+                    "ABV": "6 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.59,
+                    "trigram": 0.244,
+                    "semantic": 0.794
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 13,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 704,
+                    "Beer_Name": "Redeemer Imperial Red Ale",
+                    "Brew_Factory_Name": "Boston Beer Works - Canal Street",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "8.20 %"
+                  },
+                  "right_record": {
+                    "id": 124,
+                    "Beer_Name": "Laguna Beach Grateful Red Imperial Red Ale",
+                    "Brew_Factory_Name": "Laguna Beach Brewing",
+                    "Style": "American Strong Ale",
+                    "ABV": "11 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.597,
+                    "trigram": 0.349,
+                    "semantic": 0.756
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 35,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 496,
+                    "Beer_Name": "Mountain Goat Fancy Pants Amber Ale",
+                    "Brew_Factory_Name": "Mountain Goat Beer Pty Ltd",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.40 %"
+                  },
+                  "right_record": {
+                    "id": 1535,
+                    "Beer_Name": "Breckenridge Mountain Series : Hoppy Amber Ale",
+                    "Brew_Factory_Name": "Breckenridge Brewery",
+                    "Style": "Amber Ale",
+                    "ABV": "6.10 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.519,
+                    "trigram": 0.242,
+                    "semantic": 0.75
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 3388,
+                    "Beer_Name": "Stone Liberty Station Outbreak Series : Red Ale",
+                    "Brew_Factory_Name": "Stone Brewing Co. .",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "7.00 %"
+                  },
+                  "right_record": {
+                    "id": 838,
+                    "Beer_Name": "Brew Bus Detour Series : Rollin Dirty Red Ale - Wood Aged",
+                    "Brew_Factory_Name": "Cigar City Brewing",
+                    "Style": "Irish Ale",
+                    "ABV": "5 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.385,
+                    "trigram": 0.222,
+                    "semantic": 0.667
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 429,
+                    "Beer_Name": "Simeon Jones River Valley Amber Ale",
+                    "Brew_Factory_Name": "Picaroons Brewing Co. .",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "4.50 %"
+                  },
+                  "right_record": {
+                    "id": 2805,
+                    "Beer_Name": "Metolius River Ales Rusty Spinner Amber Ale",
+                    "Brew_Factory_Name": "Genesee Brewing Company &#40; North American Breweries &#41;",
+                    "Style": "Amber Ale",
+                    "ABV": "5.10 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.641,
+                    "trigram": 0.269,
+                    "semantic": 0.724
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 2751,
+                    "Beer_Name": "Spencer Creek Amber Ale",
+                    "Brew_Factory_Name": "Mia & Pia 's Pizzeria And Brewhouse",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.50 %"
+                  },
+                  "right_record": {
+                    "id": 2550,
+                    "Beer_Name": "Ruby Mountain Angel Creek Amber Ale",
+                    "Brew_Factory_Name": "Ruby Mountain Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "-"
+                  },
+                  "similarities": {
+                    "syntactic": 0.586,
+                    "trigram": 0.359,
+                    "semantic": 0.753
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 37,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 2614,
+                    "Beer_Name": "Killer Red Fresh Hop India Red Ale",
+                    "Brew_Factory_Name": "Double Mountain Brewery & Taproom",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "7.20 %"
+                  },
+                  "right_record": {
+                    "id": 1645,
+                    "Beer_Name": "8 Wired Tall Poppy India Red Ale",
+                    "Brew_Factory_Name": "Renaissance Brewing",
+                    "Style": "Amber Ale",
+                    "ABV": "7 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.667,
+                    "trigram": 0.267,
+                    "semantic": 0.719
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 32,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 1743,
+                    "Beer_Name": "Red 's Heaven 15th Anniversary Imperial Red Ale",
+                    "Brew_Factory_Name": "Flying Bison Brewing Company",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "8.30 %"
+                  },
+                  "right_record": {
+                    "id": 2334,
+                    "Beer_Name": "Austin Beerworks Battle Axe Imperial Red Ale",
+                    "Brew_Factory_Name": "Austin Beerworks",
+                    "Style": "American Strong Ale",
+                    "ABV": "8 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.527,
+                    "trigram": 0.214,
+                    "semantic": 0.734
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 487,
+                    "Beer_Name": "Three Beavers Imperial Red Ale",
+                    "Brew_Factory_Name": "Howe Sound Inn & Brewing Company",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "7.50 %"
+                  },
+                  "right_record": {
+                    "id": 2582,
+                    "Beer_Name": "Worthy Eruption Imperial Red Ale",
+                    "Brew_Factory_Name": "Worthy Brewing Company",
+                    "Style": "American Strong Ale",
+                    "ABV": "8 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.71,
+                    "trigram": 0.349,
+                    "semantic": 0.751
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 26,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 128,
+                    "Beer_Name": "The Unforgiven Amber Ale",
+                    "Brew_Factory_Name": "Rush River Brewing Company",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.80 %"
+                  },
+                  "right_record": {
+                    "id": 1230,
+                    "Beer_Name": "The Civil Life Stevie_s 5 Star Amber Ale",
+                    "Brew_Factory_Name": "The Civil Life Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "5 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.531,
+                    "trigram": 0.208,
+                    "semantic": 0.732
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 113,
+                    "Beer_Name": "Alexander Keith 's Red Amber Ale",
+                    "Brew_Factory_Name": "Alexander Keith 's",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.00 %"
+                  },
+                  "right_record": {
+                    "id": 2975,
+                    "Beer_Name": "Swashbuckler Red Sea Amber Ale",
+                    "Brew_Factory_Name": "Swashbuckler Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "-"
+                  },
+                  "similarities": {
+                    "syntactic": 0.581,
+                    "trigram": 0.25,
+                    "semantic": 0.762
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 3593,
+                    "Beer_Name": "Escanaba River Amber Ale",
+                    "Brew_Factory_Name": "Dead Bear Brewing Co. .",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "5.76 %"
+                  },
+                  "right_record": {
+                    "id": 2636,
+                    "Beer_Name": "Piney River McKinney Eddy Amber Ale",
+                    "Brew_Factory_Name": "Piney River Brewing Company",
+                    "Style": "Amber Ale",
+                    "ABV": "-"
+                  },
+                  "similarities": {
+                    "syntactic": 0.576,
+                    "trigram": 0.316,
+                    "semantic": 0.678
+                  },
+                  "candidate_generation": {
+                    "found": false,
+                    "rank": null,
+                    "max_candidates": 50
+                  }
+                },
+                {
+                  "left_record": {
+                    "id": 3246,
+                    "Beer_Name": "Buffalo Trace Bourbon Barrel Aged Amber Ale",
+                    "Brew_Factory_Name": "Wolf Hills Brewing Company",
+                    "Style": "American Amber / Red Ale",
+                    "ABV": "-"
+                  },
+                  "right_record": {
+                    "id": 709,
+                    "Beer_Name": "Bull & Barrel Session Style - Amber Ale",
+                    "Brew_Factory_Name": "Bull & Barrel Brew Pub",
+                    "Style": "Amber Ale",
+                    "ABV": "4.70 %"
+                  },
+                  "similarities": {
+                    "syntactic": 0.561,
+                    "trigram": 0.238,
+                    "semantic": 0.738
+                  },
+                  "candidate_generation": {
+                    "found": true,
+                    "rank": 27,
+                    "max_candidates": 50
+                  }
+                }
+              ]
+            },
+            "dataset_characteristics": {
+              "table_a_size": 4345,
+              "table_b_size": 3000,
+              "field_names": [
+                "Beer_Name",
+                "Brew_Factory_Name",
+                "Style",
+                "ABV"
+              ],
+              "sample_records": [
+                {
+                  "id": 0,
+                  "Beer_Name": "Tr\u00c3 \u00b6 egs Nugget Nectar",
+                  "Brew_Factory_Name": "Tr\u00c3 \u00b6 egs Brewing Company",
+                  "Style": "American Amber / Red Ale",
+                  "ABV": "7.50 %"
+                },
+                {
+                  "id": 1,
+                  "Beer_Name": "Fat Tire Amber Ale",
+                  "Brew_Factory_Name": "New Belgium Brewing",
+                  "Style": "American Amber / Red Ale",
+                  "ABV": "5.20 %"
+                },
+                {
+                  "id": 2,
+                  "Beer_Name": "Levitation Ale",
+                  "Brew_Factory_Name": "Stone Brewing Co. .",
+                  "Style": "American Amber / Red Ale",
+                  "ABV": "4.40 %"
+                }
+              ]
+            }
+          }
+        },
+        "note": "Temporary artifact generated during optimization"
+      },
+      {
+        "file": "results/temp/generated_rules.json",
+        "content": {
+          "hyperparameters": {
+            "max_candidates": 50,
+            "semantic_weight": 0.9,
+            "trigram_weight": 0.05,
+            "syntactic_weight": 0.05,
+            "decision_threshold": 0.5,
+            "auto_accept_threshold": 0.9,
+            "auto_reject_threshold": 0.1
+          },
+          "candidate_rules": [],
+          "score_rules": [],
+          "decision_rules": [],
+          "weight_rules": [],
+          "prompt_rules": [],
+          "pipeline_rules": [],
+          "timestamp": "2025-07-31T15:24:41",
+          "generation_method": "baseline_initialization",
+          "mode": "prompt-modification"
+        },
+        "note": "Temporary artifact generated during optimization"
+      },
+      {
+        "file": "results/temp/prompt_data.json",
+        "content": {
+          "sections": [
+            {
+              "title": "ENTITY MATCHING TASK",
+              "description": "You are an expert at entity matching. Your task is to find the candidate that refers to the same real-world entity as the left record.",
+              "unordered_list": [
+                "Two records match if they refer to the same entity, even if:",
+                "They have different formatting or spellings",
+                "One has more/less information than the other",
+                "They use different abbreviations or representations"
+              ]
+            },
+            {
+              "title": "COMPARISON CRITERIA",
+              "description": "Compare the left record against the candidate. Look for:",
+              "ordered_list": [
+                "Same entity name (allowing for variations in spelling/format)",
+                "Matching key identifiers (IDs, codes, etc.)",
+                "Consistent attribute values where they overlap",
+                "No contradictory information"
+              ]
+            },
+            {
+              "title": "BEER MATCHING GUIDANCE",
+              "description": "For beer records, pay special attention to:",
+              "unordered_list": [
+                "Beer name is the primary identifier - look for exact or very similar names",
+                "Brewery name should match (allowing for abbreviations like 'Co.' vs 'Company')",
+                "One record may have brewery name prepended to beer name (e.g. 'Red Ale' vs 'Brewery Red Ale')",
+                "Important: Different variants are NOT matches (Organic vs Non-Organic, Light vs Regular, etc.)",
+                "Same ABV strongly indicates a match when names are similar",
+                "Ignore minor differences in style descriptions"
+              ]
+            },
+            {
+              "title": "REASONING PROCESS",
+              "description": "Think step by step and identify if the candidate represents the same entity."
+            },
+            {
+              "title": "RESPONSE FORMAT REQUIREMENTS",
+              "description": "Your response must follow this exact format:",
+              "unordered_list": [
+                "You MUST respond with ONLY a single integer number",
+                "If the candidate matches the left record: respond with the candidate number",
+                "If the candidate does NOT match the left record: respond with \"-1\"",
+                "DO NOT include any words, explanations, or other text",
+                "DO NOT include quotes, brackets, or punctuation",
+                "Examples of CORRECT responses: `7` or `-1`",
+                "Examples of INCORRECT responses: \"no match\", \"the beer name\", \"candidate 0\""
+              ]
+            }
+          ]
+        },
+        "note": "Temporary artifact generated during optimization"
+      }
+    ],
+    "method_recommendation": {
+      "best_method": "baseline",
+      "f1_improvement": -0.0025542784163473664,
+      "should_use_rules": false,
+      "reasoning": "Marginal difference, use simpler baseline approach"
+    }
+  },
   "summary": {
-    "dev_f1": 0.8571428571428571,
-    "baseline_f1": 0.9333333333333333,
-    "enhanced_f1": 0.8333333333333333,
-    "f1_improvement": -0.10000000000000009,
-    "total_cost_usd": 0.79035995,
-    "rule_generation_cost_usd": 0.73419535,
-    "rule_generation_method": "agentic",
-    "total_time_seconds": 204.19711184501648,
+    "dev_f1": 0.8148148148148148,
+    "baseline_f1": 0.9655172413793104,
+    "enhanced_f1": 0.962962962962963,
+    "f1_improvement": -0.0025542784163473664,
+    "total_cost_usd": 0.46480395,
+    "rule_generation_cost_usd": 0.15988575,
+    "rule_generation_method": "unknown",
+    "total_time_seconds": 128.4266858100891,
     "beat_leaderboard": true,
-    "leaderboard_target": 91.2
+    "leaderboard_target": 95.3,
+    "reusable_config_path": "results/generated_rules/beer_known_params_config.json",
+    "pipeline_registry_id": "2e38ba14",
+    "registry_path": "results/registries/pipeline_2e38ba14.json",
+    "experiment_genealogy": {
+      "pipeline_run_id": "2e38ba14",
+      "created_at": "2025-07-31T15:23:58.548750",
+      "stages": {
+        "dev": [
+          {
+            "experiment_id": "d3881356",
+            "timestamp": "2025-07-31T15:24:41.206163",
+            "f1_score": 0.8148148148148148,
+            "notes": "Development stage with known parameters and validation data"
+          }
+        ],
+        "claude_optimization": [
+          {
+            "experiment_id": "9cb103be",
+            "timestamp": "2025-07-31T15:27:19.284109",
+            "f1_score": 0.0,
+            "notes": "Claude optimization experiment with weights 0.20/0.50/0.30"
+          },
+          {
+            "experiment_id": "2023e805",
+            "timestamp": "2025-07-31T15:27:49.535084",
+            "f1_score": 0.9655172413793104,
+            "notes": "Claude optimization experiment with weights 0.20/0.50/0.30"
+          },
+          {
+            "experiment_id": "acc49675",
+            "timestamp": "2025-07-31T15:28:08.922024",
+            "f1_score": 1.0,
+            "notes": "Claude optimization experiment with weights 0.20/0.50/0.30"
+          }
+        ],
+        "3A_baseline": [
+          {
+            "experiment_id": "8136d688",
+            "timestamp": "2025-07-31T15:30:18.655965",
+            "f1_score": 0.9655172413793104,
+            "notes": "Baseline test evaluation without rules, using dev stage parameters"
+          }
+        ],
+        "3B_enhanced": [
+          {
+            "experiment_id": "74c72fff",
+            "timestamp": "2025-07-31T15:30:24.998272",
+            "f1_score": 0.962962962962963,
+            "notes": "Enhanced test evaluation with rules using winning Claude experiment"
+          }
+        ]
+      },
+      "best_claude_experiment_id": "acc49675"
+    }
   },
   "failure_analysis": {
-    "failure_analysis": "No predictions available for failure analysis"
+    "total_failures": 1,
+    "false_positives": 0,
+    "false_negatives": 1,
+    "detailed_failures": [
+      {
+        "left_id": 1621,
+        "right_id": 548,
+        "true_label": 1,
+        "predicted_label": 0,
+        "failure_type": "false_negative",
+        "left_record": {
+          "id": 1621,
+          "Beer_Name": "Red Rocket Amber Ale",
+          "Brew_Factory_Name": "Third Base Sports Bar & Brewery",
+          "Style": "American Amber / Red Ale",
+          "ABV": "6.40 %"
+        },
+        "right_record": {
+          "id": 548,
+          "Beer_Name": "Third Base Red Rocket Amber Ale",
+          "Brew_Factory_Name": "Third Base Sports Bar & Brewery",
+          "Style": "Amber Ale",
+          "ABV": "4.60 %"
+        },
+        "predicted_right_id": null,
+        "predicted_right_record": null
+      }
+    ]
   }
 }

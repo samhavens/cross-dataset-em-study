@@ -63,6 +63,23 @@ class InternalLeaderboardGenerator:
         # Baseline is better (or equal)
         return baseline_f1, "baseline", pipeline_data.get("baseline_results", {})
 
+    def get_experiment_id(self, pipeline_data: Dict, method: str) -> str:
+        """Get the experiment ID for the given method (baseline or enhanced)"""
+        summary = pipeline_data.get("summary", {})
+        genealogy = summary.get("experiment_genealogy", {})
+        stages = genealogy.get("stages", {})
+        
+        if method == "enhanced":
+            enhanced_experiments = stages.get("3B_enhanced", [])
+            if enhanced_experiments:
+                return enhanced_experiments[0].get("experiment_id", "")
+        elif method == "baseline":
+            baseline_experiments = stages.get("3A_baseline", [])
+            if baseline_experiments:
+                return baseline_experiments[0].get("experiment_id", "")
+        
+        return ""
+
     def load_original_leaderboard(self) -> str:
         """Load the original leaderboard.md for reference"""
         leaderboard_file = pathlib.Path("leaderboard.md")
@@ -174,19 +191,23 @@ Our best results on entity matching datasets. Shows the better of baseline (opti
                 precision = result_details.get("precision", 0.0)
                 recall = result_details.get("recall", 0.0)
                 result_details.get("cost_usd", 0.0)
+                experiment_id = self.get_experiment_id(pipeline_data, method)
+                experiment_link = f"[exp_{experiment_id}](results/experiments/exp_{experiment_id}/)" if experiment_id else ""
 
                 # Create method description
                 if method == "enhanced":
-                    method_desc = "Enhanced (rules)"
+                    method_desc = "Claude-optimized hyperparams + prompt"
                     early_decisions = pipeline_data.get("enhanced_results", {}).get("early_decisions", 0)
                     llm_reduction = pipeline_data.get("enhanced_results", {}).get("llm_call_reduction", 0)
-                    notes = f"P:{precision:.3f}, R:{recall:.3f}, Early:{early_decisions}, -LLM:{llm_reduction:.1f}%"
+                    notes = f"P:{precision:.3f}, R:{recall:.3f}, Early:{early_decisions}, -LLM:{llm_reduction:.1f}%, {experiment_link}"
                 elif method == "baseline":
-                    method_desc = "Baseline (optimal)"
+                    method_desc = "Default (or user-provided) hyperparams + default prompt"
                     optimal_params = pipeline_data.get("optimal_params", {})
                     candidates = optimal_params.get("max_candidates", "?")
                     semantic_weight = optimal_params.get("semantic_weight", "?")
-                    notes = f"P:{precision:.3f}, R:{recall:.3f}, {candidates}c, sw:{semantic_weight}"
+                    trigram_weight = optimal_params.get("trigram_weight", "?")
+                    syntactic_weight = optimal_params.get("syntactic_weight", "?")
+                    notes = f"P:{precision:.3f}, R:{recall:.3f}, {candidates}c, sw:{semantic_weight}, tw:{trigram_weight}, syn:{syntactic_weight}, {experiment_link}"
                 else:
                     method_desc = method
                     notes = f"P:{precision:.3f}, R:{recall:.3f}"

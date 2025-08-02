@@ -1,0 +1,278 @@
+[
+  {
+    "timestamp": "2025-07-25T17:29:47.157276",
+    "issue_description": "TestRules timed out after 5 minutes when using max_candidates=500 for beer dataset. This suggests processing 500 candidates per query is too computationally expensive. Need to find optimal balance between candidate coverage and processing time.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-25T18:34:05.059645",
+    "issue_description": "Beer dataset optimization hitting performance plateau at F1 0.8462, far from target 0.953. Key issues: 1) JT Schmid's vs JT Schmids looks like valid match but labeled as false positive 2) Two matches (Rock Steady Red Cider, Sierra Amber Ale) not found in top 200-300 candidates despite high semantic similarity 3) Valid matches found in candidates but LLM not selecting them (Buckleys Original Ale at rank 10, Revenuers Red Ale at rank 1). Tried various weight combinations and prompt modifications but performance plateaued. May need data quality review or candidate generation improvements.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-26T07:11:05.204014",
+    "issue_description": "Performance collapsed from F1=0.8462 to F1=0.2353 when increasing max_candidates from 200 to 500. The LLM appears to be getting overwhelmed with too many candidates, causing massive performance degradation. All the false negatives are actually found in candidates (many at rank 1) but the LLM is not selecting them. This suggests the prompt or LLM decision-making process breaks down with large candidate sets.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-26T09:11:23.369144",
+    "issue_description": "After extensive optimization attempts on amazon_google dataset, unable to reach F1 > 0.75 target. Best achieved: F1=0.7170 with weights semantic=0.4, trigram=0.4, syntactic=0.2. Key findings:\n\n1. Baseline performance: F1=0.6839, high precision (96.36%) but low recall (53%)\n2. Weight optimization attempts: Tried various combinations, best was 0.4/0.4/0.2\n3. Prompt modifications: All attempts to modify prompt structure decreased performance\n4. Candidate pool size: Increasing from 100 to 150 candidates hurt performance significantly\n5. Core issue: Many correct matches are found in candidate pool but LLM rejects them\n\nConsistent false positives:\n- \"print shop 21 deluxe\" vs \"print shop 21 essentials\" (different editions)\n- \"creative suite cs3 design premium\" vs \"creative suite 3 design premium upgrade\" (upgrade vs full version)\n\nMost false negatives show correct match found but ranked 1-6, suggesting LLM is being too conservative despite prompt guidance attempts. Need alternative approach or different similarity weighting strategy.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-26T14:30:01.886284",
+    "issue_description": "Configuration mismatch between baseline and current testing: Baseline shows F1=1.0000 with semantic=0.5, trigram=0.25, syntactic=0.25 weights, but RunExperiment with same weights shows F1=0.8333. Baseline was evaluated on 'unknown' dataset while RunExperiment uses 'zomato_yelp' validation set. This suggests different evaluation datasets or different candidate selection parameters (baseline max_candidates=unknown vs current max_candidates=100). Need clarification on baseline evaluation conditions.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-26T14:59:58.067451",
+    "issue_description": "The rotten_imdb dataset has F1=0.0000 with 42 false negatives and 0 true positives. All candidates are found at rank=1 with high semantic similarity (0.92-0.97) but the LLM is responding with -1 instead of selecting the candidates. I've tried: 1) Modifying the prompt to be more movie-specific with examples, 2) Adjusting weights to favor semantic similarity (0.7/0.2/0.1), but still getting 0% performance. This suggests either a fundamental issue with the LLM evaluation or a problem with how the responses are being parsed/evaluated.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-27T00:47:38.553871",
+    "issue_description": "Severe performance degradation in fodors_zagat optimization: F1 score dropped from 0.8235 baseline to 0.0000 with overly conservative prompt modifications. The system is now rejecting all legitimate matches including identical restaurant names like \"chinois on main\" vs \"chinois on main\" and \"veni vidi vici\" vs \"veni vidi vici\". This suggests the prompt guidance became too restrictive, causing the LLM to be overly conservative in matching decisions. Need to find optimal balance between reducing false positives while maintaining ability to match legitimate restaurant pairs.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-27T02:05:03.982680",
+    "issue_description": "Beer dataset optimization challenge: Current F1 score is 0.8462, target is 0.953 (significant gap of 0.107). Key observations:\n\n1. The \"false positive\" (JT Schmid's Emil's Amber Ale matching JT Schmids Emils Amber Ale) appears to be a correct match - just spelling variations of the same beer.\n\n2. False negatives include some questionable matches:\n   - \"Rock Steady Red\" (ale, 5%) vs \"Acoustic Rock Steady Red Cider\" (cider, 6%) - different product types\n   - \"Sierra Amber Ale\" (US) vs \"Chy_e Sierra Amber Ale\" (Czech) - different countries/breweries\n   - \"Buckleys Original Ale\" from two different breweries - could be legitimate different products\n\n3. All missed matches are now in candidates (ranks 10, 348, 489) with max_candidates=500, but LLM is correctly rejecting them.\n\n4. Weight adjustments (tried semantic 0.2-0.5, trigram 0.25-0.6) and prompt modifications haven't improved F1.\n\nQuestion: Are the ground truth labels for this dataset potentially incorrect? The current performance might actually be more accurate than the target labels suggest. Should I continue trying to match potentially incorrect labels, or is there another approach to reach F1 > 0.953?",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-27T07:02:21.363271",
+    "issue_description": "dblp_scholar dataset optimization challenging: Despite academic-specific prompt modifications and extensive weight tuning (tested semantic weights 0.3-0.7, syntactic weights 0.15-0.5), best F1 achieved is 0.6259 vs target 0.898. System has very high precision (0.98) but low recall (0.46). Many false negatives have high semantic similarity (0.8-0.95) but LLM still rejects them. The 54 missed matches include obvious cases like identical titles with minor formatting. Candidate selection working well (most true matches ranked 1-5), but LLM decision-making appears overly conservative despite explicit high-recall guidance in prompt. May need different approach than similarity weight optimization.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-27T17:54:56.208195",
+    "issue_description": "Struggling to optimize itunes_amazon dataset to reach F1 > 0.85 target. Current status:\n\n1. Baseline F1: 0.6154 (precision=1.0, recall=0.4444)\n2. Current best F1: ~0.58 after various optimizations\n3. Target: F1 > 0.85\n\nIssues observed:\n- Perfect precision (1.0) but very low recall (~0.37-0.41)\n- Most matches are being found by candidate selection (good similarity scores) but rejected by LLM\n- Many false negatives have high semantic similarity (0.8+) and high trigram similarity (0.5+)\n- Examples include obvious matches like \"Thriller (Live From Hammersmith Palais)\" vs same title with different album edition\n- Tried various approaches: weight adjustments, prompt modifications, increasing max_candidates to 150\n\nQuestion: Is F1 > 0.85 realistic for this dataset, or are there system limitations/configuration issues I should be aware of? The gap between current performance (0.58) and target (0.85) seems large despite high similarity scores for missed matches.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-27T18:22:02.952442",
+    "issue_description": "Prompt modification caused complete system failure. F1 score dropped from 0.9438 to 0.0000 with all 42 true matches being rejected as false negatives. The LLM is now too conservative and rejecting obvious matches like \"Buffy the Vampire Slayer\" with identical titles, directors, and release dates. Need to revert to a working prompt structure that doesn't over-constrain the matching logic.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-28T13:48:03.083071",
+    "issue_description": "Candidate rules and weight rules in WriteRules are not taking effect. Despite writing rules to increase max_candidates to 200 and adjust weights to semantic=0.4, syntactic=0.4, trigram=0.2, the system still shows max_candidates=25 and weights as semantic=0.6, trigram=0.2, syntactic=0.2. The rules are being saved but not applied during RunExperiment.",
+    "server_mode": "heuristics-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-28T14:36:14.281891",
+    "issue_description": "Potential ground truth labeling issue in beer dataset: Record 977 (\"JT Schmid's Emil's Amber Ale\" from \"JT Schmid's Restaurant & Brewery\") appears to be correctly matched to record 1601 (\"JT Schmids Emils Amber Ale\" from \"JT Schmids Brewhouse & Eatery\") - they have identical beer names (modulo apostrophes), related brewery names, same ABV (5.20%), and compatible styles. However, this is being reported as a false positive, suggesting the ground truth may be incorrect. This affects optimization as the model is being penalized for what appears to be a correct prediction.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-28T18:20:11.809386",
+    "issue_description": "RunExperiment failed with error \"keys must be str, int, float, bool or None, not int64\" when trying to run fodors_zagat experiment with weights: semantic_weight=0.5, trigram_weight=0.25, syntactic_weight=0.25, max_candidates=50",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-28T18:21:34.942071",
+    "issue_description": "RunExperiment continues to fail with same error \"keys must be str, int, float, bool or None, not int64\" even with max_examples parameter added. This appears to be a systematic issue with the RunExperiment tool that needs debugging.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-28T18:36:47.066374",
+    "issue_description": "RunExperiment tool failed with error: name 'experiment_id' is not defined. This appears to be an internal tool error where the experiment_id variable is not defined in the tool implementation.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T10:37:35.355195",
+    "issue_description": "Struggling to improve beer dataset F1 beyond 0.8462 baseline. Key issues identified: 1) Two false negatives are not in top 50 candidates despite high semantic similarity (0.814-0.951), suggesting candidate retrieval limitations. 2) One 'false positive' (JT Schmid's Emil's vs JT Schmids Emils) appears to be a ground truth labeling error - these are clearly the same beer with punctuation differences. 3) Sample data suggests 300 candidates gives 100% recall, but testing with 300 candidates actually degraded performance. Need guidance on: a) How to improve candidate retrieval without hurting precision, b) Whether ground truth issues can be addressed, c) Alternative optimization strategies given current constraints.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T12:09:17.346957",
+    "issue_description": "Unable to achieve F1 > 0.953 target for beer dataset. Consistently hitting F1 ceiling around 0.8462 despite trying:\n\n1. Various weight configurations (semantic=0.3-0.5, trigram=0.25-0.5, syntactic=0.2-0.4)\n2. Max candidates from 50 to 300 \n3. Multiple prompt modifications (beer-specific guidance, matching guidelines)\n\nKey persistent issues:\n- False positive: JT Schmid's Emil's Amber Ale vs JT Schmids Emils Amber Ale (look identical but labeled as different entities - possible data quality issue)\n- False negatives: \"Buckleys Original Ale\" found at rank 1 but rejected by LLM; others not in candidate set despite high semantic similarity (0.946, 0.951)\n\nCurrent best: F1=0.8462, Precision=0.9167, Recall=0.7857 with semantic=0.3, trigram=0.3, syntactic=0.4, max_candidates=100\n\nGap to target: 0.107 (12.6% improvement needed)\n\nThis may require investigation of:\n1. Ground truth data quality (JT Schmid's case)\n2. Candidate retrieval algorithm limitations \n3. LLM decision boundary issues for high-similarity non-matches",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T12:19:52.396033",
+    "issue_description": "The prompt modifications became too aggressive and caused performance to collapse (F1 from 0.8462 to 0.1333). The LLM became overly conservative, matching only 1 out of 14 true positives. Need to revert to a more balanced prompt that encourages matching without being too aggressive. The system seems very sensitive to prompt changes.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T12:58:00.809472",
+    "issue_description": "Evaluation inconsistencies in beer dataset optimization:\n\n1. FALSE POSITIVE EVALUATION ERRORS: Two cases show identical predicted and actual records but are counted as false positives:\n   - Case 1: JT Schmid's Emil's Amber Ale - predicted and actual records are identical (ID 1601)  \n   - Case 2: Oatmeal Raisin Cookie Ale - predicted and actual records are identical (ID 1166)\n   These should be true positives, not false positives.\n\n2. PERSISTENT FALSE NEGATIVES despite explicit prompt guidance:\n   - \"Rock Steady Red\" vs \"Acoustic Rock Steady Red Cider\" (rank 117, similarities: trigram=0.376, semantic=0.736)\n   - \"Sierra Amber Ale\" vs \"Chy_e Sierra Amber Ale\" (rank 12, similarities: trigram=0.411, semantic=0.810)\n   \n   Both cases are found as candidates but LLM consistently rejects them despite:\n   - Specific examples in CRITICAL MATCHING RULES section\n   - Clear guidance to \"focus on core beer name\" and \"be liberal in matching\"\n   - Multiple prompt iterations emphasizing these exact scenarios\n\n3. PERFORMANCE PLATEAU: Stuck at F1=0.8571, far from target of 0.953. If false positive evaluation errors are fixed, actual F1 might be higher.\n\nRequest: Please investigate evaluation logic and suggest alternative approaches for these challenging edge cases.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T14:07:28.062278",
+    "issue_description": "Inconsistent evaluation results in beer dataset: \n\n1. False positives that appear to be correct matches:\n   - \"JT Schmid's Emil's Amber Ale\" vs \"JT Schmids Emils Amber Ale\" (same beer, apostrophe differences)\n   - Both have identical ABV (5.20%) and similar brewery names\n\n2. Results are unstable - same weight configurations giving different F1 scores across runs\n\n3. The baseline F1 of 0.8462 seems to be from a different evaluation set than the validation set I'm testing on\n\nPlease verify:\n- Are the ground truth labels correct for the beer dataset?\n- Is there consistency between baseline evaluation and current validation set?\n- Should \"JT Schmid's Emil's Amber Ale\" and \"JT Schmids Emils Amber Ale\" be considered the same entity?",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T15:06:04.254847",
+    "issue_description": "WriteWeights tool is not available - getting error \"No such tool available: mcp__entity-matching__WriteWeights\" when trying to optimize similarity weights. This is a critical tool needed for the optimization workflow.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T16:29:50.759020",
+    "issue_description": "WriteWeights tool is not available but was mentioned in the instructions. Need to adjust similarity weights (semantic_weight, trigram_weight, syntactic_weight) but the tool is missing.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T16:35:24.878660",
+    "issue_description": "Unable to achieve target F1 > 0.953 for beer dataset. Best achieved: F1=0.8276 with semantic=0.5, trigram=0.25, syntactic=0.25, max_candidates=100. Main issues: 1) False positives on very similar beer names from different breweries (e.g., JT Schmid cases), 2) False negatives where rank-1 candidates are rejected by LLM. The gap of ~0.13 F1 points suggests either the target is too aggressive for this dataset or there are configuration/baseline inconsistencies.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T16:38:11.995906",
+    "issue_description": "WriteWeights tool is not available. The tool list shows it should exist for adjusting similarity weights (semantic_weight, trigram_weight, syntactic_weight), but when I call it I get \"No such tool available: mcp__entity-matching__WriteWeights\". This is needed for the optimization workflow.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T16:51:23.562884",
+    "issue_description": "Beer dataset optimization challenge: Despite extensive prompt engineering and weight tuning, I can only achieve F1=0.8571 vs target of 0.953 (gap of 0.096). \n\nKey findings:\n1. Best configuration: semantic_weight=0.5, trigram_weight=0.3, syntactic_weight=0.2, max_candidates=300\n2. Prompt optimized with beer-specific matching criteria and brewery validation rules\n3. Remaining issues: 2 false positives (same beer name, different breweries) and 2 false negatives (very different brewery names)\n4. Baseline comparison shows \"unknown\" evaluation set vs \"FULL validation\" - potential data mismatch?\n\nThe baseline F1=0.8462 suggests the target F1=0.953 may not be achievable with current similarity features or there may be test/validation set differences. Need guidance on whether to accept current best performance or investigate data/configuration issues.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T17:03:42.700500",
+    "issue_description": "The WriteWeights tool is not available, but it was mentioned in the instructions as one of the available tools for optimizing similarity weights (semantic, trigram, syntactic). I need this tool to adjust the weights as part of the optimization process.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T17:32:11.904752",
+    "issue_description": "The mcp__entity-matching__WriteWeights tool is not available, but it was mentioned in the instructions and workflow. I need this tool to optimize similarity weights for the entity matching system.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T17:34:09.092815",
+    "issue_description": "The WriteWeights tool is not available. I need to adjust similarity weights but the tool doesn't exist. Available tools seem to be ReadInstructions, GetBaseline, ReadSampleData, RunExperiment, ReadPrompt, WritePrompt, and ReportIssue.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T17:42:56.604647",
+    "issue_description": "Beer-specific prompt modifications caused F1 to drop to 0.0000. All 14 true matches were rejected. The prompt might be too complex or restrictive, causing the LLM to be overly conservative. Need to simplify the prompt while keeping beer-specific guidance.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T18:07:33.535037",
+    "issue_description": "The WriteWeights tool is not available, but it was mentioned in the instructions as a key tool for optimizing similarity weights (semantic_weight, trigram_weight, syntactic_weight). This prevents me from adjusting the weights as part of the optimization process.",
+    "server_mode": "prompt-only",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-29T18:30:08.790243",
+    "issue_description": "Achieving F1 score around 0.85 but target is >0.953. Key issues observed:\n\n1. \"False positives\" show identical predicted and actual matches, suggesting evaluation issue:\n   - \"Flying Monkey\" vs \"Flying Monkeys\" (same brewery, minor name difference)\n   - \"JT Schmid's\" vs \"JT Schmids\" (same brewery, apostrophe difference)\n   - These appear to be correct matches but marked as false positives\n\n2. False negatives involve completely different brewery companies:\n   - \"Rock Wood Fire Pizza & Brewery\" vs \"Acoustic Brewing Company\"\n   - \"Silver Peak Restaurant & Brewery\" vs \"Zamecky Pivovar Chy_e\"\n   These seem like different breweries entirely but are labeled as matches in ground truth\n\n3. Current best configuration: semantic=0.7, trigram=0.2, syntactic=0.1, max_candidates=50, with beer-specific prompt emphasizing brewery compatibility\n\nNeed guidance on whether ground truth labeling is correct or if there's a configuration issue preventing higher F1 scores.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-30T06:56:20.703307",
+    "issue_description": "Beer dataset optimization stuck at F1=0.8462, unable to reach target of 0.953. Tried multiple weight combinations (semantic 0.2-0.5, trigram 0.25-0.6, syntactic 0.2-0.3), prompt modifications for beer-specific guidance, and max_candidates from 50-300. Consistent issues: 1) JT Schmid's false positive appears to be same entity with name variations, possibly ground truth error 2) Three false negatives include genuinely difficult cases like same beer name from different breweries (Buckleys), beer vs cider distinction (Rock Steady Red), and international brewery differences (Sierra Amber). All false negatives are now in candidate set but LLM rejects them. Performance ceiling may be due to dataset quality or inherent difficulty of these edge cases.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-30T10:50:22.077009",
+    "issue_description": "The updated prompt caused F1 score to drop to 0.0000 - all matches are being missed. The LLM is being too strict with the beer-specific matching criteria. Previous performance was F1=0.8148, but after modifying the prompt to be more beer-specific and emphasize brewery name disambiguation, the system now finds no matches at all. This suggests the prompt may be too restrictive or the brewery name matching criteria are too strict. Many of the missed matches show high semantic similarity (0.8-0.9+) and trigram similarity (0.5-0.7+) but the LLM is rejecting all of them. Examples of missed matches include identical brewery names with minor variations like \"Catawba Brewing Co.\" vs \"Catawba Valley Brewing Company\" which should match.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-30T10:52:16.764295",
+    "issue_description": "Updated prompt with specific brewery examples caused F1 to drop to 0.0000 again. The prompt with specific ACCEPT/REJECT examples seems to be making the LLM too strict. Even clearly matching cases like \"Bentley Brewing Company\" vs \"Bentley Brewing Co.\" are being rejected, which I specifically marked as ACCEPT in the prompt. The specific examples in the prompt may be causing the LLM to be overly rigid in its interpretation. I need to find a balance between being specific enough to avoid false positives but flexible enough to catch true matches.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-30T11:00:01.561483",
+    "issue_description": "WriteWeights tool failed with missing max_candidates parameter. The tool signature shows max_candidates as optional with default=50, but the tool is requiring it as a positional argument. This is a parameter specification issue in the MCP tool.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-30T14:19:14.821257",
+    "issue_description": "WriteWeights tool is expecting a max_candidates parameter that wasn't mentioned in the schema. The tool schema shows semantic_weight, trigram_weight, syntactic_weight as required parameters, but the actual implementation requires max_candidates as well.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-31T11:03:56.105575",
+    "issue_description": "ReadInstructions tool failed with error: 'ExperimentRegistry' object has no attribute 'pipeline_config'. This error occurred when trying to read instructions for the beer dataset optimization task. The tool call was made with no parameters as expected.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-31T11:04:02.437439",
+    "issue_description": "GetBaseline tool also failed with the same error: 'ExperimentRegistry' object has no attribute 'pipeline_config'. This suggests a systematic issue with the ExperimentRegistry object in the MCP server.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-31T11:11:35.551663",
+    "issue_description": "MCP Tool Error in ReadInstructions: 'ExperimentRegistry' object has no attribute 'pipeline_config' when trying to read instructions for dataset \"beer\". This appears to be an internal server error where the registry object is missing the pipeline_config attribute.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-31T11:11:57.327980",
+    "issue_description": "MCP Tool Error in TestWeights: 'ExperimentEntry' object has no attribute 'get' when trying to test weights with semantic_weight=0.3, trigram_weight=0.5, syntactic_weight=0.2, top_n=10. This appears to be an internal server error where the ExperimentEntry object is missing the 'get' method.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-31T11:26:58.486570",
+    "issue_description": "LLM is rejecting all matches after prompt modifications. Started with F1=84.62% but after prompt changes, F1 dropped to 0.0%. All 14 true matches are being missed, even obvious ones like 'Hooligan Amber Ale' vs 'Bentley Hooligan Amber Ale' from the same brewery. The candidates are being found (most rank #1) but the LLM is responding with -1 for everything. Need to identify what in the prompt is causing this overly conservative behavior.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-31T12:01:58.827389",
+    "issue_description": "RunExperiment failed with error: 'ExperimentConfig' object has no attribute 'model'. This appears to be a configuration object issue where the model attribute is missing or not properly initialized.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-31T12:02:12.637530",
+    "issue_description": "RunExperiment consistently fails with 'ExperimentConfig' object has no attribute 'model' error, regardless of parameters provided. This appears to be a systematic issue with the experiment configuration setup that prevents any experiment execution.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-31T15:21:06.253884",
+    "issue_description": "RunExperiment failed with error: \"run_enhanced_matching() got an unexpected keyword argument 'dataset'\" - this appears to be an issue with the function signature not matching the expected parameters.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  },
+  {
+    "timestamp": "2025-07-31T15:21:11.808509",
+    "issue_description": "RunExperiment continues to fail with the same error about 'dataset' parameter. The function seems to have a signature mismatch. Tried calling with no parameters and still getting the same error.",
+    "server_mode": "prompt-modification",
+    "tool_call_context": "ReportIssue"
+  }
+]

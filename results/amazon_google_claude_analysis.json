@@ -1,0 +1,2025 @@
+{
+  "dataset": "amazon_google",
+  "analysis_type": "validation",
+  "metadata": {
+    "total_pairs_analyzed": 2293,
+    "positive_pairs": 234,
+    "negative_pairs_sampled": 30,
+    "semantic_available": true
+  },
+  "similarity_analysis": {
+    "true_matches": {
+      "syntactic": {
+        "mean": 0.6746661786303316,
+        "std": 0.16042482319431708,
+        "median": 0.6666666666666666,
+        "min": 0.29411764705882354,
+        "max": 1.0
+      },
+      "trigram": {
+        "mean": 0.5012303405022985,
+        "std": 0.19677128486443238,
+        "median": 0.4667693661971831,
+        "min": 0.17647058823529413,
+        "max": 1.0
+      },
+      "semantic": {
+        "mean": 0.8882029669000554,
+        "std": 0.06751037041747053,
+        "median": 0.9045703676639995,
+        "min": 0.6661224301420856,
+        "max": 0.9934239570930536
+      }
+    },
+    "false_positives": {
+      "syntactic": {
+        "mean": 0.5579018037308201,
+        "std": 0.10486702786430052,
+        "median": 0.5230512587200485,
+        "min": 0.36585365853658536,
+        "max": 0.8636363636363636
+      },
+      "trigram": {
+        "mean": 0.30818091482176935,
+        "std": 0.08740145744304208,
+        "median": 0.2896057347670251,
+        "min": 0.21518987341772153,
+        "max": 0.5961538461538461
+      },
+      "semantic": {
+        "mean": 0.7959144976690637,
+        "std": 0.08923899861798694,
+        "median": 0.8060959305680051,
+        "min": 0.5334928034252624,
+        "max": 0.9239393565394091
+      }
+    }
+  },
+  "candidate_analysis": {
+    "recall_at_1": 0.6538461538461539,
+    "recall_at_5": 0.9017094017094017,
+    "recall_at_10": 0.9273504273504274,
+    "recall_at_25": 0.9444444444444444,
+    "recall_at_50": 0.9487179487179487,
+    "recall_at_100": 0.9487179487179487,
+    "recall_at_150": 0.9487179487179487,
+    "recall_at_200": 0.9487179487179487,
+    "recall_at_300": 0.9529914529914529,
+    "recall_at_500": 0.9529914529914529
+  },
+  "concrete_examples": {
+    "true_matches": [
+      {
+        "left_record": {
+          "id": 389,
+          "title": "instant immersion japanese 2.0",
+          "manufacturer": "topics entertainment",
+          "price": 19.99
+        },
+        "right_record": {
+          "id": 3009,
+          "title": "instant immersion japanese 2.0",
+          "manufacturer": "",
+          "price": 22.43
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.977
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 582,
+          "title": "apple garageband jam pack : remix tools",
+          "manufacturer": "apple",
+          "price": 99.0
+        },
+        "right_record": {
+          "id": 457,
+          "title": "apple garageband jam pack : remix tools",
+          "manufacturer": "",
+          "price": 95.99
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.993
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 602,
+          "title": "adobe creative suite cs3 design standard upgrade [ mac ]",
+          "manufacturer": "adobe",
+          "price": 399.0
+        },
+        "right_record": {
+          "id": 946,
+          "title": "adobe cs3 design standard upgrade",
+          "manufacturer": "",
+          "price": 413.99
+        },
+        "similarities": {
+          "syntactic": 0.742,
+          "trigram": 0.585,
+          "semantic": 0.944
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1342,
+          "title": "power translator 11 premium",
+          "manufacturer": "language-engineering-co-llc",
+          "price": 79.99
+        },
+        "right_record": {
+          "id": 646,
+          "title": "csdc power translator 11 premium language engineering company",
+          "manufacturer": "language-engineering-co-llc",
+          "price": 64.25
+        },
+        "similarities": {
+          "syntactic": 0.614,
+          "trigram": 0.424,
+          "semantic": 0.918
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1222,
+          "title": "guild wars nightfall",
+          "manufacturer": "ncsoft",
+          "price": 49.99
+        },
+        "right_record": {
+          "id": 560,
+          "title": "nc interactive inc guild wars nightfall",
+          "manufacturer": "",
+          "price": 48.27
+        },
+        "similarities": {
+          "syntactic": 0.678,
+          "trigram": 0.514,
+          "semantic": 0.934
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 885,
+          "title": "ipswitch inc ws ftp pro 9 sdk w / ws ftp pro wd-1000-0900 )",
+          "manufacturer": "ipswitch inc",
+          "price": 395.0
+        },
+        "right_record": {
+          "id": 119,
+          "title": "ipswitch wd-1000-0900 ws_ftp pro 9 sdk w / ws_ftp pro",
+          "manufacturer": "ipswitch",
+          "price": 325.51
+        },
+        "similarities": {
+          "syntactic": 0.696,
+          "trigram": 0.712,
+          "semantic": 0.978
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 868,
+          "title": "live bingo",
+          "manufacturer": "imagination-international-corp",
+          "price": ""
+        },
+        "right_record": {
+          "id": 201,
+          "title": "imagination international corp live bingo",
+          "manufacturer": "imagination-international-corp",
+          "price": 10.86
+        },
+        "similarities": {
+          "syntactic": 0.392,
+          "trigram": 0.229,
+          "semantic": 0.951
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 66,
+          "title": "freddi fish 2 : the haunted schoolhouse",
+          "manufacturer": "humongous entertainment",
+          "price": 29.95
+        },
+        "right_record": {
+          "id": 1574,
+          "title": "freddi fish 2 case of haunted schl hse",
+          "manufacturer": "",
+          "price": 7.5
+        },
+        "similarities": {
+          "syntactic": 0.805,
+          "trigram": 0.431,
+          "semantic": 0.831
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1264,
+          "title": "punch ! professional home design suite",
+          "manufacturer": "punch ! software",
+          "price": 69.99
+        },
+        "right_record": {
+          "id": 2399,
+          "title": "punch software 35100 punch ! professional home design suite ( small box )",
+          "manufacturer": "punch software",
+          "price": 62.99
+        },
+        "similarities": {
+          "syntactic": 0.685,
+          "trigram": 0.537,
+          "semantic": 0.917
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 5,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1182,
+          "title": "onone software pxl smartscale windows and macintosh )",
+          "manufacturer": "onone software",
+          "price": ""
+        },
+        "right_record": {
+          "id": 801,
+          "title": "onone software smartscale software",
+          "manufacturer": "",
+          "price": 189.99
+        },
+        "similarities": {
+          "syntactic": 0.644,
+          "trigram": 0.451,
+          "semantic": 0.828
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 927,
+          "title": "gorilla 4 student",
+          "manufacturer": "jungle software",
+          "price": 199.0
+        },
+        "right_record": {
+          "id": 178,
+          "title": "jungle software gorilla student 4.0 film production",
+          "manufacturer": "",
+          "price": 179.99
+        },
+        "similarities": {
+          "syntactic": 0.441,
+          "trigram": 0.231,
+          "semantic": 0.882
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1272,
+          "title": "punch ! home design architectural series 18",
+          "manufacturer": "punch ! software",
+          "price": 129.99
+        },
+        "right_record": {
+          "id": 2927,
+          "title": "punch software 42100 punch ! home design architectural series 18 ( small box )",
+          "manufacturer": "punch software",
+          "price": 119.99
+        },
+        "similarities": {
+          "syntactic": 0.711,
+          "trigram": 0.569,
+          "semantic": 0.935
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 5,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 36,
+          "title": "stomp inc recover lost data 2005",
+          "manufacturer": "stomp inc",
+          "price": 39.95
+        },
+        "right_record": {
+          "id": 2037,
+          "title": "recover lost data",
+          "manufacturer": "",
+          "price": 29.9
+        },
+        "similarities": {
+          "syntactic": 0.694,
+          "trigram": 0.5,
+          "semantic": 0.822
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 512,
+          "title": "microsoft windows xp professional upgrade with sp2",
+          "manufacturer": "microsoft software",
+          "price": 199.99
+        },
+        "right_record": {
+          "id": 2853,
+          "title": "microsoft windows xp professional edition ( upgrade )",
+          "manufacturer": "",
+          "price": 199.99
+        },
+        "similarities": {
+          "syntactic": 0.816,
+          "trigram": 0.672,
+          "semantic": 0.95
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 960,
+          "title": "make music finale 2008 academic",
+          "manufacturer": "emedia",
+          "price": 350.0
+        },
+        "right_record": {
+          "id": 2296,
+          "title": "make finale 2007 software educational discount music production software",
+          "manufacturer": "",
+          "price": 289.95
+        },
+        "similarities": {
+          "syntactic": 0.447,
+          "trigram": 0.239,
+          "semantic": 0.732
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 8,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 677,
+          "title": "mcsa/mcse self-paced training kit ( exams 70-292 & 70-296 ) upgrading your certi",
+          "manufacturer": "microsoft",
+          "price": 70.0
+        },
+        "right_record": {
+          "id": 1684,
+          "title": "mcsa/mcse self-paced training kit ( exams 70-292 and 70-296 ) upg . your",
+          "manufacturer": "",
+          "price": 39.95
+        },
+        "similarities": {
+          "syntactic": 0.882,
+          "trigram": 0.7,
+          "semantic": 0.951
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1244,
+          "title": "peachtree by sage pro accounting 2007",
+          "manufacturer": "sage software",
+          "price": 169.99
+        },
+        "right_record": {
+          "id": 1068,
+          "title": "sage software peachtree pro accounting 2007 software for windows tax & finance software",
+          "manufacturer": "",
+          "price": 159.95
+        },
+        "similarities": {
+          "syntactic": 0.468,
+          "trigram": 0.411,
+          "semantic": 0.859
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 320,
+          "title": "quicken 2007 premier",
+          "manufacturer": "intuit",
+          "price": 79.95
+        },
+        "right_record": {
+          "id": 3055,
+          "title": "quicken 2007 premier win cd",
+          "manufacturer": "intuit",
+          "price": 73.99
+        },
+        "similarities": {
+          "syntactic": 0.851,
+          "trigram": 0.72,
+          "semantic": 0.927
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1209,
+          "title": "flash action phonics made easy",
+          "manufacturer": "school zone",
+          "price": 14.99
+        },
+        "right_record": {
+          "id": 542,
+          "title": "school zone interactive flash action phonics made easy",
+          "manufacturer": "",
+          "price": 8.8
+        },
+        "similarities": {
+          "syntactic": 0.714,
+          "trigram": 0.56,
+          "semantic": 0.943
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 447,
+          "title": "simple movie maker",
+          "manufacturer": "topics entertainment",
+          "price": 19.99
+        },
+        "right_record": {
+          "id": 2157,
+          "title": "simple movie maker",
+          "manufacturer": "",
+          "price": 12.9
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.963
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1332,
+          "title": "emedia blues guitar legends",
+          "manufacturer": "emedia",
+          "price": 29.94
+        },
+        "right_record": {
+          "id": 632,
+          "title": "emedia music corp emedia blues guitar legends",
+          "manufacturer": "",
+          "price": 24.81
+        },
+        "similarities": {
+          "syntactic": 0.75,
+          "trigram": 0.658,
+          "semantic": 0.953
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 542,
+          "title": "apple ilife '06 ( mac dvd ) [ older version ]",
+          "manufacturer": "apple computer",
+          "price": 79.0
+        },
+        "right_record": {
+          "id": 222,
+          "title": "apple ilife '06",
+          "manufacturer": "",
+          "price": 79.99
+        },
+        "similarities": {
+          "syntactic": 0.5,
+          "trigram": 0.302,
+          "semantic": 0.855
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 174,
+          "title": "1pk internet sec ste 2007 oem",
+          "manufacturer": "ca oem",
+          "price": ""
+        },
+        "right_record": {
+          "id": 1484,
+          "title": "oem internet security suite 2007 3-user single pack",
+          "manufacturer": "",
+          "price": 32.85
+        },
+        "similarities": {
+          "syntactic": 0.6,
+          "trigram": 0.31,
+          "semantic": 0.708
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1169,
+          "title": "print explosion deluxe 3.0 ( mac )",
+          "manufacturer": "nova development",
+          "price": 49.99
+        },
+        "right_record": {
+          "id": 906,
+          "title": "nova print explosion deluxe 3.0",
+          "manufacturer": "",
+          "price": 46.99
+        },
+        "similarities": {
+          "syntactic": 0.8,
+          "trigram": 0.649,
+          "semantic": 0.904
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 859,
+          "title": "onone software intellihance pro 4.1",
+          "manufacturer": "onone software",
+          "price": ""
+        },
+        "right_record": {
+          "id": 803,
+          "title": "onone software intellihance pro 4 for mac/pc",
+          "manufacturer": "",
+          "price": 159.99
+        },
+        "similarities": {
+          "syntactic": 0.835,
+          "trigram": 0.705,
+          "semantic": 0.903
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 907,
+          "title": "hoyle card games ( jewel case )",
+          "manufacturer": "encore software",
+          "price": 9.99
+        },
+        "right_record": {
+          "id": 1593,
+          "title": "encore 10025 hoyle card games for pc",
+          "manufacturer": "encore",
+          "price": 10.0
+        },
+        "similarities": {
+          "syntactic": 0.567,
+          "trigram": 0.319,
+          "semantic": 0.858
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1269,
+          "title": "punch 5 in 1 home design",
+          "manufacturer": "punch ! software",
+          "price": 39.99
+        },
+        "right_record": {
+          "id": 783,
+          "title": "punch software 20100 punch ! 5 in 1 home design",
+          "manufacturer": "punch software",
+          "price": 35.99
+        },
+        "similarities": {
+          "syntactic": 0.676,
+          "trigram": 0.5,
+          "semantic": 0.945
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 564,
+          "title": "h & r block taxcut 2006 premium federal",
+          "manufacturer": "h & r block",
+          "price": 19.99
+        },
+        "right_record": {
+          "id": 2114,
+          "title": "h & r block taxcut premium federal software for mac and windows tax & finance software",
+          "manufacturer": "",
+          "price": 18.95
+        },
+        "similarities": {
+          "syntactic": 0.544,
+          "trigram": 0.388,
+          "semantic": 0.666
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 996,
+          "title": "time money & fractions grades 1-2",
+          "manufacturer": "school zone",
+          "price": 9.99
+        },
+        "right_record": {
+          "id": 835,
+          "title": "school zone interactive time money & fractions 1-2 on track software",
+          "manufacturer": "",
+          "price": 9.45
+        },
+        "similarities": {
+          "syntactic": 0.515,
+          "trigram": 0.353,
+          "semantic": 0.886
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 349,
+          "title": "middle school success deluxe 2008",
+          "manufacturer": "topics entertainment",
+          "price": 49.99
+        },
+        "right_record": {
+          "id": 2862,
+          "title": "middle school success deluxe 2008 ( pc/mac ) topics",
+          "manufacturer": "",
+          "price": 49.99
+        },
+        "similarities": {
+          "syntactic": 0.786,
+          "trigram": 0.633,
+          "semantic": 0.911
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 185,
+          "title": "iremember digital scrapbooking 2.0",
+          "manufacturer": "intriguing development",
+          "price": 39.95
+        },
+        "right_record": {
+          "id": 1550,
+          "title": "iremember 2.0 intriguing development",
+          "manufacturer": "",
+          "price": 32.99
+        },
+        "similarities": {
+          "syntactic": 0.457,
+          "trigram": 0.222,
+          "semantic": 0.716
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 73,
+          "title": "snap ! 10 000 drink recipies ( jewel case )",
+          "manufacturer": "topics entertainment",
+          "price": 4.99
+        },
+        "right_record": {
+          "id": 1565,
+          "title": "10000 drink recipe snap",
+          "manufacturer": "",
+          "price": 8.95
+        },
+        "similarities": {
+          "syntactic": 0.576,
+          "trigram": 0.326,
+          "semantic": 0.9
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1035,
+          "title": "riverdeep spongebob squarepants typing fun",
+          "manufacturer": "riverdeep",
+          "price": ""
+        },
+        "right_record": {
+          "id": 2343,
+          "title": "encore software 12441 encore spongebob squarepants typing fun time management",
+          "manufacturer": "",
+          "price": 17.97
+        },
+        "similarities": {
+          "syntactic": 0.639,
+          "trigram": 0.408,
+          "semantic": 0.798
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1043,
+          "title": "monopoly tycoon",
+          "manufacturer": "encore",
+          "price": 9.99
+        },
+        "right_record": {
+          "id": 755,
+          "title": "encore software 11630 monopoly tycoon win 98 me 2000 xp",
+          "manufacturer": "",
+          "price": 7.69
+        },
+        "similarities": {
+          "syntactic": 0.429,
+          "trigram": 0.25,
+          "semantic": 0.807
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1284,
+          "title": "punch ! master landscape & home design",
+          "manufacturer": "punch ! software",
+          "price": 99.99
+        },
+        "right_record": {
+          "id": 1062,
+          "title": "punch software 25100 punch ! master landscape and home design",
+          "manufacturer": "punch software",
+          "price": 45.99
+        },
+        "similarities": {
+          "syntactic": 0.747,
+          "trigram": 0.579,
+          "semantic": 0.949
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 2,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 515,
+          "title": "instant immersion spanish deluxe 2.0",
+          "manufacturer": "topics entertainment",
+          "price": 49.99
+        },
+        "right_record": {
+          "id": 3021,
+          "title": "instant immers spanish dlux 2",
+          "manufacturer": "",
+          "price": 36.11
+        },
+        "similarities": {
+          "syntactic": 0.892,
+          "trigram": 0.525,
+          "semantic": 0.833
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 9,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 840,
+          "title": "digital video and audio production book for vegas 7 + dvd",
+          "manufacturer": "sony-pictures-digital-entertainment",
+          "price": 49.35
+        },
+        "right_record": {
+          "id": 1510,
+          "title": "digital video & audio prod book",
+          "manufacturer": "sony-pictures-digital-entertainment",
+          "price": 27.5
+        },
+        "similarities": {
+          "syntactic": 0.682,
+          "trigram": 0.4,
+          "semantic": 0.875
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 836,
+          "title": "i love the usa",
+          "manufacturer": "global-software-publishing",
+          "price": 9.99
+        },
+        "right_record": {
+          "id": 2700,
+          "title": "global software a1055 i love the usa",
+          "manufacturer": "global-software-publishing",
+          "price": 11.99
+        },
+        "similarities": {
+          "syntactic": 0.56,
+          "trigram": 0.353,
+          "semantic": 0.898
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 666,
+          "title": "riding academy : jump & ride",
+          "manufacturer": "viva media",
+          "price": 19.99
+        },
+        "right_record": {
+          "id": 218,
+          "title": "viva media llc riding academy : jump & ride",
+          "manufacturer": "",
+          "price": 17.55
+        },
+        "similarities": {
+          "syntactic": 0.789,
+          "trigram": 0.641,
+          "semantic": 0.955
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1314,
+          "title": "return to castle wolfenstein ( mac )",
+          "manufacturer": "aspyr media",
+          "price": 29.99
+        },
+        "right_record": {
+          "id": 971,
+          "title": "aspyr return to castle wolfenstein",
+          "manufacturer": "",
+          "price": 30.99
+        },
+        "similarities": {
+          "syntactic": 0.8,
+          "trigram": 0.65,
+          "semantic": 0.946
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1087,
+          "title": "captain america the complete comic collection win/mac",
+          "manufacturer": "git corp",
+          "price": 49.95
+        },
+        "right_record": {
+          "id": 988,
+          "title": "git captain america : the complete collection dvd-rom",
+          "manufacturer": "",
+          "price": 42.99
+        },
+        "similarities": {
+          "syntactic": 0.774,
+          "trigram": 0.574,
+          "semantic": 0.854
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 108,
+          "title": "buzby breakin ' all the rules hermie and friends",
+          "manufacturer": "digital praise",
+          "price": 19.99
+        },
+        "right_record": {
+          "id": 1695,
+          "title": "buzby ; breakin all the rules hermie and freinds - digital pr",
+          "manufacturer": "",
+          "price": 15.99
+        },
+        "similarities": {
+          "syntactic": 0.826,
+          "trigram": 0.567,
+          "semantic": 0.945
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 473,
+          "title": "pro photo essentials plug in suite & iview mediapro 3",
+          "manufacturer": "onone software",
+          "price": 499.95
+        },
+        "right_record": {
+          "id": 2485,
+          "title": "onone software inc. ppi-12005 pro photo essentials plug in suite & iview mediapro 3",
+          "manufacturer": "",
+          "price": 450.97
+        },
+        "similarities": {
+          "syntactic": 0.779,
+          "trigram": 0.628,
+          "semantic": 0.912
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 974,
+          "title": "sony vegas movie studio + dvd 8 platinum edition",
+          "manufacturer": "sony media",
+          "price": 129.95
+        },
+        "right_record": {
+          "id": 840,
+          "title": "sony media software vegas movie studio + dvd 8 platinum edition",
+          "manufacturer": "",
+          "price": 100.97
+        },
+        "similarities": {
+          "syntactic": 0.865,
+          "trigram": 0.738,
+          "semantic": 0.948
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 23,
+          "title": "the printshop 20 professional publisher",
+          "manufacturer": "broderbund",
+          "price": 69.99
+        },
+        "right_record": {
+          "id": 1437,
+          "title": "printshop 20 pro publisher",
+          "manufacturer": "",
+          "price": 34.9
+        },
+        "similarities": {
+          "syntactic": 0.8,
+          "trigram": 0.579,
+          "semantic": 0.837
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 699,
+          "title": "scrapbook for windows",
+          "manufacturer": "abacus",
+          "price": ""
+        },
+        "right_record": {
+          "id": 415,
+          "title": "abacus scrapbook for windows",
+          "manufacturer": "",
+          "price": 26.14
+        },
+        "similarities": {
+          "syntactic": 0.857,
+          "trigram": 0.731,
+          "semantic": 0.903
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 47,
+          "title": "math success deluxe 2006",
+          "manufacturer": "topics entertainment",
+          "price": 49.99
+        },
+        "right_record": {
+          "id": 2076,
+          "title": "math success deluxe 2006",
+          "manufacturer": "",
+          "price": 12.9
+        },
+        "similarities": {
+          "syntactic": 1.0,
+          "trigram": 1.0,
+          "semantic": 0.968
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 713,
+          "title": "call of duty deluxe ( mac ) ( dvd )",
+          "manufacturer": "aspyr media",
+          "price": 39.99
+        },
+        "right_record": {
+          "id": 398,
+          "title": "aspyr call of duty deluxe",
+          "manufacturer": "",
+          "price": 53.99
+        },
+        "similarities": {
+          "syntactic": 0.633,
+          "trigram": 0.447,
+          "semantic": 0.901
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 500,
+          "title": "the printshop business card maker ( jewel case )",
+          "manufacturer": "riverdeep-learning-company",
+          "price": 9.99
+        },
+        "right_record": {
+          "id": 300,
+          "title": "encore inc printshop business card maker",
+          "manufacturer": "riverdeep-learning-company",
+          "price": 8.01
+        },
+        "similarities": {
+          "syntactic": 0.705,
+          "trigram": 0.509,
+          "semantic": 0.891
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1208,
+          "title": "tune tools for ipod ( win/mac )",
+          "manufacturer": "valusoft",
+          "price": 19.99
+        },
+        "right_record": {
+          "id": 540,
+          "title": "valusoft tune tools for ipod",
+          "manufacturer": "",
+          "price": 21.99
+        },
+        "similarities": {
+          "syntactic": 0.644,
+          "trigram": 0.447,
+          "semantic": 0.956
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 1,
+          "max_candidates": 50
+        }
+      }
+    ],
+    "confusing_non_matches": [
+      {
+        "left_record": {
+          "id": 412,
+          "title": "adobe creative suite cs3 web premium upsell [ mac ]",
+          "manufacturer": "adobe",
+          "price": 1399.0
+        },
+        "right_record": {
+          "id": 939,
+          "title": "adobe cs3 design premium academic",
+          "manufacturer": "",
+          "price": 575.99
+        },
+        "similarities": {
+          "syntactic": 0.524,
+          "trigram": 0.238,
+          "semantic": 0.852
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 24,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 522,
+          "title": "microsoft visio standard 2007",
+          "manufacturer": "microsoft",
+          "price": 259.95
+        },
+        "right_record": {
+          "id": 3171,
+          "title": "microsoft ( r ) project standard 2007",
+          "manufacturer": "",
+          "price": 599.95
+        },
+        "similarities": {
+          "syntactic": 0.758,
+          "trigram": 0.476,
+          "semantic": 0.785
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 819,
+          "title": "mavis beacon 17 standard",
+          "manufacturer": "encore software",
+          "price": 19.95
+        },
+        "right_record": {
+          "id": 1093,
+          "title": "mavis beacon ( r ) teaches typing v. 17 deluxe",
+          "manufacturer": "",
+          "price": 37.99
+        },
+        "similarities": {
+          "syntactic": 0.486,
+          "trigram": 0.25,
+          "semantic": 0.763
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 8,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1310,
+          "title": "ca antivirus 2007",
+          "manufacturer": "computer associates",
+          "price": 39.95
+        },
+        "right_record": {
+          "id": 2801,
+          "title": "ca anti-spyware 2007",
+          "manufacturer": "",
+          "price": 24.99
+        },
+        "similarities": {
+          "syntactic": 0.703,
+          "trigram": 0.32,
+          "semantic": 0.84
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 208,
+          "title": "wasp bar code wasp bar code labeler complete package 3 users std cd -",
+          "manufacturer": "wasp technologies",
+          "price": ""
+        },
+        "right_record": {
+          "id": 43,
+          "title": "10568 hoyle puzzle & board games 2005 complete package 1 user pc cd win",
+          "manufacturer": "",
+          "price": 14.51
+        },
+        "similarities": {
+          "syntactic": 0.514,
+          "trigram": 0.224,
+          "semantic": 0.533
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 944,
+          "title": "registry mechanic by encore software",
+          "manufacturer": "encore software",
+          "price": 46.52
+        },
+        "right_record": {
+          "id": 2102,
+          "title": "encore software 11191 scrabble sb cs by hasbro",
+          "manufacturer": "",
+          "price": 17.97
+        },
+        "similarities": {
+          "syntactic": 0.366,
+          "trigram": 0.246,
+          "semantic": 0.67
+        },
+        "candidate_generation": {
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 350,
+          "title": "adobe creative suite cs3 design standard upsell [ mac ]",
+          "manufacturer": "adobe",
+          "price": 899.0
+        },
+        "right_record": {
+          "id": 368,
+          "title": "adobe cs3 design standard upgrade windows",
+          "manufacturer": "",
+          "price": 413.99
+        },
+        "similarities": {
+          "syntactic": 0.604,
+          "trigram": 0.4,
+          "semantic": 0.921
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 7,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 531,
+          "title": "microsoft windows server 2003 client additional license for users-5 pack",
+          "manufacturer": "microsoft",
+          "price": 809.0
+        },
+        "right_record": {
+          "id": 53,
+          "title": "395-03824 microsoft exchange server 2007 enterprise edition complete package 1 server",
+          "manufacturer": "",
+          "price": 6594.2
+        },
+        "similarities": {
+          "syntactic": 0.522,
+          "trigram": 0.217,
+          "semantic": 0.721
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 19,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 654,
+          "title": "acrobat professional 8 ( windows )",
+          "manufacturer": "adobe",
+          "price": 273.0
+        },
+        "right_record": {
+          "id": 3060,
+          "title": "resume maker professional 12",
+          "manufacturer": "",
+          "price": 17.95
+        },
+        "similarities": {
+          "syntactic": 0.516,
+          "trigram": 0.261,
+          "semantic": 0.653
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 34,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 565,
+          "title": "adobe creative suite cs3 web premium [ mac ]",
+          "manufacturer": "adobe",
+          "price": 1599.0
+        },
+        "right_record": {
+          "id": 75,
+          "title": "19600061dm adobe creative suite 3 production premium media tlp download mac world",
+          "manufacturer": "",
+          "price": 20.97
+        },
+        "similarities": {
+          "syntactic": 0.592,
+          "trigram": 0.322,
+          "semantic": 0.864
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 20,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 975,
+          "title": "computrace lojack for laptops 1 year license ( mac )",
+          "manufacturer": "absolute software",
+          "price": 49.95
+        },
+        "right_record": {
+          "id": 2714,
+          "title": "absolute software lfl-m2-36 computrace lojack for laptops 3 year license mac 10.2 or higher",
+          "manufacturer": "",
+          "price": 80.97
+        },
+        "similarities": {
+          "syntactic": 0.671,
+          "trigram": 0.452,
+          "semantic": 0.924
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 5,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 705,
+          "title": "professional home design suite platinum",
+          "manufacturer": "punch ! software",
+          "price": 99.95
+        },
+        "right_record": {
+          "id": 1955,
+          "title": "punch software 85100 master landscape professional & home design v 10.0",
+          "manufacturer": "",
+          "price": 61.8
+        },
+        "similarities": {
+          "syntactic": 0.473,
+          "trigram": 0.277,
+          "semantic": 0.787
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 27,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 316,
+          "title": "f-secure internet security 2007 3 pcs",
+          "manufacturer": "global-marketing-partners",
+          "price": 79.99
+        },
+        "right_record": {
+          "id": 1534,
+          "title": "norton internet security 2008 10 user",
+          "manufacturer": "",
+          "price": 199.99
+        },
+        "similarities": {
+          "syntactic": 0.703,
+          "trigram": 0.426,
+          "semantic": 0.764
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 7,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 981,
+          "title": "instant immersion italian v2 .0 ( large box )",
+          "manufacturer": "topics entertainment",
+          "price": 29.99
+        },
+        "right_record": {
+          "id": 307,
+          "title": "topics entertainment instant immersion german audio",
+          "manufacturer": "",
+          "price": 12.05
+        },
+        "similarities": {
+          "syntactic": 0.479,
+          "trigram": 0.236,
+          "semantic": 0.749
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 17,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 176,
+          "title": "instant immersion japanese ( audio book )",
+          "manufacturer": "topics entertainment",
+          "price": ""
+        },
+        "right_record": {
+          "id": 2851,
+          "title": "instant immersion spanish 2.0 topics",
+          "manufacturer": "",
+          "price": 19.99
+        },
+        "similarities": {
+          "syntactic": 0.649,
+          "trigram": 0.304,
+          "semantic": 0.69
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 11,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 364,
+          "title": "adobe premiere elements 3.0 [ lb ]",
+          "manufacturer": "adobe",
+          "price": 99.99
+        },
+        "right_record": {
+          "id": 372,
+          "title": "adobe premiere pro cs3 upgrade",
+          "manufacturer": "",
+          "price": 308.99
+        },
+        "similarities": {
+          "syntactic": 0.5,
+          "trigram": 0.289,
+          "semantic": 0.87
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 5,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1177,
+          "title": "microsoft office student and teacher edition 2004 macintosh",
+          "manufacturer": "microsoft",
+          "price": 149.99
+        },
+        "right_record": {
+          "id": 1120,
+          "title": "microsoft academic microsoft office project 2003 standard",
+          "manufacturer": "",
+          "price": 69.95
+        },
+        "similarities": {
+          "syntactic": 0.431,
+          "trigram": 0.241,
+          "semantic": 0.782
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 21,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 615,
+          "title": "adobe creative suite cs3 design standard upgrade",
+          "manufacturer": "adobe",
+          "price": 399.0
+        },
+        "right_record": {
+          "id": 566,
+          "title": "adobe cs3 web standard",
+          "manufacturer": "",
+          "price": 1035.99
+        },
+        "similarities": {
+          "syntactic": 0.571,
+          "trigram": 0.3,
+          "semantic": 0.867
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 21,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1160,
+          "title": "apple mac os x tiger 10.4.6 ( mac dvd )",
+          "manufacturer": "apple computer",
+          "price": 129.0
+        },
+        "right_record": {
+          "id": 1599,
+          "title": "apple apple mac os x server 10 4 7 10 client",
+          "manufacturer": "",
+          "price": 499.0
+        },
+        "similarities": {
+          "syntactic": 0.578,
+          "trigram": 0.296,
+          "semantic": 0.825
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 480,
+          "title": "jumpstart world 1st grade",
+          "manufacturer": "knowledge adventure",
+          "price": 19.99
+        },
+        "right_record": {
+          "id": 2056,
+          "title": "reader rabbit 1st grade",
+          "manufacturer": "",
+          "price": 17.9
+        },
+        "similarities": {
+          "syntactic": 0.458,
+          "trigram": 0.229,
+          "semantic": 0.666
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 15,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 711,
+          "title": "family tree maker 2008 platinum",
+          "manufacturer": "encore",
+          "price": 99.95
+        },
+        "right_record": {
+          "id": 3207,
+          "title": "family tree maker 16 collectors edition",
+          "manufacturer": "",
+          "price": 99.99
+        },
+        "similarities": {
+          "syntactic": 0.657,
+          "trigram": 0.32,
+          "semantic": 0.825
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 1360,
+          "title": "dragon naturally speaking standard v9",
+          "manufacturer": "nuance-communications-inc .",
+          "price": 99.99
+        },
+        "right_record": {
+          "id": 1810,
+          "title": "dragon naturally speaking ( v9 .0 ) preferred wireless edition nuance a109x-wn4",
+          "manufacturer": "",
+          "price": 161.82
+        },
+        "similarities": {
+          "syntactic": 0.5,
+          "trigram": 0.294,
+          "semantic": 0.901
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 3,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 558,
+          "title": "instant immersion spanish 2.0",
+          "manufacturer": "topics entertainment",
+          "price": 29.99
+        },
+        "right_record": {
+          "id": 307,
+          "title": "topics entertainment instant immersion german audio",
+          "manufacturer": "",
+          "price": 12.05
+        },
+        "similarities": {
+          "syntactic": 0.525,
+          "trigram": 0.281,
+          "semantic": 0.787
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 14,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 689,
+          "title": "family tree maker version 16 collectors edition",
+          "manufacturer": "encore software",
+          "price": ""
+        },
+        "right_record": {
+          "id": 2002,
+          "title": "family tree maker 11 collector 's edition",
+          "manufacturer": "",
+          "price": 34.9
+        },
+        "similarities": {
+          "syntactic": 0.864,
+          "trigram": 0.596,
+          "semantic": 0.889
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 4,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 580,
+          "title": "quickbooks premier edition 2007 5 user multi-pack",
+          "manufacturer": "intuit",
+          "price": 1499.95
+        },
+        "right_record": {
+          "id": 1823,
+          "title": "299530 quickbooks premier nonprofit edition 2007 complete package 1 user cd win",
+          "manufacturer": "",
+          "price": 344.58
+        },
+        "similarities": {
+          "syntactic": 0.609,
+          "trigram": 0.386,
+          "semantic": 0.83
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 12,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 216,
+          "title": "adobe illustrator cs3 upgrade from freehand [ mac ]",
+          "manufacturer": "adobe",
+          "price": 199.0
+        },
+        "right_record": {
+          "id": 151,
+          "title": "adobe indesign cs3 for mac upgrade",
+          "manufacturer": "",
+          "price": 205.99
+        },
+        "similarities": {
+          "syntactic": 0.471,
+          "trigram": 0.29,
+          "semantic": 0.902
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 6,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 276,
+          "title": "instant immersion 33 languages",
+          "manufacturer": "topics entertainment",
+          "price": 49.99
+        },
+        "right_record": {
+          "id": 423,
+          "title": "topics entertainment instant immersion japanese crash course",
+          "manufacturer": "",
+          "price": 6.56
+        },
+        "similarities": {
+          "syntactic": 0.489,
+          "trigram": 0.239,
+          "semantic": 0.786
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 20,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 452,
+          "title": "adobe after effects cs3",
+          "manufacturer": "adobe",
+          "price": 999.0
+        },
+        "right_record": {
+          "id": 2177,
+          "title": "adobe after effects professional 7.0 software effects software",
+          "manufacturer": "",
+          "price": 998.95
+        },
+        "similarities": {
+          "syntactic": 0.518,
+          "trigram": 0.367,
+          "semantic": 0.856
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 11,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 518,
+          "title": "microsoft office 2004 standard upgrade ( mac )",
+          "manufacturer": "microsoft",
+          "price": 239.99
+        },
+        "right_record": {
+          "id": 2833,
+          "title": "microsoft office accounting professional 2007 ( pc )",
+          "manufacturer": "",
+          "price": 229.95
+        },
+        "similarities": {
+          "syntactic": 0.531,
+          "trigram": 0.253,
+          "semantic": 0.735
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 34,
+          "max_candidates": 50
+        }
+      },
+      {
+        "left_record": {
+          "id": 888,
+          "title": "microsoft oem 3pk xp home edition sp2 n09-01624 )",
+          "manufacturer": "microsoft corporation",
+          "price": ""
+        },
+        "right_record": {
+          "id": 924,
+          "title": "microsoft windows xp pro oem sp2 no open box returns",
+          "manufacturer": "",
+          "price": 149.99
+        },
+        "similarities": {
+          "syntactic": 0.475,
+          "trigram": 0.215,
+          "semantic": 0.841
+        },
+        "candidate_generation": {
+          "found": true,
+          "rank": 6,
+          "max_candidates": 50
+        }
+      }
+    ]
+  },
+  "dataset_characteristics": {
+    "table_a_size": 1363,
+    "table_b_size": 3226,
+    "field_names": [
+      "title",
+      "manufacturer",
+      "price"
+    ],
+    "sample_records": [
+      {
+        "id": 0,
+        "title": "clickart 950 000 premier image pack ( dvd-rom )",
+        "manufacturer": "broderbund",
+        "price": ""
+      },
+      {
+        "id": 1,
+        "title": "ca international arcserve lap/desktop oem 30pk",
+        "manufacturer": "computer associates",
+        "price": ""
+      },
+      {
+        "id": 2,
+        "title": "noah 's ark activity center ( jewel case ages 3-8 )",
+        "manufacturer": "victory multimedia",
+        "price": ""
+      }
+    ]
+  }
+}

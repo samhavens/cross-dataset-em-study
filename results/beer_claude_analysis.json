@@ -24,11 +24,11 @@
         "max": 1.0
       },
       "semantic": {
-        "mean": 0.9553365749972207,
-        "std": 0.041662077171052234,
-        "median": 0.9669203460216522,
-        "min": 0.8138793706893921,
-        "max": 0.9854633212089539
+        "mean": 0.9039179410061543,
+        "std": 0.06831056256501937,
+        "median": 0.9257187100276694,
+        "min": 0.7359046964263662,
+        "max": 0.9791366764437867
       }
     },
     "false_positives": {
@@ -47,25 +47,25 @@
         "max": 0.7916666666666666
       },
       "semantic": {
-        "mean": 0.927684756120046,
-        "std": 0.021287170696848306,
-        "median": 0.9275202751159668,
-        "min": 0.8789061307907104,
-        "max": 0.9764837622642517
+        "mean": 0.7400071041940972,
+        "std": 0.05535624859389854,
+        "median": 0.7364240606506486,
+        "min": 0.6398776534839024,
+        "max": 0.9394267973694531
       }
     }
   },
   "candidate_analysis": {
-    "recall_at_1": 0.7857142857142857,
-    "recall_at_5": 0.8571428571428571,
-    "recall_at_10": 0.8571428571428571,
-    "recall_at_25": 0.8571428571428571,
-    "recall_at_50": 0.8571428571428571,
-    "recall_at_100": 0.8571428571428571,
-    "recall_at_150": 0.8571428571428571,
-    "recall_at_200": 0.9285714285714286,
-    "recall_at_300": 0.9285714285714286,
-    "recall_at_500": 0.9285714285714286
+    "recall_at_1": 0.8571428571428571,
+    "recall_at_5": 0.9285714285714286,
+    "recall_at_10": 0.9285714285714286,
+    "recall_at_25": 0.9285714285714286,
+    "recall_at_50": 0.9285714285714286,
+    "recall_at_100": 0.9285714285714286,
+    "recall_at_150": 1.0,
+    "recall_at_200": 1.0,
+    "recall_at_300": 1.0,
+    "recall_at_500": 1.0
   },
   "concrete_examples": {
     "true_matches": [
@@ -87,12 +87,12 @@
         "similarities": {
           "syntactic": 0.815,
           "trigram": 0.69,
-          "semantic": 0.98
+          "semantic": 0.953
         },
         "candidate_generation": {
           "found": true,
           "rank": 1,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -113,12 +113,12 @@
         "similarities": {
           "syntactic": 0.875,
           "trigram": 0.76,
-          "semantic": 0.985
+          "semantic": 0.97
         },
         "candidate_generation": {
           "found": true,
           "rank": 1,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -139,12 +139,12 @@
         "similarities": {
           "syntactic": 1.0,
           "trigram": 1.0,
-          "semantic": 0.946
+          "semantic": 0.824
         },
         "candidate_generation": {
           "found": true,
-          "rank": 2,
-          "max_candidates": 500
+          "rank": 1,
+          "max_candidates": 50
         }
       },
       {
@@ -165,12 +165,12 @@
         "similarities": {
           "syntactic": 0.926,
           "trigram": 0.852,
-          "semantic": 0.984
+          "semantic": 0.979
         },
         "candidate_generation": {
           "found": true,
           "rank": 1,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -191,12 +191,12 @@
         "similarities": {
           "syntactic": 0.829,
           "trigram": 0.692,
-          "semantic": 0.971
+          "semantic": 0.933
         },
         "candidate_generation": {
           "found": true,
           "rank": 1,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -217,12 +217,12 @@
         "similarities": {
           "syntactic": 0.842,
           "trigram": 0.7,
-          "semantic": 0.951
+          "semantic": 0.81
         },
         "candidate_generation": {
           "found": true,
-          "rank": 169,
-          "max_candidates": 500
+          "rank": 5,
+          "max_candidates": 50
         }
       },
       {
@@ -243,12 +243,12 @@
         "similarities": {
           "syntactic": 0.683,
           "trigram": 0.48,
-          "semantic": 0.954
+          "semantic": 0.876
         },
         "candidate_generation": {
           "found": true,
           "rank": 1,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -269,12 +269,12 @@
         "similarities": {
           "syntactic": 0.489,
           "trigram": 0.323,
-          "semantic": 0.973
+          "semantic": 0.919
         },
         "candidate_generation": {
           "found": true,
           "rank": 1,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -300,7 +300,7 @@
         "candidate_generation": {
           "found": true,
           "rank": 1,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -321,12 +321,12 @@
         "similarities": {
           "syntactic": 0.667,
           "trigram": 0.464,
-          "semantic": 0.814
+          "semantic": 0.736
         },
         "candidate_generation": {
           "found": false,
           "rank": null,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -347,12 +347,12 @@
         "similarities": {
           "syntactic": 0.694,
           "trigram": 0.517,
-          "semantic": 0.975
+          "semantic": 0.903
         },
         "candidate_generation": {
           "found": true,
           "rank": 1,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -373,12 +373,12 @@
         "similarities": {
           "syntactic": 0.818,
           "trigram": 0.667,
-          "semantic": 0.981
+          "semantic": 0.966
         },
         "candidate_generation": {
           "found": true,
           "rank": 1,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -399,12 +399,12 @@
         "similarities": {
           "syntactic": 0.571,
           "trigram": 0.361,
-          "semantic": 0.963
+          "semantic": 0.936
         },
         "candidate_generation": {
           "found": true,
           "rank": 1,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -425,12 +425,12 @@
         "similarities": {
           "syntactic": 0.762,
           "trigram": 0.583,
-          "semantic": 0.943
+          "semantic": 0.896
         },
         "candidate_generation": {
           "found": true,
           "rank": 1,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       }
     ],
@@ -453,12 +453,12 @@
         "similarities": {
           "syntactic": 0.71,
           "trigram": 0.4,
-          "semantic": 0.934
+          "semantic": 0.768
         },
         "candidate_generation": {
           "found": true,
-          "rank": 8,
-          "max_candidates": 500
+          "rank": 12,
+          "max_candidates": 50
         }
       },
       {
@@ -479,12 +479,12 @@
         "similarities": {
           "syntactic": 0.5,
           "trigram": 0.236,
-          "semantic": 0.936
+          "semantic": 0.732
         },
         "candidate_generation": {
-          "found": true,
-          "rank": 22,
-          "max_candidates": 500
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
         }
       },
       {
@@ -505,12 +505,12 @@
         "similarities": {
           "syntactic": 0.667,
           "trigram": 0.326,
-          "semantic": 0.944
+          "semantic": 0.774
         },
         "candidate_generation": {
           "found": true,
-          "rank": 1,
-          "max_candidates": 500
+          "rank": 3,
+          "max_candidates": 50
         }
       },
       {
@@ -531,12 +531,12 @@
         "similarities": {
           "syntactic": 0.41,
           "trigram": 0.25,
-          "semantic": 0.904
+          "semantic": 0.815
         },
         "candidate_generation": {
-          "found": false,
-          "rank": null,
-          "max_candidates": 500
+          "found": true,
+          "rank": 9,
+          "max_candidates": 50
         }
       },
       {
@@ -557,12 +557,12 @@
         "similarities": {
           "syntactic": 0.539,
           "trigram": 0.317,
-          "semantic": 0.903
+          "semantic": 0.666
         },
         "candidate_generation": {
           "found": true,
-          "rank": 2,
-          "max_candidates": 500
+          "rank": 18,
+          "max_candidates": 50
         }
       },
       {
@@ -583,12 +583,12 @@
         "similarities": {
           "syntactic": 0.643,
           "trigram": 0.268,
-          "semantic": 0.921
+          "semantic": 0.657
         },
         "candidate_generation": {
           "found": false,
           "rank": null,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -609,12 +609,12 @@
         "similarities": {
           "syntactic": 0.611,
           "trigram": 0.383,
-          "semantic": 0.929
+          "semantic": 0.703
         },
         "candidate_generation": {
           "found": true,
-          "rank": 7,
-          "max_candidates": 500
+          "rank": 10,
+          "max_candidates": 50
         }
       },
       {
@@ -635,12 +635,12 @@
         "similarities": {
           "syntactic": 0.511,
           "trigram": 0.273,
-          "semantic": 0.945
+          "semantic": 0.774
         },
         "candidate_generation": {
-          "found": true,
-          "rank": 408,
-          "max_candidates": 500
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
         }
       },
       {
@@ -661,12 +661,12 @@
         "similarities": {
           "syntactic": 0.509,
           "trigram": 0.275,
-          "semantic": 0.944
+          "semantic": 0.749
         },
         "candidate_generation": {
           "found": true,
-          "rank": 37,
-          "max_candidates": 500
+          "rank": 16,
+          "max_candidates": 50
         }
       },
       {
@@ -687,12 +687,12 @@
         "similarities": {
           "syntactic": 0.619,
           "trigram": 0.423,
-          "semantic": 0.958
+          "semantic": 0.785
         },
         "candidate_generation": {
           "found": true,
-          "rank": 3,
-          "max_candidates": 500
+          "rank": 6,
+          "max_candidates": 50
         }
       },
       {
@@ -713,12 +713,12 @@
         "similarities": {
           "syntactic": 0.979,
           "trigram": 0.792,
-          "semantic": 0.976
+          "semantic": 0.939
         },
         "candidate_generation": {
           "found": true,
           "rank": 2,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -739,12 +739,12 @@
         "similarities": {
           "syntactic": 0.648,
           "trigram": 0.3,
-          "semantic": 0.926
+          "semantic": 0.715
         },
         "candidate_generation": {
-          "found": true,
-          "rank": 59,
-          "max_candidates": 500
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
         }
       },
       {
@@ -765,12 +765,12 @@
         "similarities": {
           "syntactic": 0.587,
           "trigram": 0.275,
-          "semantic": 0.921
+          "semantic": 0.64
         },
         "candidate_generation": {
           "found": true,
-          "rank": 11,
-          "max_candidates": 500
+          "rank": 21,
+          "max_candidates": 50
         }
       },
       {
@@ -791,12 +791,12 @@
         "similarities": {
           "syntactic": 0.655,
           "trigram": 0.395,
-          "semantic": 0.949
+          "semantic": 0.768
         },
         "candidate_generation": {
           "found": true,
-          "rank": 44,
-          "max_candidates": 500
+          "rank": 46,
+          "max_candidates": 50
         }
       },
       {
@@ -817,12 +817,12 @@
         "similarities": {
           "syntactic": 0.408,
           "trigram": 0.313,
-          "semantic": 0.934
+          "semantic": 0.733
         },
         "candidate_generation": {
           "found": true,
-          "rank": 10,
-          "max_candidates": 500
+          "rank": 9,
+          "max_candidates": 50
         }
       },
       {
@@ -843,12 +843,12 @@
         "similarities": {
           "syntactic": 0.462,
           "trigram": 0.268,
-          "semantic": 0.914
+          "semantic": 0.726
         },
         "candidate_generation": {
-          "found": true,
-          "rank": 332,
-          "max_candidates": 500
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
         }
       },
       {
@@ -869,12 +869,12 @@
         "similarities": {
           "syntactic": 0.583,
           "trigram": 0.257,
-          "semantic": 0.941
+          "semantic": 0.697
         },
         "candidate_generation": {
-          "found": true,
-          "rank": 158,
-          "max_candidates": 500
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
         }
       },
       {
@@ -895,12 +895,12 @@
         "similarities": {
           "syntactic": 0.59,
           "trigram": 0.244,
-          "semantic": 0.937
+          "semantic": 0.794
         },
         "candidate_generation": {
-          "found": false,
-          "rank": null,
-          "max_candidates": 500
+          "found": true,
+          "rank": 13,
+          "max_candidates": 50
         }
       },
       {
@@ -921,12 +921,12 @@
         "similarities": {
           "syntactic": 0.597,
           "trigram": 0.349,
-          "semantic": 0.907
+          "semantic": 0.756
         },
         "candidate_generation": {
           "found": true,
-          "rank": 63,
-          "max_candidates": 500
+          "rank": 35,
+          "max_candidates": 50
         }
       },
       {
@@ -947,12 +947,12 @@
         "similarities": {
           "syntactic": 0.519,
           "trigram": 0.242,
-          "semantic": 0.906
+          "semantic": 0.75
         },
         "candidate_generation": {
-          "found": true,
-          "rank": 209,
-          "max_candidates": 500
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
         }
       },
       {
@@ -973,12 +973,12 @@
         "similarities": {
           "syntactic": 0.385,
           "trigram": 0.222,
-          "semantic": 0.886
+          "semantic": 0.667
         },
         "candidate_generation": {
           "found": false,
           "rank": null,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -999,12 +999,12 @@
         "similarities": {
           "syntactic": 0.641,
           "trigram": 0.269,
-          "semantic": 0.959
+          "semantic": 0.724
         },
         "candidate_generation": {
-          "found": true,
-          "rank": 470,
-          "max_candidates": 500
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
         }
       },
       {
@@ -1025,12 +1025,12 @@
         "similarities": {
           "syntactic": 0.586,
           "trigram": 0.359,
-          "semantic": 0.925
+          "semantic": 0.753
         },
         "candidate_generation": {
           "found": true,
-          "rank": 482,
-          "max_candidates": 500
+          "rank": 37,
+          "max_candidates": 50
         }
       },
       {
@@ -1051,12 +1051,12 @@
         "similarities": {
           "syntactic": 0.667,
           "trigram": 0.267,
-          "semantic": 0.92
+          "semantic": 0.719
         },
         "candidate_generation": {
           "found": true,
-          "rank": 24,
-          "max_candidates": 500
+          "rank": 32,
+          "max_candidates": 50
         }
       },
       {
@@ -1077,12 +1077,12 @@
         "similarities": {
           "syntactic": 0.527,
           "trigram": 0.214,
-          "semantic": 0.918
+          "semantic": 0.734
         },
         "candidate_generation": {
-          "found": true,
-          "rank": 416,
-          "max_candidates": 500
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
         }
       },
       {
@@ -1103,12 +1103,12 @@
         "similarities": {
           "syntactic": 0.71,
           "trigram": 0.349,
-          "semantic": 0.944
+          "semantic": 0.751
         },
         "candidate_generation": {
           "found": true,
-          "rank": 9,
-          "max_candidates": 500
+          "rank": 26,
+          "max_candidates": 50
         }
       },
       {
@@ -1129,12 +1129,12 @@
         "similarities": {
           "syntactic": 0.531,
           "trigram": 0.208,
-          "semantic": 0.944
+          "semantic": 0.732
         },
         "candidate_generation": {
-          "found": true,
-          "rank": 109,
-          "max_candidates": 500
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
         }
       },
       {
@@ -1155,12 +1155,12 @@
         "similarities": {
           "syntactic": 0.581,
           "trigram": 0.25,
-          "semantic": 0.879
+          "semantic": 0.762
         },
         "candidate_generation": {
           "found": false,
           "rank": null,
-          "max_candidates": 500
+          "max_candidates": 50
         }
       },
       {
@@ -1181,12 +1181,12 @@
         "similarities": {
           "syntactic": 0.576,
           "trigram": 0.316,
-          "semantic": 0.913
+          "semantic": 0.678
         },
         "candidate_generation": {
-          "found": true,
-          "rank": 344,
-          "max_candidates": 500
+          "found": false,
+          "rank": null,
+          "max_candidates": 50
         }
       },
       {
@@ -1207,12 +1207,12 @@
         "similarities": {
           "syntactic": 0.561,
           "trigram": 0.238,
-          "semantic": 0.914
+          "semantic": 0.738
         },
         "candidate_generation": {
-          "found": false,
-          "rank": null,
-          "max_candidates": 500
+          "found": true,
+          "rank": 27,
+          "max_candidates": 50
         }
       }
     ]
